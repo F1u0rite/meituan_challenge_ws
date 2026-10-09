@@ -213,6 +213,131 @@ def check_gitignore() -> None:
                 target.unlink(missing_ok=True)
 
 
+def check_entry_points() -> None:
+    """核验 setup.py 声明的 console_scripts 指向真实存在的模块与函数。
+
+    这一项在无 ROS 2 环境下无法通过 `ros2 run` 验证，但静态解析即可发现
+    “入口点指向不存在的模块”这类安装后必然失败的问题。
+    """
+    import ast
+
+    declared: dict[str, str] = {}
+    for setup in sorted((WORKSPACE / 'src').glob('*/setup.py')):
+        pkg = setup.parent.name
+        try:
+            tree = ast.parse(setup.read_text(encoding='utf-8'))
+        except SyntaxError as exc:
+            check(False, f'{pkg}/setup.py: 语法错误 {exc}')
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Dict):
+                continue
+            for key, value in zip(node.keys, node.values):
+                if not (isinstance(key, ast.Constant) and key.value == 'console_scripts'):
+                    continue
+                for elt in getattr(value, 'elts', []):
+                    if not isinstance(elt, ast.Constant):
+                        continue
+                    name, _, target = elt.value.partition(' = ')
+                    declared[name.strip()] = target.strip()
+                    module, _, func = target.strip().partition(':')
+                    path = (setup.parent / Path(*module.split('.')))
+                    file = (path.with_suffix('.py') if path.with_suffix('.py').is_file()
+                            else path / '__init__.py')
+                    ok = file.is_file() and f'def {func}(' in file.read_text(encoding='utf-8')
+                    check(ok, f'{pkg}: 入口点 {name} -> {module}:{func} '
+                              + ('存在' if ok else '缺失（安装后必然失败）'))
+    if not declared:
+        check(False, '没有任何包声明 console_scripts')
+
+
+def check_error_code_mirrors() -> None:
+    """核验各纯 Python 模块中的错误码常量与 ErrorCodes.msg 数值一致。
+
+    FSM / 工具 / 安全 / 桥接层为脱离 rclpy 而各自镜像了错误码；
+    本检查确保镜像不会与 IDL 漂移。
+    """
+    import importlib.util
+    import re as _re
+    import sys as _sys
+
+    msg_path = WORKSPACE / 'src/mtc_interfaces/msg/ErrorCodes.msg'
+    if not msg_path.is_file():
+        check(False, 'ErrorCodes.msg 缺失，无法核验镜像')
+        return
+    ref = {name: int(value) for name, value in _re.findall(
+        r'^uint16\s+([A-Z_0-9]+)\s*=\s*(\d+)', msg_path.read_text(encoding='utf-8'), _re.M)}
+
+    targets = [
+        ('mtc_tool/codes.py', 'mtc_tool/mtc_tool/codes.py', None),
+        ('mtc_safety/interlocks.py', 'mtc_safety/mtc_safety/interlocks.py', None),
+        ('mtc_aubo_bridge/bridge_core.py', 'mtc_aubo_bridge/mtc_aubo_bridge/bridge_core.py', None),
+        ('mtc_manipulation/pick_place_fsm.py',
+         'mtc_manipulation/mtc_manipulation/pick_place_fsm.py', 'ErrorCode'),
+    ]
+    for label, rel, container in targets:
+        path = WORKSPACE / 'src' / rel
+        if not path.is_file():
+            check(False, f'错误码镜像核验：找不到 {rel}')
+            continue
+        try:
+            spec = importlib.util.spec_from_file_location(
+                'mirror_' + label.replace('/', '_').replace('.', '_'), path)
+            module = importlib.util.module_from_spec(spec)
+            _sys.modules[spec.name] = module
+            spec.loader.exec_module(module)
+        except Exception as exc:  # 无法导入则无法核验，按失败处理
+            check(False, f'{rel}: 导入失败，无法核验错误码镜像（{type(exc).__name__}）')
+            continue
+        source = getattr(module, container) if container else module
+        items = {k: int(v) for k, v in vars(source).items()
+                 if k.isupper() and isinstance(v, int) and not isinstance(v, bool)}
+        normalized = {_re.sub(r'^(ERROR_|ERR_)', '', k): v for k, v in items.items()}
+        compared = {k: v for k, v in normalized.items() if k in ref}
+        bad = [f'{k}: msg={ref[k]} 代码={v}' for k, v in compared.items() if ref[k] != v]
+        check(not bad, f'{rel}: 错误码镜像 {len(compared)}/{len(ref)} 项与 IDL 一致'
+              + ('' if not bad else f'；不一致 {bad}'))
+        del _sys.modules[spec.name]
+
+
+def check_joint_name_consistency() -> None:
+    """核验关节名称在各配置与实现文件中的集合完全一致。
+
+    `ExecuteJointMove` 要求 joint_names 与 target_rad 一一对应，
+    名称漂移会导致执行层拒绝合法请求（或漏检非法顺序）。
+    """
+    import re as _re
+
+    baseline_file = WORKSPACE / 'config/motion_profiles.yaml'
+    candidates = [
+        'config/motion_profiles.yaml',
+        'config/manipulation.yaml',
+        'src/mtc_motion_execution/mtc_motion_execution/motion_executor_node.py',
+        'src/mtc_motion_execution/mtc_motion_execution/backends.py',
+        'src/mtc_motion_execution/test/test_backends.py',
+        'src/mtc_bringup/mtc_bringup/mock_pipeline.py',
+    ]
+    baseline: list[str] | None = None
+    for rel in candidates:
+        path = WORKSPACE / rel
+        if not path.is_file():
+            check(False, f'关节名核验：找不到 {rel}')
+            continue
+        names = list(dict.fromkeys(_re.findall(
+            r'["\']([A-Za-z_0-9]*_joint)["\']', path.read_text(encoding='utf-8'))))
+        if rel == 'config/motion_profiles.yaml':
+            baseline = names
+            check(bool(names), f'{rel}: 解析到 {len(names)} 个关节名')
+            continue
+        if baseline is None:
+            continue
+        extra = sorted(set(names) - set(baseline))
+        missing = sorted(set(baseline) - set(names))
+        check(set(names) == set(baseline),
+              f'{rel}: 关节名与 config/motion_profiles.yaml 一致'
+              + ('' if not (extra or missing) else f'；多余 {extra} 缺失 {missing}'))
+
+
 def main() -> int:
     src = WORKSPACE / 'src'
     if not src.is_dir():
@@ -231,6 +356,9 @@ def main() -> int:
         check_python(pkg_dir)
 
     check_gitignore()
+    check_entry_points()
+    check_error_code_mirrors()
+    check_joint_name_consistency()
 
     passed = sum(1 for ok, _ in results if ok)
     failed = [(ok, msg) for ok, msg in results if not ok]

@@ -19,7 +19,7 @@
 | P3 | ROSIDL 接口契约 | **PASS**（静态自检；官方生成器 `NOT RUN`） |
 | P4 | 双层 FSM、工具策略、执行层、安全层 | **PASS**（离线单测） |
 | P5 | SDK 桥接（disabled stub） | **PASS**（离线单测；真实通路禁止） |
-| P6 | 回归与验收 | **PARTIAL**（离线单元 255/255、静态自检 61/61、Mock 端到端 15/15 全 PASS；`colcon test` 与仿真回归 `NOT RUN`） |
+| P6 | 回归与验收 | **PARTIAL**（离线单元 255/255、静态自检 79/79、Mock 端到端 15/15 全 PASS；`colcon test` 与仿真回归 `NOT RUN`） |
 
 **一句话：** 新工程可独立构建（依赖层面无旧工程绝对路径），双层状态机与 Mock 执行链路在离线环境可运行并通过单元测试；**实机抓放、完整轨迹执行、仿真回归均未验证**。
 
@@ -198,7 +198,7 @@ sudo chown aaet:aaet /home/meituan_challenge_ws
 | `mtc_tool` | `python3 -m pytest test/ -q` | **39 / 39** | 0 |
 | `mtc_safety` | `python3 -m pytest test/ -q` | **70 / 70** | 0 |
 | **单元测试合计** | — | **255 / 255** | — |
-| 离线静态自检 | `python3 scripts/offline_selfcheck.py` | **61 / 61** | 0 |
+| 离线静态自检 | `python3 scripts/offline_selfcheck.py` | **79 / 79** | 0 |
 | 跨包 Mock 端到端 | `python3 tests/test_mock_end_to_end.py` | **15 / 15** | 0 |
 
 **端到端最终输出（原文）：**
@@ -247,6 +247,33 @@ E2E RESULT: PASS 15 / FAIL 0 / SKIP 0
 | `ros2 interface show` | 同上 |
 | Gazebo 仿真回归 | 无 `mtc_simulation` 源码、无 Jazzy、无可用 Gazebo 基线 |
 | 真实 AUBO S3 任何操作 | **未获现场授权**；安全默认禁止 |
+
+### 6.4 集成一致性核验（本轮新增，均已固化为自检项）
+
+离线单测与端到端测试覆盖不到“安装/装配层面”的断裂，因此补充了四类静态核验，
+并全部纳入 `scripts/offline_selfcheck.py`，避免日后回归：
+
+| 核验项 | 方法 | 结果 |
+|---|---|---|
+| **入口点可解析性** | 解析各 `setup.py` 的 `console_scripts`，检查目标模块文件是否存在、函数是否定义 | 8/8 存在。**修复 1 处真实断裂**：`mtc_aubo_bridge` 声明 `aubo_bridge = mtc_aubo_bridge.bridge_node:main`，但 `bridge_node.py` 从未创建（安装后 `ros2 run` 必然失败）——已补齐该节点外壳 |
+| **错误码镜像一致性** | 实际导入各纯 Python 模块，比对常量数值与 `ErrorCodes.msg` | `mtc_tool/codes.py` 18/18、`mtc_safety/interlocks.py` 18/18、`mtc_manipulation/pick_place_fsm.py` 18/18、`mtc_aubo_bridge/bridge_core.py` 5/5（该模块只用到 5 个码）全部一致 |
+| **关节名一致性** | 比对 6 处配置/实现文件中的 `*_joint` 名称集合 | 6/6 完全一致（`shoulder_joint`/`upperArm_joint`/`foreArm_joint`/`wrist1_joint`/`wrist2_joint`/`wrist3_joint`） |
+| **文档链接与齐备性** | 核对 V3 §2 要求的架构与迁移文档 | `CONTROL_FSM_AND_ROS2_INTERFACES.md`、`TF_CONVENTIONS.md`、`FSM_IMPLEMENTATION.md` 与四份迁移文档全部存在 |
+
+**同时修复一处文档与代码不一致：** `mock_bringup.launch.py` 的注释声称
+`mtc_safety` 的节点外壳“尚未落地”，并将 `start_safety_supervisor` 默认置为 `False`。
+该外壳实际已存在，现已改为默认启动并把就绪性说明更新为实测结论（`mtc_aubo_bridge`
+的 `bridge_node` 已落地但不属于 Mock 组合，故不在该 launch 中启动）。
+
+**依赖可用性（实测）：** 在现有 ROS 2 Humble 中 `std_msgs`、`geometry_msgs`、
+`builtin_interfaces`、`rosidl_default_generators`、`sensor_msgs`、`ament_cmake`
+均可用；`PyYAML 6.0.1` 可用（`mtc_bringup` 配置加载与校验依赖它）。
+
+**launch 引用核验：** `mock_bringup.launch.py` 的 `COMPOSITION` 表引用的 5 个可执行文件
+（`motion_executor`/`task_executor`/`pick_place_server`/`tool_manager`/`safety_supervisor`）
+均已在对应包中声明且入口点可解析；`real_bringup.launch.py` 与 `sim_bringup.launch.py`
+不含任何 `Node` 启动，只打印拒绝/NOT RUN 说明，符合安全边界。
+
 
 ---
 

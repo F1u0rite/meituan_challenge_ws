@@ -14,11 +14,15 @@
 
 已就绪性说明（如实登记，不掩盖）
 --------------------------------
-``mtc_task`` / ``mtc_safety`` / ``mtc_aubo_bridge`` 当前只有核心纯 Python 模块，
-ROS 2 节点外壳（``task_executor`` 已具备 / ``safety_supervisor`` / ``bridge_node``）
-尚未全部落地。因此本 launch 通过 ``start_*`` 参数允许按需关闭：
-被关闭的节点会在日志中打印 ``SKIPPED(节点外壳未就绪)``，而不是静默失败。
-默认只启动**已确认存在**的 ``motion_executor`` / ``pick_place_server`` / ``tool_manager``。
+节点外壳就绪情况（2026-10-09 实测核对，非推测）：
+
+* 已落地并默认启动：``motion_executor``、``task_executor``、``pick_place_server``、
+  ``tool_manager``、``safety_supervisor``
+* ``mtc_aubo_bridge`` 的 ``bridge_node`` 亦已落地，但它面向真实 SDK 通路
+  （默认 ``mode=disabled``），**不属于 Mock 组合**，因此本 launch 不启动它；
+  真机桥接需现场授权后使用独立启动流程。
+
+任何 ``start_*`` 参数被关闭或因故未启动的节点都会打印明确日志，而不是静默失败。
 
 用法::
 
@@ -57,7 +61,7 @@ COMPOSITION = (
      "manipulation.yaml", True),
     ("start_tool_manager", "mtc_tool", "tool_manager", None, True),
     ("start_safety_supervisor", "mtc_safety", "safety_supervisor",
-     "safety.yaml", False),
+     "safety.yaml", True),
 )
 
 
@@ -106,7 +110,7 @@ def _build_nodes(context, *args, **kwargs):
         enabled = str(LaunchConfiguration(arg_name).perform(context)).strip().lower() in (
             "true", "1", "yes", "on")
         if not enabled:
-            actions.append(LogInfo(msg="SKIPPED(节点外壳未就绪或已显式关闭)：%s/%s"
+            actions.append(LogInfo(msg="SKIPPED(已显式关闭该节点)：%s/%s"
                                        % (package, executable)))
             continue
 
@@ -161,6 +165,6 @@ def generate_launch_description() -> LaunchDescription:
     for arg_name, _package, _executable, _config, default_on in COMPOSITION:
         declared.append(DeclareLaunchArgument(
             arg_name, default_value="true" if default_on else "false",
-            description="是否启动该节点（节点外壳未就绪时可关闭）"))
+            description="是否启动该节点（默认 True；可按需显式关闭）"))
 
     return LaunchDescription(declared + [OpaqueFunction(function=_build_nodes)])
