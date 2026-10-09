@@ -15,7 +15,7 @@
 离线运行（无需 ROS，`ROS_DISTRO=humble` 也不影响）：
 
 ```bash
-cd /home/meituan_challenge_ws/src/mtc_safety
+cd /home/aaet/meituan_challenge_ws/src/mtc_safety
 python3 -m pytest test/ -v            # 首选
 python3 -m unittest discover -s test -t .   # 无 pytest 时的备用方式
 python3 -m py_compile mtc_safety/interlocks.py mtc_safety/safety_supervisor.py

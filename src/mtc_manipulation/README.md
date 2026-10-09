@@ -107,7 +107,7 @@ V2 解锁失败或解锁结果未知时，FSM 一律 FAULT，**禁止继续强�
 **依赖：仅 Python 3.10+ 与 pytest（无 pytest 时用标准库 unittest 亦可）。无需 ROS 环境、无需 colcon build。**
 
 ```bash
-cd /home/meituan_challenge_ws/src/mtc_manipulation
+cd /home/aaet/meituan_challenge_ws/src/mtc_manipulation
 
 # 语法检查
 python3 -m py_compile mtc_manipulation/*.py test/*.py

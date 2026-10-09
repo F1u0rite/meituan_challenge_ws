@@ -187,7 +187,7 @@ fsm.advance_validation()
 纯 Python 3，**不 import rclpy**：
 
 ```bash
-cd /home/meituan_challenge_ws/src/mtc_task
+cd /home/aaet/meituan_challenge_ws/src/mtc_task
 python3 -m pytest test/ -v
 # 或
 python3 test/test_task_fsm.py

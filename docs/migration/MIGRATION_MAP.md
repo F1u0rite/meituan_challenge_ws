@@ -10,10 +10,10 @@
 
 | 编号 | 源路径（绝对） | 目标路径（绝对） | 操作 | 原因 | 哈希 / 证据 |
 |---|---|---|---|---|---|
-| M1 | `/home/chang/meituan_challenge/src/mtc_interfaces` | `/home/meituan_challenge_ws/src/mtc_interfaces` | **未复制**（源缺失） | 源目录在本机不存在（全盘查找无命中） | 见 `SOURCE_AUDIT.md` §4；期望内容仅见于交接文档记述 |
-| M2 | `/home/chang/meituan_challenge/src/mtc_motion_planning` | `/home/meituan_challenge_ws/src/mtc_motion_planning` | **未复制**（源缺失） | 同上；规划算法与动力学成果**未被重写或替换** | 占位说明见 `src/mtc_motion_planning/README.md` |
-| M3 | `/home/chang/meituan_challenge/src/mtc_description` | `/home/meituan_challenge_ws/src/mtc_description` | **未复制**（源缺失） | 同上；URDF/网格未迁移，禁止臆造 | 占位说明见 `src/mtc_description/README.md` |
-| M4 | `/home/chang/meituan_challenge/src/mtc_simulation` | `/home/meituan_challenge_ws/src/mtc_simulation` | **未复制**（源缺失） | 同上；Gazebo 回归 `NOT RUN` | 占位说明见 `src/mtc_simulation/README.md` |
+| M1 | `/home/chang/meituan_challenge/src/mtc_interfaces` | `/home/aaet/meituan_challenge_ws/src/mtc_interfaces` | **未复制**（源缺失） | 源目录在本机不存在（全盘查找无命中） | 见 `SOURCE_AUDIT.md` §4；期望内容仅见于交接文档记述 |
+| M2 | `/home/chang/meituan_challenge/src/mtc_motion_planning` | `/home/aaet/meituan_challenge_ws/src/mtc_motion_planning` | **未复制**（源缺失） | 同上；规划算法与动力学成果**未被重写或替换** | 占位说明见 `src/mtc_motion_planning/README.md` |
+| M3 | `/home/chang/meituan_challenge/src/mtc_description` | `/home/aaet/meituan_challenge_ws/src/mtc_description` | **未复制**（源缺失） | 同上；URDF/网格未迁移，禁止臆造 | 占位说明见 `src/mtc_description/README.md` |
+| M4 | `/home/chang/meituan_challenge/src/mtc_simulation` | `/home/aaet/meituan_challenge_ws/src/mtc_simulation` | **未复制**（源缺失） | 同上；Gazebo 回归 `NOT RUN` | 占位说明见 `src/mtc_simulation/README.md` |
 | M5 | `/home/chang/meituan_challenge/scripts/*` | `scripts/` | **未复制** | 旧脚本含指向 `/home/chang/...` 的绝对路径，且无可核实的源文件 | — |
 | M6 | `/home/chang/meituan_challenge/config/*` | `config/` | **未复制** | 同上 | 新配置为本项目**新编写**，见 §4 |
 | M7 | `AUBO_S3.md`（仓库根） | `docs/reference/AUBO_S3.md` | **git mv（重排）** | 归位到 V3 §2 规定结构 | 内容未改；SHA256 `a5cf0980cd5e911f29bc416c776e452c4e8a3a25616ac47fa90d15cd2edd7a59`（迁移前后一致） |
@@ -52,7 +52,7 @@ V3 要求“确保新工程的包不会误引用旧仓库的 `build/install`、�
 | 是否出现旧绝对路径 | `grep -rn "/home/chang" src/ config/ scripts/ docs/` | 仅出现在**说明性文档**中对缺失源的引用（本文件、`SOURCE_AUDIT.md`、占位 README），源码内**无**硬编码旧路径 |
 | 是否出现旧 SDK 目录硬编码 | `grep -rn "aubo_s3_nuc_smoke" src/` | 无 |
 | 是否引用旧 overlay | `grep -rn "COLCON_PREFIX_PATH\|/home/chang.*install" src/ config/` | 无 |
-| 是否存在符号链接指向旧工程 | `find /home/meituan_challenge_ws -type l` | 无 |
+| 是否存在符号链接指向旧工程 | `find /home/aaet/meituan_challenge_ws -type l` | 无 |
 
 **结论：** 新工程不依赖旧工程绝对路径，可在任意位置独立 `colcon build`。
 

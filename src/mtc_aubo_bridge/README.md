@@ -58,7 +58,7 @@ ROS 2 与 **AUBO S3 SDK**（`pyaubo-sdk` / RPC / RTDE）之间的适配层。
 
 ```bash
 # 单元测试（25 项，不需要 ROS 2 环境，不连接任何设备）
-cd /home/meituan_challenge_ws/src/mtc_aubo_bridge
+cd /home/aaet/meituan_challenge_ws/src/mtc_aubo_bridge
 python3 test/test_bridge_core.py
 ```
 

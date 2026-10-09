@@ -3,7 +3,7 @@
 
 运行方式（无需 ROS，也无需 colcon build）::
 
-    cd /home/meituan_challenge_ws
+    cd /home/aaet/meituan_challenge_ws
     python3 tests/test_mock_end_to_end.py
 
 覆盖范围

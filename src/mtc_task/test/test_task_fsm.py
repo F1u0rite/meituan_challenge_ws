@@ -3,7 +3,7 @@
 
 可运行方式（两种均可）::
 
-    cd /home/meituan_challenge_ws/src/mtc_task
+    cd /home/aaet/meituan_challenge_ws/src/mtc_task
     python3 -m pytest test/ -v
     python3 test/test_task_fsm.py
     python3 -m unittest discover -s test -v

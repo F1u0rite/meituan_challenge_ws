@@ -99,7 +99,7 @@
 ## 6. 离线运行方式（无需编译、无需 source ROS）
 
 ```bash
-cd /home/meituan_challenge_ws/src/mtc_tool
+cd /home/aaet/meituan_challenge_ws/src/mtc_tool
 python3 -m pytest test/ -v
 # 或无 pytest：
 python3 -m unittest discover -s test -v

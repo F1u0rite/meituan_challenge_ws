@@ -21,7 +21,7 @@
 ## 2. 运行方式（无需 ROS 2，无需 colcon build）
 
 ```bash
-cd /home/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
 
 # 配置校验（退出码 0 通过 / 1 失败）
 PYTHONPATH=src/mtc_bringup python3 -m mtc_bringup.validate_config

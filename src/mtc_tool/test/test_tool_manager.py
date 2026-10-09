@@ -2,7 +2,7 @@
 
 运行方式（无需编译、无需 source ROS）::
 
-    cd /home/meituan_challenge_ws/src/mtc_tool
+    cd /home/aaet/meituan_challenge_ws/src/mtc_tool
     python3 -m pytest test/ -v
     # 或者
     python3 -m unittest discover -s test -v
@@ -41,7 +41,7 @@ from mtc_tool.strategy import (  # noqa: E402
 # ---------------------------------------------------------------------------
 # 目录定位（只读引用 mtc_interfaces，绝不修改）
 # ---------------------------------------------------------------------------
-WS_ROOT = _PKG_DIR.parents[1]  # /home/meituan_challenge_ws
+WS_ROOT = _PKG_DIR.parents[1]  # /home/aaet/meituan_challenge_ws
 MSG_DIR = WS_ROOT / "src" / "mtc_interfaces" / "msg"
 SRV_DIR = WS_ROOT / "src" / "mtc_interfaces" / "srv"
 CORE_MODULES = ("codes.py", "strategy.py", "manager.py", "io_port.py", "__init__.py")

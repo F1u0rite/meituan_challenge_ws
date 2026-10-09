@@ -14,7 +14,7 @@
     11. V2 未确认落座时解锁被拒（策略级 + FSM 级防御联锁）。
 
 运行：
-    cd /home/meituan_challenge_ws/src/mtc_manipulation
+    cd /home/aaet/meituan_challenge_ws/src/mtc_manipulation
     python3 -m pytest test/ -v
 """
 

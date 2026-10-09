@@ -65,7 +65,7 @@ ROSIDL 接口契约包（Action / Message / Service）。**只定义接口，不
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-cd /home/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
 colcon build --packages-select mtc_interfaces
 source install/setup.bash
 ros2 interface show mtc_interfaces/action/ExecuteTask

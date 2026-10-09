@@ -11,7 +11,7 @@
 
 | 审计项 | 期望（按 V3 提示词） | 实测结果 | 判定 |
 |---|---|---|---|
-| 唯一新工作空间 | `/home/meituan_challenge_ws` | 已由 GitHub 克隆建立，`rev-parse --show-toplevel` 精确返回该路径 | ✅ 符合 |
+| 唯一新工作空间 | 当时为 `/home/meituan_challenge_ws`（V3 指定）；**现为 `/home/aaet/meituan_challenge_ws`** | 已由 GitHub 克隆建立，`rev-parse --show-toplevel` 精确返回当时路径（见 §3.1.1 的路径迁移记录） | ✅ 符合 |
 | 旧比赛工程 | `/home/chang/meituan_challenge` | **不存在**（`/home` 下仅有 `aaet`） | ❌ 缺失 → 迁移阻塞 |
 | 旧 WSL 冒烟工程 | `/home/chang/aubo_s3_nuc_smoke` | **不存在** | ❌ 缺失 |
 | NUC 旧 SDK 工程 | `/home/aaet/aubo_s3_nuc_smoke/hardware` | **存在**（非 Git 仓库，含 `smoke.py`/`telemetry.py`/`j6_45_fast.py` 等） | ⚠️ 只读参考可用 |
@@ -53,8 +53,8 @@
 ## 3. 新工作空间核验（P1 证据）
 
 ```text
-realpath                          : /home/meituan_challenge_ws
-git rev-parse --show-toplevel     : /home/meituan_challenge_ws
+realpath                          : /home/aaet/meituan_challenge_ws
+git rev-parse --show-toplevel     : /home/aaet/meituan_challenge_ws
 remote origin (fetch/push)        : https://github.com/F1u0rite/meituan_challenge_ws.git
 初始 HEAD                         : 24f08a3143051ba0cdc89378ef234e740eb78ac2
 初始 HEAD 提交信息                : "Add initial files"
@@ -63,9 +63,9 @@ remote origin (fetch/push)        : https://github.com/F1u0rite/meituan_challeng
 .git 来源                         : GitHub clone 自带，**未执行 git init、未重新克隆、未删除/替换 .git**
 ```
 
-### 3.1 目录创建权限处理（唯一一处 sudo 使用）
+### 3.1 目录创建权限处理（P1 阶段的 sudo 使用；另见 §3.1.1 的路径迁移）
 
-`/home` 属主为 `root`（`drwxr-xr-x`），普通账户无法在其中建目录。经用户明确授权后执行了**最小必要**操作：
+`/home` 属主为 `root`（`drwxr-xr-x`），普通账户无法在其中建目录。经用户明确授权后执行了**最小必要**操作（**记录当时真实路径**：P1 阶段的工作空间为 V3 提示词指定的 `/home/meituan_challenge_ws`）：
 
 ```bash
 sudo mkdir -p /home/meituan_challenge_ws
@@ -73,7 +73,22 @@ sudo chown aaet:aaet /home/meituan_challenge_ws
 sudo chmod 755 /home/meituan_challenge_ws
 ```
 
-**未**对 `/home` 整体 `chmod`；**未**改动其他任何系统路径。建目录后即以普通用户 `aaet` 身份克隆与写入，全程不再需要提权。
+**未**对 `/home` 整体 `chmod`；**未**改动其他任何系统路径。建目录后即以普通用户 `aaet` 身份克隆与写入。
+
+### 3.1.1 后续路径迁移（2026-10-09，用户指示）
+
+用户随后指示把工程迁至 `/home/aaet/meituan_challenge_ws`，理由是 `/home` 根目录下的入口不便操作。由于 `/home` 根目录的移动对普通账户受限，再次使用了一次 sudo（**真实执行的命令**）：
+
+```bash
+# 1) 备份目标位置原有的临时克隆（仅基线 7 个文件，无开发内容）
+mv /home/aaet/meituan_challenge_ws /home/aaet/meituan_challenge_ws_temp_clone_backup
+# 2) 同文件系统内整体移动完整工程（保留 .git 历史与全部提交）
+sudo mv /home/meituan_challenge_ws /home/aaet/meituan_challenge_ws
+```
+
+迁移后核验：`realpath` 与 `git rev-parse --show-toplevel` 均返回新路径；`git status --porcelain` 为空；`find -not -user aaet` 无输出（全部归 `aaet`）；旧路径已不存在。原始文档哈希未变（见 §3.2）。详细记录见 `IMPLEMENTATION_REPORT.md` §1.1。
+
+> §3.2 起的哈希基线采集于 P1 阶段（原路径）；路径变化不影响文件哈希值。
 
 ### 3.2 初始文档哈希（迁移前基线）
 
@@ -212,7 +227,7 @@ sudo chmod 755 /home/meituan_challenge_ws
 ```bash
 # 前置：安装 ROS 2 Jazzy 后
 source /opt/ros/jazzy/setup.bash
-cd /home/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
 colcon list
 colcon build --symlink-install
 source install/setup.bash
@@ -224,4 +239,4 @@ colcon test-result --verbose
 
 ---
 
-*本审计未在任何旧目录写入文件；所有命令均为只读或仅作用于 `/home/meituan_challenge_ws`。*
+*本审计未在任何旧目录写入文件；所有命令均为只读或仅作用于 `/home/aaet/meituan_challenge_ws`。*

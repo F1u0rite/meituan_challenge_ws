@@ -1,7 +1,7 @@
 """mtc_aubo_bridge 离线单元测试（纯 Python，不 import rclpy，不连接任何设备）。
 
 运行：
-    cd /home/meituan_challenge_ws/src/mtc_aubo_bridge
+    cd /home/aaet/meituan_challenge_ws/src/mtc_aubo_bridge
     python3 test/test_bridge_core.py
 """
 

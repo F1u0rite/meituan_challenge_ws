@@ -8,8 +8,8 @@
 
 权威来源（以文件为准，禁止在本模块发明新语义）::
 
-    /home/meituan_challenge_ws/src/mtc_interfaces/msg/ToolState.msg
-    /home/meituan_challenge_ws/src/mtc_interfaces/msg/ErrorCodes.msg
+    /home/aaet/meituan_challenge_ws/src/mtc_interfaces/msg/ToolState.msg
+    /home/aaet/meituan_challenge_ws/src/mtc_interfaces/msg/ErrorCodes.msg
 
 ``test/test_tool_manager.py`` 会解析上述 ``.msg`` 文件并逐项断言本模块数值与之一致；
 若 IDL 变更而本文件未同步，测试必须失败。

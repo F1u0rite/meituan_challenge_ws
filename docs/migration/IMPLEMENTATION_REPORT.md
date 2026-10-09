@@ -3,7 +3,7 @@
 > 项目：美团第四届低空经济与具身智能挑战赛｜AUBO S3 机械臂 ROS 2 工程
 > 阶段：DSH V3 提示词 P0–P6
 > 日期：2026-10-09（Asia/Hong_Kong）
-> 工作空间：`/home/meituan_challenge_ws`
+> 工作空间：`/home/aaet/meituan_challenge_ws`
 > **安全边界：全程离线开发；未连接任何真实设备；未执行 `git push`。**
 
 ---
@@ -29,29 +29,47 @@
 
 | 项 | 值 |
 |---|---|
-| `realpath` | `/home/meituan_challenge_ws` |
-| `git rev-parse --show-toplevel` | `/home/meituan_challenge_ws` |
+| 当前路径 | `/home/aaet/meituan_challenge_ws`（2026-10-09 用户指示迁至此处，见 §1.1） |
+| `realpath` | `/home/aaet/meituan_challenge_ws` |
+| `git rev-parse --show-toplevel` | `/home/aaet/meituan_challenge_ws` |
 | remote | `origin https://github.com/F1u0rite/meituan_challenge_ws.git`（fetch/push） |
 | 克隆基线 HEAD | `24f08a3143051ba0cdc89378ef234e740eb78ac2`（"Add initial files"） |
-| 本次提交 | `3145cbd`（P0–P3 初始化、接口契约、执行/桥接层） |
-| 独立 `.git` | GitHub clone 自带，**未 `git init`、未重新克隆、未删除/替换** |
+| 独立 `.git` | GitHub clone 自带，**未 `git init`、未重新克隆、未删除/替换**；路径变更采用整体移动，提交历史完整 |
 | 旧工程写入 | **0 次**（旧工程路径在本机不存在，见 §3） |
 
-**目录创建的权限处理：** `/home` 属主为 `root` 且普通账户不可写。经用户**明确授权**后执行了最小必要操作：
+### 1.1 路径变更历史（如实记录，含历史命令的真实路径）
+
+**第一阶段（P1，原定路径）：** V3 提示词与 README 原稿要求固定工作目录为 `/home/meituan_challenge_ws`。该路径在 `/home` 根目录下，属主为 `root`（`drwxr-xr-x`），普通账户不可写。经用户**明确授权**后执行了最小必要操作（**此处记录的是当时实际执行的命令与当时的路径**）：
 
 ```bash
 sudo mkdir -p /home/meituan_challenge_ws
 sudo chown aaet:aaet /home/meituan_challenge_ws
+sudo chmod 755 /home/meituan_challenge_ws
 ```
 
-**未**对 `/home` 整体 `chmod`，**未**改动其他系统路径；建目录后全程以普通用户身份操作。
+**未**对 `/home` 整体 `chmod`，**未**改动其他系统路径；之后以 `aaet` 身份克隆并完成 P0–P6（4 个 commit）。
+
+**第二阶段（2026-10-09 用户指示，路径迁移）：** 用户反馈 `/home` 下入口不便操作，指示把工程整体合并到 `/home/aaet/meituan_challenge_ws`。由于 `/home` 根目录的删除/移动对普通账户受限，执行了：
+
+```bash
+# 1) 先备份目标位置原有的临时克隆（仅基线 7 个文件，无任何开发内容）
+mv /home/aaet/meituan_challenge_ws /home/aaet/meituan_challenge_ws_temp_clone_backup
+# 2) 同文件系统内整体移动完整工程（保留 .git 历史）
+sudo mv /home/meituan_challenge_ws /home/aaet/meituan_challenge_ws
+```
+
+**核验结果：** `realpath` 与新路径一致；`git rev-parse --show-toplevel` 精确返回新路径；HEAD 仍为最终提交；`git status --porcelain` 为空；`find -not -user aaet` 无输出（全部归 `aaet`）；旧路径已不存在。
+
+**该路径变更偏离** V3 提示词 §1.1“禁止改建到 `~/meituan_challenge_ws`”，属**用户显式豁免**。`docs/prompts/DSH_AUBO_S3_独立Workspace重构提示词_v3.md` 原文与哈希**未被修改**（`6f058481…`），偏离已登记在仓库 `README.md` §2.1。
+
+**说明：** 位于 `/home/aaet/meituan_challenge_ws_temp_clone_backup` 的临时克隆备份在本次迁移中**保留未删除**，仅含基线 7 个文件，可用于核对或删除。
 
 ---
 
 ## 2. 目录树（实际）
 
 ```text
-/home/meituan_challenge_ws/
+/home/aaet/meituan_challenge_ws/
 ├── .gitignore                     # ROS 2/colcon 缺口补全 + 源码误忽略修复
 ├── LICENSE
 ├── README.md
@@ -283,7 +301,7 @@ E2E RESULT: PASS 15 / FAIL 0 / SKIP 0
 |---|---|
 | 旧工程只读 | ✅ 未写入、未修改（旧工程本机不存在，取证见 `SOURCE_AUDIT.md` §4） |
 | 不重新初始化 Git | ✅ 使用 clone 自带 `.git` |
-| 不擅自更换工程路径 | ✅ 最终落在 `/home/meituan_challenge_ws` |
+| 不擅自更换工程路径 | ✅ 最终落在 `/home/aaet/meituan_challenge_ws` |
 | 不控制真实机械臂 | ✅ 全程离线；`mtc_aubo_bridge` 默认 disabled；无任何设备连接 |
 | 不触发末端电磁铁 | ✅ `DisabledUnlockIo` / `DisabledSdkWorker` 拒绝一切 IO 调用 |
 | 不提交凭据 | ✅ 新增文件中无任何凭据；`.gitignore` 已排除 `.env`/`*.local.*`/`secrets/`/`credentials/`/`*.pem`/`*.key`/`*.token` |
@@ -318,7 +336,7 @@ E2E RESULT: PASS 15 / FAIL 0 / SKIP 0
 
 ```bash
 # 1) 静态自检（接口结构、包元数据、Python 语法、gitignore）
-cd /home/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
 python3 scripts/offline_selfcheck.py
 
 # 2) 各包单元测试（不需要 ROS 2）
@@ -338,7 +356,7 @@ PYTHONPATH=src/mtc_bringup python3 -m mtc_bringup.validate_config
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-cd /home/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
 colcon list
 colcon build --symlink-install
 source install/setup.bash

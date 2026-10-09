@@ -1,7 +1,7 @@
 """mtc_motion_execution 离线单元测试（纯 Python，不 import rclpy）。
 
 运行方式：
-    cd /home/meituan_challenge_ws/src/mtc_motion_execution
+    cd /home/aaet/meituan_challenge_ws/src/mtc_motion_execution
     python3 test/test_backends.py
 """
 

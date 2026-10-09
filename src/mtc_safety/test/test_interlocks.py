@@ -1,6 +1,6 @@
 """mtc_safety 联锁单元测试 —— **纯 Python，不 import rclpy**。
 
-运行方式（在包根目录，即 ``/home/meituan_challenge_ws/src/mtc_safety``）::
+运行方式（在包根目录，即 ``/home/aaet/meituan_challenge_ws/src/mtc_safety``）::
 
     python3 -m pytest test/ -v
     python3 -m unittest discover -s test -v   # 备用（无 pytest 时）
