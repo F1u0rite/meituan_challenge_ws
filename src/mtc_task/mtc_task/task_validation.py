@@ -46,6 +46,10 @@ GOAL_FIELDS: Tuple[str, ...] = (
     "placement_stability_sec",
 )
 
+#: 上位机可选附加的工位约束（ExecuteTask.action 本身没有该字段，
+#: 但允许调用方显式指定以便交叉校验；缺省时按模式/次序推导）。
+OPTIONAL_GOAL_FIELDS: Tuple[str, ...] = ("target_slot",)
+
 
 @dataclass
 class ValidationResult:
@@ -78,7 +82,8 @@ def _goal_field(goal: Any, name: str) -> Any:
 def normalize_task_request(goal: Any) -> Dict[str, Any]:
     """从任意"类 Goal 对象"提取 ExecuteTask.action 的 Goal 字段。
 
-    支持 ROS 消息对象、``dict``、``SimpleNamespace``。
+    支持 ROS 消息对象、``dict``、``SimpleNamespace``。若调用方额外提供了
+    ``target_slot``（可选约束字段），也会一并提取，供交叉校验使用。
     """
     if goal is None:
         raise ValueError("goal is None")
@@ -87,6 +92,10 @@ def normalize_task_request(goal: Any) -> Dict[str, Any]:
         raise ValueError("missing field: task_id")
     stability = data.get("placement_stability_sec")
     data["placement_stability_sec"] = 0.0 if stability is None else float(stability)
+    for name in OPTIONAL_GOAL_FIELDS:
+        value = _goal_field(goal, name)
+        if value is not None:
+            data[name] = value
     return data
 
 
@@ -166,9 +175,7 @@ def validate_task_request(goal_or_task: Any) -> ValidationResult:
     if stability_value < 0.0:
         return _fail("negative_stability", "placement_stability_sec must be >= 0")
 
-    explicit_slot = getattr(goal_or_task, "target_slot", None)
-    if isinstance(goal_or_task, Mapping):
-        explicit_slot = goal_or_task.get("target_slot", explicit_slot)
+    explicit_slot = raw.get("target_slot")
     derived = [expected_slot_for_index(mode, i) for i in range(len(colors))]
     if any(slot is None for slot in derived):
         return _fail("slot_mapping", "cannot derive target slots for mode=%s count=%d" % (mode, len(colors)))

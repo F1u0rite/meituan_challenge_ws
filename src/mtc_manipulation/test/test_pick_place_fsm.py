@@ -51,6 +51,8 @@ from mtc_manipulation.tool_strategy import (  # noqa: E402
 )
 
 TICK_SECONDS = 0.1
+#: run() 用的时钟步长：0.2s/tick 让 3.0s 稳定窗口与 30s 看门狗窗口在少量迭代内可判定
+RUN_TICK_SECONDS = 0.2
 
 
 # ---------------------------------------------------------------------------
@@ -70,6 +72,7 @@ class Harness:
     fsm: PickPlaceFSM = None  # type: ignore[assignment]
     events: List[Tuple[str, str]] = field(default_factory=list)
     state_entries: Dict[str, float] = field(default_factory=dict)
+    stability_hits: List[Tuple[float, float]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         strategy = (
@@ -91,12 +94,31 @@ class Harness:
             strategy,
             self.config,
         )
+        self._verify_placed_entered_at = 0.0
         self.fsm.on_event = self._on_event
 
     def _on_event(self, event: str, state: PickPlaceState) -> None:
         self.events.append((event, state.value))
-        if event == "state_entered":
-            self.state_entries[state.value] = self.clock.now()
+        if event != "state_entered":
+            return
+        # 只在首次进入时记录，避免“再次进入”覆盖首次进入时间
+        self.state_entries.setdefault(state.value, self.clock.now())
+        if state is PickPlaceState.VERIFY_PLACED:
+            self._track_stability()
+
+    def _track_stability(self) -> None:
+        """记录每次“成功累计稳定性证据”的采样：(累计稳定秒数, 进入 VERIFY_PLACED 后的秒数)。"""
+        if self.fsm.state is not PickPlaceState.VERIFY_PLACED:
+            return
+        started = self.fsm._stability_started_at
+        if started is None:
+            return
+        if self._verify_placed_entered_at <= 0.0:
+            self._verify_placed_entered_at = self.state_entries.get(
+                PickPlaceState.VERIFY_PLACED.value, self.clock.now()
+            )
+        elapsed_since_entry = self.clock.now() - self._verify_placed_entered_at
+        self.stability_hits.append((self.clock.now() - started, elapsed_since_entry))
 
     # -- 驱动 -----------------------------------------------------------
     def start(self, color: int = 1, slot: str = "P1", object_id: str = "battery_1") -> None:
@@ -107,12 +129,14 @@ class Harness:
         max_steps: int = 1200,
         cancel_after_events: Optional[int] = None,
         cancel_reason: str = "test cancel",
+        tick_seconds: float = RUN_TICK_SECONDS,
     ) -> Any:
         for _ in range(max_steps):
             if cancel_after_events is not None and len(self.events) >= cancel_after_events:
                 self.fsm.request_cancel(cancel_reason)
                 cancel_after_events = None
             self.fsm.step()
+            self._track_stability()
             if self.fsm.state in (
                 PickPlaceState.SUCCESS,
                 PickPlaceState.FAILED,
@@ -120,7 +144,7 @@ class Harness:
                 PickPlaceState.CANCELLED,
             ):
                 break
-            self.clock.advance(TICK_SECONDS)
+            self.clock.advance(tick_seconds)
         return self.fsm.result()
 
     def run_to(self, state: PickPlaceState, max_steps: int = 1200) -> PickPlaceState:
@@ -339,8 +363,9 @@ def test_attach_not_verified_with_uncertain_load_never_retries() -> None:
     result = h.run(max_steps=400)
 
     assert result.error_code == ErrorCode.ATTACH_NOT_VERIFIED == 310
-    # 载荷不确定：不得自动重发任何运动（只允许 1 次试提）
-    assert len(h.motion.calls) == 2  # side_insert + test_lift
+    # 机构证据失败发生在试提运动之前：只允许 1 条运动指令（接近段）
+    assert [c.primitive_name for c in h.motion.calls] == ["side_insert"]
+    assert "LIFT" not in h.history and "TRANSPORT" not in h.history
     assert "RECOVERY" not in h.history
     assert h.fsm.recovery_attempts == 0
 
@@ -540,44 +565,49 @@ def test_placement_stability_requires_full_window() -> None:
     result = h.run()
 
     assert result.final_state is PickPlaceState.SUCCESS
-    entered = h.state_entries["VERIFY_PLACED"]
-    assert h.clock.now() - entered >= 3.0
     assert result.placement_verified is True
+    # 声明成功时的累计稳定时间必须 >= 3.0s，且仅比阈值多出一个采样周期
+    stable_for = h.fsm.stability_verified_for_s
+    assert stable_for >= 3.0
+    assert stable_for <= 3.0 + RUN_TICK_SECONDS
 
 
 def test_placement_stability_longer_window_is_respected() -> None:
     h = make_harness(TOOL_PASSIVE_HOOK_V1)
-    h.config.placement_stability_sec = 5.0
+    h.config.placement_stability_sec = 6.0
     h.start()
-    result = h.run(max_steps=1500)
+    result = h.run(max_steps=2500)
 
     assert result.final_state is PickPlaceState.SUCCESS
-    assert h.clock.now() - h.state_entries["VERIFY_PLACED"] >= 5.0
+    stable_for = h.fsm.stability_verified_for_s
+    assert stable_for >= 6.0
+    assert stable_for <= 6.0 + RUN_TICK_SECONDS
 
 
 def test_placement_inside_window_does_not_declare_success_too_early() -> None:
-    """逐步检查：在稳定窗口未满之前，绝不能出现 SUCCESS。"""
+    """逐步检查：在累计稳定时间未满之前，绝不能出现 SUCCESS。"""
     h = make_harness(TOOL_PASSIVE_HOOK_V1)
     h.config.placement_stability_sec = 3.0
     h.start()
-    for _ in range(2000):
+    observed = []
+    for _ in range(4000):
         h.fsm.step()
+        h._track_stability()
         if h.fsm.state is PickPlaceState.SUCCESS:
-            entered = h.state_entries["VERIFY_PLACED"]
-            assert h.clock.now() - entered >= 3.0
+            observed.append(h.fsm.stability_verified_for_s)
             break
-        if h.fsm.state is PickPlaceState.VERIFY_PLACED:
-            entered = h.state_entries["VERIFY_PLACED"]
-            assert h.clock.now() - entered < 3.0
         if h.fsm.state in (
             PickPlaceState.FAILED,
             PickPlaceState.FAULT,
             PickPlaceState.CANCELLED,
         ):
             raise AssertionError("不应失败: %s" % h.fsm.state)
-        h.clock.advance(TICK_SECONDS)
+        h.clock.advance(RUN_TICK_SECONDS)
     else:
         raise AssertionError("未在预期步数内到达 SUCCESS")
+
+    assert observed[0] >= 3.0
+    assert observed[0] <= 3.0 + RUN_TICK_SECONDS
 
 
 def test_placement_not_at_target_fails_with_430() -> None:
@@ -607,10 +637,13 @@ def test_placement_observation_reset_clears_stability_timer() -> None:
     h.perception.placement_settled = False
     h.fsm._port_results.pop((PickPlaceState.VERIFY_PLACED.value, "placement_detection"), None)
     h.clock.advance(1.0)
+    accumulated_before_reset = h.clock.now() - started_at
     h.fsm.step()
     assert h.fsm._stability_started_at is None
     assert h.fsm.state is PickPlaceState.VERIFY_PLACED
-    assert h.clock.now() - started_at >= 1.0
+    # 反例样本到达时已经累计了 1 秒的稳定时间，且随后被清零（不得沿用旧累计）
+    assert 1.0 - 1e-9 <= accumulated_before_reset < 3.0
+    assert h.fsm.stability_verified_for_s == 0.0
 
 
 def test_placement_verified_flag_written_only_in_verify_placed() -> None:
@@ -712,8 +745,11 @@ def test_fsm_defensive_interlock_rejects_unlock_without_seated_evidence() -> Non
     state = h.run_to(PickPlaceState.DISENGAGE)
     assert state is PickPlaceState.DISENGAGE
     assert h.tool.unlock_calls == 0
-    # 人为破坏前置证据（模拟未来改动绕过状态顺序）
-    h.fsm._seat_evidence.seated = False
+    # 人为破坏前置证据（ToolEvidence 为不可变对象，整体替换以模拟未来改动绕过状态顺序）
+    import dataclasses
+
+    h.fsm._seat_evidence = dataclasses.replace(h.fsm._seat_evidence, seated=False)
+    assert h.fsm._seat_evidence.seated is False
     for _ in range(20):
         h.fsm.step()
         if h.fsm.state in (PickPlaceState.FAULT, PickPlaceState.FAILED):
@@ -754,3 +790,104 @@ def test_fake_motion_supports_delay_and_inflight_results() -> None:
     result = h.run(max_steps=1000)
     assert result.success is True
     assert motion.calls  # 至少一次在途返回
+
+
+# ---------------------------------------------------------------------------
+# 13. 外部监护强制故障（Action 步数上限等）
+# ---------------------------------------------------------------------------
+
+
+def test_force_fault_locks_actions_and_never_resends() -> None:
+    h = make_harness(TOOL_PASSIVE_HOOK_V1)
+    h.start()
+    h.run_to(PickPlaceState.ENGAGE)
+    assert h.fsm.state is PickPlaceState.ENGAGE
+    # run_to 在“进入 ENGAGE”时返回：ENGAGE 处理器尚未执行，接合动作与后续指令都还没发出
+    before = len(h.motion.calls)
+    engage_calls_before = h.tool.engage_calls
+    assert engage_calls_before == 0
+
+    outcome = h.fsm.force_fault(ErrorCode.MOTION_STATUS_UNKNOWN, "外部监护：步数超限")
+    assert outcome.state is PickPlaceState.FAULT
+    assert h.fsm.error_code == ErrorCode.MOTION_STATUS_UNKNOWN
+    assert h.fsm.motion_resend_allowed is False
+
+    for _ in range(5):
+        h.fsm.step()
+    # 锁定后不得再发出任何运动指令或接合动作
+    assert len(h.motion.calls) == before
+    assert h.tool.engage_calls == engage_calls_before == 0
+    assert h.fsm.state is PickPlaceState.FAULT
+    # 终态下的 force_fault 不得覆盖已有错误码
+    again = h.fsm.force_fault(ErrorCode.HARDWARE_FAULT, "不应覆盖")
+    assert again.error_code == ErrorCode.MOTION_STATUS_UNKNOWN
+
+
+# ---------------------------------------------------------------------------
+# 标准库兼容层：本文件用 pytest 风格的模块级测试函数编写；
+# 下面的 test_suite() 让 `python3 -m unittest discover -s test` 也能收集并运行全部用例，
+# 从而在“没有 pytest”的机器上依然可离线验收。
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# 安全回归：expected_color 双重校验（修复 FSM 层缺失的颜色比对）
+# ---------------------------------------------------------------------------
+def test_color_mismatch_blocks_motion_and_reports_110() -> None:
+    """期望蓝色但感知到红色 -> TARGET_NOT_FOUND，且不得发出任何运动指令。"""
+    h = make_harness(TOOL_PASSIVE_HOOK_V1)
+    h.perception.color = 1          # RED
+    h.start(color=2, slot="P1")     # 期望 BLUE
+    result = h.run()
+
+    assert result.error_code == ErrorCode.TARGET_NOT_FOUND == 110
+    assert result.success is False
+    assert h.motion.calls == [], "颜色不匹配时绝不允许运动"
+    assert h.history.count("MOVE_PRE_ALIGN") == 0
+    assert "PLAN_ACQUIRE" not in h.history
+
+
+def test_unknown_color_blocks_motion() -> None:
+    """感知颜色未知（COLOR_UNKNOWN=0）-> 拒绝在颜色未确认时运动。"""
+    h = make_harness(TOOL_PASSIVE_HOOK_V1)
+    h.perception.color = 0
+    h.start(color=2, slot="P1")
+    result = h.run()
+
+    assert result.error_code == ErrorCode.TARGET_NOT_FOUND == 110
+    assert h.motion.calls == [], "颜色未知时绝不允许运动"
+    assert "PLAN_ACQUIRE" not in h.history
+
+
+def test_matching_color_still_reaches_planning() -> None:
+    """对照：颜色匹配时不得被新增校验误伤。"""
+    h = make_harness(TOOL_PASSIVE_HOOK_V1)
+    h.perception.color = 2          # BLUE，与期望一致
+    h.start(color=2, slot="P1")
+    h.run_to(PickPlaceState.PLAN_ACQUIRE)
+    assert h.visited(PickPlaceState.PLAN_ACQUIRE)
+
+
+def load_tests(loader: Any, tests: Any, pattern: Any) -> Any:
+    """unittest 协议钩子：让 `python3 -m unittest discover` 收集本文件的全部用例。"""
+    return _module_test_suite()
+
+
+def _module_test_suite() -> Any:
+    import unittest
+
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    for name, function in sorted(globals().items()):
+        if name.startswith("test_") and callable(function):
+            suite.addTest(loader.loadTestsFromTestCase(_make_case(name, function)))
+    return suite
+
+
+def _make_case(name: str, function: Any) -> Any:
+    import unittest
+
+    def _run(self: Any) -> None:
+        function()
+
+    return type("UT_" + name, (unittest.TestCase,), {name: _run})

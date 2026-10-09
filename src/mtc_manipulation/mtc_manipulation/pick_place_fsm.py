@@ -571,6 +571,8 @@ class PickPlaceFSM:
         self._primitive_calls: List[str] = []
         self._port_results: Dict[Tuple[str, str], Any] = {}
         self._stability_started_at: Optional[float] = None
+        #: 声明 SUCCESS 时的实际累计稳定时间（秒），用于日志/回放与测试断言
+        self.stability_verified_for_s: float = 0.0
         self._placement_last_pose: Optional[Tuple[float, float, float]] = None
         self.on_event: Optional[Callable[[str, PickPlaceState], None]] = None
         self.logger = LOGGER
@@ -592,8 +594,11 @@ class PickPlaceFSM:
         self.object_id = object_id
         self.expected_color = int(expected_color)
         self.target_slot = str(target_slot)
+        # 优先级：Goal 显式传入 > 运行时配置（PickPlaceConfig.placement_stability_sec）
         if placement_stability_sec is not None:
             self.placement_stability_sec = float(placement_stability_sec)
+        else:
+            self.placement_stability_sec = float(self.config.placement_stability_sec)
 
         self._started = True
         self._started_at = self.clock.now()
@@ -606,7 +611,10 @@ class PickPlaceFSM:
         self._primitive_calls = []
         self._port_results = {}
         self._stability_started_at = None
+        self.stability_verified_for_s = 0.0
         self._placement_last_pose = None
+        self._pending_command = None
+        self._pending_command_label = ""
         self.object_attached_estimated = False
         self.error_code = ErrorCode.OK
         self.message = ""
@@ -745,6 +753,10 @@ class PickPlaceFSM:
     def _enter_state(self, state: PickPlaceState) -> None:
         self.state = state
         self._state_entered_at = self.clock.now()
+        # 离开旧状态即释放“在途命令”引用：再次进入同一状态必须生成新的 command_id，
+        # 而在同一次状态访问内（端口未返回时）必须复用同一条命令，绝不重发。
+        self._pending_command = None
+        self._pending_command_label = ""
         self.states_history.append(state)
         self._emit("state_entered", state)
 
@@ -804,7 +816,21 @@ class PickPlaceFSM:
         self.message = message
         self.logger.error("[%s] FAULT %s: %s", self.state, code, message)
         self._emit("fault", self.state)
+        # 关键：必须真正切换到 FAULT。否则 handler 直接返回 _fault(...) 时，
+        # step() 会认为“状态未变化”而继续推进，导致锁定失效。
+        self._enter_state(PickPlaceState.FAULT)
         return StepResult(state=PickPlaceState.FAULT, error_code=code, resumable=False, message=message)
+
+    def force_fault(self, code: int, message: str, resend_allowed: bool = False) -> StepResult:
+        """外部监护（如 Action 执行步数上限）判定危险/不确定时，强制进入 FAULT。
+
+        默认 resend_allowed=False：一旦判定运动状态不确定，禁止自动重发任何指令。
+        """
+        if self.state in TERMINAL_STATES:
+            return StepResult(
+                state=self.state, error_code=self.error_code, resumable=False, message=self.message
+            )
+        return self._fault(code, message, resend_allowed=resend_allowed)
 
     def _is_resumable_context(self) -> bool:
         """是否允许退回重试：必须确认当前无载荷且运动状态已知。"""
@@ -914,6 +940,25 @@ class PickPlaceFSM:
                 "提环位姿不可用（ring_pose_valid=False）",
                 resumable=True,
             )
+        # 安全语义（设计 V0.1 §4.4）：expected_color 是防抓错的**双重校验**。
+        # FSM 必须独立比对感知颜色，不能只依赖端口内部校验；
+        # 颜色不匹配或颜色未知（COLOR_UNKNOWN=0）一律拒绝运动。
+        if self.expected_color:
+            observed_color = int(getattr(pose, "color", 0) or 0)
+            if observed_color == 0:
+                return self._error(
+                    ErrorCode.TARGET_NOT_FOUND,
+                    "目标颜色未知（COLOR_UNKNOWN），拒绝在颜色未确认时运动；"
+                    "object_id=%s" % self.object_id,
+                    resumable=True,
+                )
+            if observed_color != int(self.expected_color):
+                return self._error(
+                    ErrorCode.TARGET_NOT_FOUND,
+                    "目标颜色不匹配：期望 color=%d，感知 color=%d（拒绝抓错颜色）；"
+                    "object_id=%s" % (int(self.expected_color), observed_color, self.object_id),
+                    resumable=True,
+                )
         self._target_pose = pose
         return StepResult(state=PickPlaceState.PLAN_ACQUIRE)
 
@@ -961,7 +1006,7 @@ class PickPlaceFSM:
             return _RUN
         if not primitives:
             return self._error(ErrorCode.PLANNING_FAILED, "接近段无运动原语", resumable=True)
-        command = self._make_command("pre_align", primitives[0])
+        command = self._cached_command("pre_align", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         result = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if result is _RUN:
@@ -1036,7 +1081,7 @@ class PickPlaceFSM:
                     resumable=self._is_resumable_context(),
                 )
 
-        command = self._make_command("test_lift", primitives[0])
+        command = self._cached_command("test_lift", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1119,7 +1164,7 @@ class PickPlaceFSM:
             )
         if not primitives:
             return self._fault(ErrorCode.PLANNING_FAILED, "提升段无运动原语")
-        command = self._make_command("lift", primitives[0])
+        command = self._cached_command("lift", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1137,7 +1182,7 @@ class PickPlaceFSM:
             return _RUN
         if not primitives:
             return self._fault(ErrorCode.PLANNING_FAILED, "搬运段无运动原语")
-        command = self._make_command("transport", primitives[0])
+        command = self._cached_command("transport", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1153,7 +1198,7 @@ class PickPlaceFSM:
             return _RUN
         if not primitives:
             return self._fault(ErrorCode.PLANNING_FAILED, "落座段无运动原语")
-        command = self._make_command("pre_seat", primitives[0])
+        command = self._cached_command("pre_seat", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1171,7 +1216,7 @@ class PickPlaceFSM:
             return _RUN
         if not primitives:
             return self._fault(ErrorCode.PLANNING_FAILED, "接触下降段无运动原语")
-        command = self._make_command("seat", primitives[0])
+        command = self._cached_command("seat", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1290,7 +1335,7 @@ class PickPlaceFSM:
             return _RUN
         if not primitives:
             return self._fault(ErrorCode.PLANNING_FAILED, "撤离段无运动原语")
-        command = self._make_command("retreat", primitives[0])
+        command = self._cached_command("retreat", primitives[0])
         self._primitive_calls.append(primitives[0].name)
         motion = self._do("motion", lambda: self.motion.execute_joint_move(command))
         if motion is _RUN:
@@ -1327,6 +1372,7 @@ class PickPlaceFSM:
             if self._stability_started_at is None:
                 self._stability_started_at = self.clock.now()
             stable_for = self.clock.now() - self._stability_started_at
+            self.stability_verified_for_s = stable_for  # 日志/回放字段（设计 §10.2）
             if stable_for + 1e-9 >= self.placement_stability_sec:
                 self._set_placement_verified()
                 return StepResult(state=PickPlaceState.SUCCESS)

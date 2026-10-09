@@ -51,9 +51,8 @@ mtc_manipulation:
     motion_backend: "mock"                # 占位值：默认绝不连接真实设备
 
     # 关节名顺序必须与执行层 expected_joint_names 一致，禁止假定 J1..J6。
-    joint_names:
-      ["shoulder_joint", "upperArm_joint", "foreArm_joint",
-       "wrist1_joint", "wrist2_joint", "wrist3_joint"]
+    joint_names: ["shoulder_joint", "upperArm_joint", "foreArm_joint",
+                  "wrist1_joint", "wrist2_joint", "wrist3_joint"]
 
     # ---- 感知与颜色 ----------------------------------------------------
     # 颜色枚举（BatteryDetection.msg）：0 UNKNOWN / 1 RED / 2 BLUE / 3 YELLOW / 4 GREEN

@@ -800,6 +800,9 @@ class WatchdogCore:
         self.stop_confirmed = False
         self.stop_confirm_timed_out = False
         self._stop_requested_at: Optional[float] = None
+        # 停稳确认截止时间从**第一次**停止请求起算：后续重发不刷新该时刻，
+        # 否则持续超时的状态会让「停稳超时」永不触发（安全侧不接受这种掩盖）。
+        self._stop_first_requested_at: Optional[float] = None
         self._requested_reasons: List[str] = []
         self.last_delivery: Optional[bool] = None
         self.events: List[Dict[str, object]] = []
@@ -852,6 +855,7 @@ class WatchdogCore:
         self.stop_confirmed = stop_confirmed
         if stop_confirmed:
             self.stop_confirm_timed_out = False
+            self._stop_first_requested_at = None
 
         if self.guard is not None:
             self.guard.link_ok = communication_ok
@@ -920,6 +924,8 @@ class WatchdogCore:
         self._requested_reasons.append(reason)
         self.stop_requested = True
         self._stop_requested_at = timestamp
+        if self._stop_first_requested_at is None:
+            self._stop_first_requested_at = timestamp
         self.stop_confirmed = False  # 新的停止请求等价于「尚未确认停稳」
         delivered: Optional[bool] = None
         message = ''
@@ -967,8 +973,8 @@ class WatchdogCore:
                 events.append(event)
 
         if self.stop_requested and not self.stop_confirmed and \
-                self._stop_requested_at is not None and not self.stop_confirm_timed_out:
-            if timestamp - self._stop_requested_at > self.config.stop_confirm_timeout_sec:
+                self._stop_first_requested_at is not None and not self.stop_confirm_timed_out:
+            if timestamp - self._stop_first_requested_at > self.config.stop_confirm_timeout_sec:
                 self.stop_confirm_timed_out = True
                 event = self._event(
                     'stop_confirm_timeout', timestamp, reason='stop_confirm_timeout',

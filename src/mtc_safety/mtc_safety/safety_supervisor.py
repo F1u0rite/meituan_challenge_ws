@@ -30,7 +30,6 @@ from mtc_interfaces.srv import RequestStop
 from .interlocks import (
     DeviceState,
     InterlockGuard,
-    PayloadState,
     WatchdogConfig,
     WatchdogCore,
     adapt_stop_client,

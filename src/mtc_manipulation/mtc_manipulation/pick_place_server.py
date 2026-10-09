@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple
 
 from .pick_place_fsm import (
     ClockPort,
@@ -41,7 +41,7 @@ from .pick_place_fsm import (
     ToolPort,
     ToolStateCode,
 )
-from .tool_strategy import MagneticLatchV2Strategy, PassiveHookV1Strategy, ToolStrategy
+from .tool_strategy import ToolStrategy
 
 LOGGER = logging.getLogger("mtc_manipulation.pick_place_server")
 
@@ -455,6 +455,9 @@ class PickPlaceServer:
     所有端口与 Action 类型均可注入，因此可离线构造（见 test/test_server_shell.py）。
     """
 
+    #: 单次 Goal 的最大推进步数（防止端口长时间返回“未完成”而卡死 Action 线程）
+    MAX_EXECUTION_STEPS = 20000
+
     def __init__(
         self,
         node: Any,
@@ -469,6 +472,7 @@ class PickPlaceServer:
         tool_state_type: Any = None,
         action_name: str = ACTION_NAME,
         tool_state_topic: str = TOOL_STATE_TOPIC,
+        max_execution_steps: int = MAX_EXECUTION_STEPS,
     ) -> None:
         self.node = node
         self.action_type = action_type
@@ -479,6 +483,7 @@ class PickPlaceServer:
         self.clock = clock
         self.strategy = strategy
         self.config = config or PickPlaceConfig()
+        self.max_execution_steps = int(max_execution_steps)
         self._fsm: Optional[PickPlaceFSM] = None
         self.tool_state_type = tool_state_type
         self._publisher = None
@@ -503,6 +508,10 @@ class PickPlaceServer:
             ),
         )
 
+        # 步数硬上限：防止端口长时间返回“未完成”而把 Action 线程卡死。
+        # 达到上限即按运动状态未知处理（MOTION_STATUS_UNKNOWN=230），锁定动作、禁止重发。
+        max_steps = self.max_execution_steps
+        steps = 0
         while fsm.state not in (
             PickPlaceState.SUCCESS,
             PickPlaceState.FAILED,
@@ -513,6 +522,16 @@ class PickPlaceServer:
                 fsm.request_cancel("Action Cancel")
             fsm.step()
             self._publish_feedback(goal_handle, fsm)
+            steps += 1
+            if steps > max_steps:
+                self.node.get_logger().error(
+                    "PickPlace 超过 %d 步仍未结束，判定运动状态未知并锁定动作" % max_steps
+                )
+                fsm.force_fault(
+                    ErrorCode.MOTION_STATUS_UNKNOWN,
+                    "超过 %d 步仍未结束：运动状态未知，禁止自动重发" % max_steps,
+                )
+                break
 
         result_state = fsm.result()
         self._publish_tool_state(fsm, result_state)
@@ -710,7 +729,13 @@ class CallbackActionType:
         pass
 
     class Server:
-        def __init__(self, node: Any, name: str, execute_callback: Callable[..., Any], cancel_callback: Callable[..., Any]) -> None:
+        def __init__(
+            self,
+            node: Any,
+            name: str,
+            execute_callback: Callable[..., Any],
+            cancel_callback: Callable[..., Any],
+        ) -> None:
             self.node = node
             self.name = name
             self.execute_callback = execute_callback

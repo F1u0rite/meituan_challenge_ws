@@ -160,11 +160,17 @@ TERMINAL_STATES: Tuple[TaskStateName, ...] = (
     TaskStateName.CANCELLED,
 )
 
-#: 仅这些错误允许自动重试（明确安全可重试：纯感知/纯规划，无运动副作用）
+#: 仅这些错误允许自动重试：均为"明确安全可重试"且不涉及在途运动不确定性。
+#: * 110/120/200 纯感知与纯规划失败；
+#: * 430 PLACEMENT_FAILED 表示未落到判定区或稳定性不足，电池已由台面承托、
+#:   工具已分离（否则会报 400/410/420），因此允许限次重试；
+#: * 210 EXECUTION_REJECTED 表示目标不合法/后端不支持，未产生运动，可重新规划一次。
 DEFAULT_RECOVERABLE_ERRORS: Tuple[int, ...] = (
     ErrorCodes.TARGET_NOT_FOUND,
     ErrorCodes.POSE_STALE,
     ErrorCodes.PLANNING_FAILED,
+    ErrorCodes.PLACEMENT_FAILED,
+    ErrorCodes.EXECUTION_REJECTED,
 )
 
 #: 明确禁止自动重试的错误（保留常量供审计与外壳判断）
@@ -428,6 +434,14 @@ TRANSITIONS: Tuple[Transition, ...] = (
     _t(TaskStateName.SELF_CHECK, Event.SELF_CHECK_FAIL, TaskStateName.FAULT, note="自检失败"),
     # --- 任务受理（§7.2：同一时刻只允许一个进行中 Goal）------------------
     _t(TaskStateName.WAIT_TASK, Event.GOAL_ACCEPTED, TaskStateName.VALIDATE_TASK, "_guard_goal_admissible"),
+    # 以下显式登记"任务进行中再次收到 Goal"：必须明确拒绝，且不得排队。
+    # 若缺少这些条目，step() 会把它当作"无转移事件"静默忽略，等于没有拒绝。
+    _t(TaskStateName.VALIDATE_TASK, Event.GOAL_ACCEPTED, TaskStateName.VALIDATE_TASK, "_guard_goal_denied"),
+    _t(TaskStateName.SCAN_SCENE, Event.GOAL_ACCEPTED, TaskStateName.SCAN_SCENE, "_guard_goal_denied"),
+    _t(TaskStateName.EXECUTE_ITEM, Event.GOAL_ACCEPTED, TaskStateName.EXECUTE_ITEM, "_guard_goal_denied"),
+    _t(TaskStateName.RECORD_RESULT, Event.GOAL_ACCEPTED, TaskStateName.RECORD_RESULT, "_guard_goal_denied"),
+    _t(TaskStateName.RECOVERY, Event.GOAL_ACCEPTED, TaskStateName.RECOVERY, "_guard_goal_denied"),
+    _t(TaskStateName.CANCEL_PENDING, Event.GOAL_ACCEPTED, TaskStateName.CANCEL_PENDING, "_guard_goal_denied"),
     # --- 任务校验（§4.3）--------------------------------------------------
     _t(TaskStateName.VALIDATE_TASK, Event.VALIDATED, TaskStateName.SCAN_SCENE),
     _t(TaskStateName.VALIDATE_TASK, Event.VALIDATION_FAILED, TaskStateName.TASK_FAILED, note="非法任务不得猜测补全"),
@@ -462,7 +476,15 @@ TRANSITIONS: Tuple[Transition, ...] = (
     _t(TaskStateName.RECORD_RESULT, Event.RECORD_FAILED, TaskStateName.TASK_FAILED),
     _t(TaskStateName.RECORD_RESULT, Event.CANCEL_REQUESTED, TaskStateName.CANCEL_PENDING),
     # --- 恢复（仅安全可重试错误）------------------------------------------
-    _t(TaskStateName.RECOVERY, Event.RETRY_APPROVED, TaskStateName.SCAN_SCENE, "_guard_retry_budget_available"),
+    # 预算不足时经 fallback 直接 TASK_FAILED，避免"守卫拒绝→原地不动"导致重试死循环。
+    _t(
+        TaskStateName.RECOVERY,
+        Event.RETRY_APPROVED,
+        TaskStateName.SCAN_SCENE,
+        "_guard_retry_budget_available",
+        fallback=TaskStateName.TASK_FAILED,
+        note="预算耗尽 → TASK_FAILED",
+    ),
     _t(TaskStateName.RECOVERY, Event.RETRY_DENIED, TaskStateName.TASK_FAILED, note="重试耗尽/不可重试"),
     _t(TaskStateName.RECOVERY, Event.CANCEL_REQUESTED, TaskStateName.CANCEL_PENDING),
     # --- 取消（§4.3：不可无等待地返回 CANCELED）--------------------------
@@ -576,8 +598,6 @@ class TaskFsm:
         self.state: TaskStateName = initial_state
         self.previous_state: Optional[TaskStateName] = None
         self.state_entered_at: float = self._clock()
-        #: 最近一次看门狗心跳确认"状态正常"的时刻；0.0 表示尚无心跳
-        self.last_timeout_check_at: float = 0.0
 
         self.current_task: Optional[TaskRequest] = None
         self.current_index: int = 0
@@ -612,9 +632,8 @@ class TaskFsm:
         return self.current_task.total_count if self.current_task else 0
 
     def elapsed_in_state(self) -> float:
-        """自上次"有效进展/心跳"以来在当前状态停留的时间（秒）。"""
-        reference = max(self.state_entered_at, self.last_timeout_check_at)
-        return self._clock() - reference
+        """自进入当前状态以来的停留时间（秒）。"""
+        return self._clock() - self.state_entered_at
 
     def snapshot(self, detail: str = "") -> TaskStateSnapshot:
         return TaskStateSnapshot(
@@ -659,15 +678,12 @@ class TaskFsm:
     def check_timeouts(self) -> Optional[StepResult]:
         """当前状态已超时则返回一次 ``timeout`` 驱动结果；否则返回 None。
 
-        语义：本方法是**看门狗心跳**。每次调用（即使未超时）都会刷新计时基准，
-        因此"状态在窗口内被反复检查但从未推进"仍会按期超时。
+        计时基准是**进入该状态的时刻**：超时表示"在该状态停留过久"。
+        本方法不做任何心跳刷新，否则周期性调用会无限推迟超时。
         """
-        now = self._clock()
-        if not self._state_timeout_expired(now):
-            # 心跳：窗口内确认状态正常，刷新计时基准
-            self.last_timeout_check_at = now
-            return None
-        return self.step(Event.TIMEOUT, {"source": "watchdog"})
+        if self._state_timeout_expired():
+            return self.step(Event.TIMEOUT, {"source": "watchdog"})
+        return None
 
     def elapsed_task_time(self) -> Optional[float]:
         """当前任务已耗时（秒）；无进行中任务时返回 None。"""
@@ -715,8 +731,10 @@ class TaskFsm:
         if transition.guard is not None:
             guard = getattr(self, transition.guard)
             if not guard(event_name, payload):
-                if transition.guard == "_guard_goal_admissible":
-                    self._register_second_goal_rejection(payload)
+                if transition.guard in ("_guard_goal_admissible", "_guard_goal_denied"):
+                    # §7.2 并发拒绝；两种情况都保留守卫写入的具体原因
+                    if self.has_active_task:
+                        self._register_second_goal_rejection(payload)
                     return StepResult(
                         state=self.state,
                         actions=[],
@@ -825,8 +843,8 @@ class TaskFsm:
         self.last_error_code = error_code
         self.last_error_message = str(payload.get("message") or ErrorCodes.name_of(error_code))
         self.substate = "RECOVERY"
-        # 重试预算逐项计数：进入 RECOVERY 即消耗一次
-        self.recovery_attempts += 1
+        # 注意：recovery_attempts 统计"已批准的重试次数"，进入 RECOVERY 本身不计数，
+        # 因此首次尝试不占用预算（recovery_max_attempts=1 恰好允许一次重试）。
         return []
 
     def _enter_cancel_pending(self, payload: Dict[str, Any]) -> List[ActionRequest]:
@@ -867,8 +885,15 @@ class TaskFsm:
 
     # -- 守卫函数（全部以 _guard_ 开头，供转移表引用）----------------------
 
+    def _guard_goal_denied(self, event_name: str, payload: Dict[str, Any]) -> bool:
+        """§7.2：已有进行中 Goal 时，第二个 Goal 一律拒绝，不得排队执行。
+
+        守卫总是返回 False，由 ``step()`` 依据 ``has_active_task`` 登记拒绝原因。
+        """
+        return False
+
     def _guard_goal_admissible(self, event_name: str, payload: Dict[str, Any]) -> bool:
-        """§7.2：正在执行运动时，第二个 Goal 必须被明确拒绝，不得排队。"""
+        """WAIT_TASK 下受理 Goal：先做最基本的 task_id 检查，再进入 VALIDATE_TASK。"""
         if self.has_active_task:
             return False
         goal = payload.get("goal")
@@ -942,16 +967,14 @@ class TaskFsm:
     def _guard_retry_budget_available(self, event_name: str, payload: Dict[str, Any]) -> bool:
         """重试预算：``recovery_max_attempts`` 指**额外重试**次数（不含首次尝试）。
 
-        ``recovery_attempts`` 在进入 RECOVERY 时 +1；重试被批准时 -1 归还预算，
-        于是 ``max=1`` 恰好允许一次重扫，第二次超预算即 TASK_FAILED。
+        ``recovery_attempts`` 只在重试被批准时 +1；预算耗尽则由转移表的
+        ``fallback`` 转入 TASK_FAILED，不会出现"守卫拒绝后原地不动"的死循环。
         """
         if not self.config.is_recoverable(self.last_error_code):
             return False
-        if self.recovery_attempts <= 0:
+        if self.recovery_attempts >= max(0, int(self.config.recovery_max_attempts)):
             return False
-        if self.recovery_attempts > max(0, int(self.config.recovery_max_attempts)):
-            return False
-        self.recovery_attempts -= 1
+        self.recovery_attempts += 1
         return True
 
     def _guard_cancel_timeout(self, event_name: str, payload: Dict[str, Any]) -> bool:
@@ -971,13 +994,13 @@ class TaskFsm:
     # -- 超时辅助 ---------------------------------------------------------
 
     def _state_timeout_expired(self, now: Optional[float] = None) -> bool:
+        """当前状态自进入以来的停留时间是否已达到其 ``timeout_s``。"""
         timeout = self.config.timeout_for(self.state)
         if timeout is None:
             return False
         if now is None:
             now = self._clock()
-        reference = max(self.state_entered_at, self.last_timeout_check_at)
-        return (now - reference) >= float(timeout)
+        return (now - self.state_entered_at) >= float(timeout)
 
     def _apply_timeout_error(self) -> None:
         """把超时翻译成本层错误码（见设计文档 §7.1 默认处置）。"""
@@ -1008,9 +1031,8 @@ class TaskFsm:
             return int(default)
 
     def _touch(self) -> None:
-        """重置超时计时基准（状态变化或有效进展时调用）。"""
+        """重置超时计时基准（进入新状态或发生有效进展时调用）。"""
         self.state_entered_at = self._clock()
-        self.last_timeout_check_at = 0.0
 
     def _current_color(self) -> Optional[int]:
         if self.current_task is None:

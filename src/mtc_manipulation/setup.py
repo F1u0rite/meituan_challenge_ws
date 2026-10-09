@@ -9,7 +9,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/test", ["test/test_pick_place_fsm.py"]),
+        ("share/" + package_name + "/test", ["test/test_pick_place_fsm.py", "test/test_server_shell.py"]),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

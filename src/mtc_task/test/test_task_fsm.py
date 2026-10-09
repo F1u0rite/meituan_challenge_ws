@@ -99,18 +99,28 @@ class FakeGoal:
 def make_fsm(**timeout_overrides):
     """构造处于 WAIT_TASK 的 FSM（注入假时钟）。
 
-    ``timeout_overrides`` 形如 ``state_scan_timeout_s=5.0``，键名与
-    :data:`DEFAULT_STATE_TIMEOUTS` 的成员一致（``state_`` + 状态小写 + ``_timeout_s``）。
+    ``timeout_overrides`` 形如 ``state_scan_timeout_s=5.0``；状态名部分会与
+    :data:`DEFAULT_STATE_TIMEOUTS` 做宽松匹配（``scan`` → ``SCAN_SCENE``）。
     """
     clock = FakeClock()
+    by_prefix = {}
+    for state in DEFAULT_STATE_TIMEOUTS:
+        by_prefix.setdefault(state.name.split("_")[0], state)
+
     overrides = {}
     for key, value in timeout_overrides.items():
         if not key.startswith("state_") or not key.endswith("_timeout_s"):
             raise ValueError("bad timeout override key: %s" % key)
-        state = TaskStateName[key[len("state_"):-len("_timeout_s")].upper()]
+        token = key[len("state_"):-len("_timeout_s")].upper()
+        if token in TaskStateName.__members__:
+            state = TaskStateName[token]
+        elif token in by_prefix:
+            state = by_prefix[token]
+        else:
+            raise ValueError("unknown state in timeout override: %s" % key)
         overrides[state] = value
-    timeouts = {**DEFAULT_STATE_TIMEOUTS, **overrides}
-    fsm = TaskFsm(clock=clock, config=FsmsConfig(state_timeouts=timeouts))
+
+    fsm = TaskFsm(clock=clock, config=FsmsConfig(state_timeouts={**DEFAULT_STATE_TIMEOUTS, **overrides}))
     fsm.start()
     fsm.step(Event.SELF_CHECK_OK)
     assert fsm.state is TaskStateName.WAIT_TASK, fsm.state
@@ -118,9 +128,12 @@ def make_fsm(**timeout_overrides):
 
 
 def complete_one_item(fsm, slot, color, object_id="obj-1"):
-    """走完一项：SCAN_SCENE → EXECUTE_ITEM → RECORD_RESULT。"""
-    assert fsm.state is TaskStateName.SCAN_SCENE, fsm.state
-    fsm.report_target(object_id, expected_color=color)
+    """走完一项：SCAN_SCENE → EXECUTE_ITEM → RECORD_RESULT。
+
+    若调用方已手动推进到 EXECUTE_ITEM，则从该处继续。
+    """
+    if fsm.state is TaskStateName.SCAN_SCENE:
+        fsm.report_target(object_id, expected_color=color)
     assert fsm.state is TaskStateName.EXECUTE_ITEM, fsm.state
     result = fsm.report_item_result(
         {"success": True, "placement_verified": True, "error_code": ErrorCodes.OK, "message": "placed"}
@@ -376,16 +389,40 @@ class TestInvalidTaskRejection(unittest.TestCase):
         self.assertEqual(fsm.last_validation_error, "timeout_not_positive")
 
     def test_illegal_target_slot_rejected(self):
-        for bad_slot in ("T1", "P4", "p1", "T0", "SOMEWHERE"):
-            with self.subTest(slot=bad_slot):
+        """显式 target_slot 不在 {T0,P1,P2,P3} 或与模式不符时必须拒绝。"""
+        cases = [
+            ("basic_nonexistent", MODE_BASIC, [BLUE], "T1"),
+            ("basic_wrong_p", MODE_BASIC, [BLUE], "P1"),
+            ("basic_lowercase", MODE_BASIC, [BLUE], "t0"),
+            ("basic_garbage", MODE_BASIC, [BLUE], "SOMEWHERE"),
+            ("basic_p4", MODE_BASIC, [BLUE], "P4"),
+            ("sequence_t0", MODE_SEQUENCE, [BLUE, RED, YELLOW], "T0"),
+            ("sequence_wrong_order", MODE_SEQUENCE, [BLUE, RED, YELLOW], "P2"),
+        ]
+        for name, mode, colors, bad_slot in cases:
+            with self.subTest(case=name):
                 fsm, result = self._submit_and_advance(
-                    FakeGoal(task_id="bad-7", mode=MODE_BASIC, ordered_colors=[BLUE], target_slot=bad_slot)
+                    FakeGoal(task_id="bad-7", mode=mode, ordered_colors=colors, target_slot=bad_slot)
                 )
-                self.assertIs(result.state, TaskStateName.TASK_FAILED)
-                self.assertEqual(fsm.last_error_code, ErrorCodes.INVALID_TASK)
+                self.assertIs(result.state, TaskStateName.TASK_FAILED, name)
+                self.assertEqual(fsm.last_error_code, ErrorCodes.INVALID_TASK, name)
                 self.assertIn(
-                    fsm.last_validation_error, ("illegal_target_slot", "target_slot_mismatch"), bad_slot
+                    fsm.last_validation_error,
+                    ("illegal_target_slot", "target_slot_mismatch"),
+                    "%s -> %s" % (name, fsm.last_validation_error),
                 )
+
+    def test_legal_target_slot_accepted(self):
+        """与模式/次序一致的 target_slot 必须被接受。"""
+        for mode, colors, slot in (
+            (MODE_BASIC, [BLUE], "T0"),
+            (MODE_SEQUENCE, [BLUE, RED, YELLOW], "P1"),
+        ):
+            with self.subTest(slot=slot):
+                fsm, result = self._submit_and_advance(
+                    FakeGoal(task_id="ok-slot", mode=mode, ordered_colors=colors, target_slot=slot)
+                )
+                self.assertIs(result.state, TaskStateName.SCAN_SCENE, fsm.last_validation_error)
 
     def test_empty_task_id_rejected_without_state_change(self):
         fsm, _clock = make_fsm()
@@ -558,15 +595,16 @@ class TestScanRecoveryBudget(unittest.TestCase):
 
         first = fsm.report_target_missing("no blue candidate")
         self.assertIs(first.state, TaskStateName.RECOVERY)
-        self.assertEqual(fsm.recovery_attempts, 1)
+        self.assertEqual(fsm.recovery_attempts, 0, "进入 RECOVERY 不消耗预算")
         self.assertEqual(fsm.last_error_code, ErrorCodes.TARGET_NOT_FOUND)
 
         retry = fsm.request_retry()
         self.assertIs(retry.state, TaskStateName.SCAN_SCENE, "预算内应允许重扫")
+        self.assertEqual(fsm.recovery_attempts, 1, "重试获批后计入已用预算")
 
         second = fsm.report_target_missing("still no blue candidate")
         self.assertIs(second.state, TaskStateName.RECOVERY)
-        self.assertEqual(fsm.recovery_attempts, 2)
+        self.assertEqual(fsm.recovery_attempts, 1)
 
         denied = fsm.request_retry()
         self.assertIs(denied.state, TaskStateName.TASK_FAILED, "重试耗尽必须 TASK_FAILED")
@@ -728,7 +766,9 @@ class TestMotionStatusUnknown(unittest.TestCase):
         fsm.report_target("o", expected_color=RED)
         result = fsm.report_item_result({"success": False, "error_code": ErrorCodes.PLANNING_FAILED})
         self.assertIs(result.state, TaskStateName.RECOVERY)
-        self.assertEqual(fsm.recovery_attempts, 1)
+        self.assertEqual(fsm.recovery_attempts, 0, "进入 RECOVERY 尚未消耗预算")
+        self.assertIs(fsm.request_retry().state, TaskStateName.SCAN_SCENE)
+        self.assertEqual(fsm.recovery_attempts, 1, "重试获批后预算 +1")
 
     def test_other_non_recoverable_errors_go_fault(self):
         for code in (

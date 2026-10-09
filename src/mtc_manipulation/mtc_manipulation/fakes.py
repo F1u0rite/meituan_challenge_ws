@@ -126,6 +126,19 @@ class FakePerception(PerceptionPort):
             ring_pose_valid=self.ring_pose_valid,
             followed=self.followed,
         )
+        # 防抓错颜色的双重校验（设计 V0.1 §4.4）：期望颜色与实际颜色不符时
+        # 视同“未找到该目标”，避免上层把它当作可抓对象。
+        color_mismatch = bool(
+            expected_color and int(self.color or 0) != int(expected_color))
+        if color_mismatch:
+            return DetectionResult(
+                found=False,
+                unique=True,
+                stale=False,
+                pose=None,
+                message=("目标颜色不匹配：期望 %s，实际 %s；拒绝抓错颜色"
+                         % (expected_color, self.color)),
+            )
         return DetectionResult(
             found=self.found,
             unique=self.unique,
