@@ -55,6 +55,52 @@ TICK_SECONDS = 0.1
 RUN_TICK_SECONDS = 0.2
 
 
+def test_watchdog_non_motion_updates_state_history_and_retry_context() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog")
+    h.perception.get_detection = lambda *args, **kwargs: None
+    h.clock.advance(2.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.RECOVERY
+    assert result.error_code == ErrorCode.MOTION_TIMEOUT
+    assert h.fsm.states_history[-1] is PickPlaceState.RECOVERY
+    assert h.fsm._last_resumable_state is PickPlaceState.RESOLVE_TARGET
+    assert h.fsm._state_entered_at == h.clock.now()
+    h.fsm.step()
+    assert h.fsm.state is PickPlaceState.RESOLVE_TARGET
+    assert h.fsm.recovery_attempts == 1
+    assert h.fsm.step().state is PickPlaceState.RESOLVE_TARGET
+
+
+def test_watchdog_non_motion_loaded_context_does_not_retry() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog-loaded")
+    h.perception.get_detection = lambda *args, **kwargs: None
+    h.tool.holding_state = lambda: "holding"
+    h.clock.advance(2.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.FAILED
+    assert not result.resumable
+    assert h.fsm.recovery_attempts == 0
+
+
+def test_watchdog_motion_timeout_remains_fault_locked() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog-motion")
+    for _ in range(10):
+        if h.fsm.state is PickPlaceState.MOVE_PRE_ALIGN:
+            break
+        h.fsm.step()
+    assert h.fsm.state is PickPlaceState.MOVE_PRE_ALIGN
+    h.motion.execute_joint_move = lambda *args, **kwargs: None
+    h.fsm.step()
+    h.clock.advance(30.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.FAULT
+    assert result.error_code == ErrorCode.MOTION_STATUS_UNKNOWN
+    assert not h.fsm.motion_resend_allowed
+
+
 # ---------------------------------------------------------------------------
 # 测试装配（Harness）
 # ---------------------------------------------------------------------------

@@ -675,11 +675,16 @@ class PickPlaceFSM:
                         "状态 %s 超过 %.1fs 未返回，运动状态未知，禁止重发" % (self.state, timeout),
                         resend_allowed=False,
                     )
-                return self._error(
+                previous = self.state
+                outcome = self._error(
                     ErrorCode.MOTION_TIMEOUT,
                     "状态 %s 超时 %.1fs" % (self.state, timeout),
-                    resumable=True,
+                    resumable=self._is_resumable_context(),
                 )
+                self._resumable_error = outcome.resumable
+                self._last_resumable_state = previous
+                self._enter_state(outcome.state)
+                return outcome
             return StepResult(state=self.state, error_code=self.error_code, message=self.message)
 
         if isinstance(outcome, StepResult):
