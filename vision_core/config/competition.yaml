@@ -1,0 +1,64 @@
+board: {width_mm: 700, height_mm: 540, source: explicit_official}
+battery_region:
+  x_mm: 30
+  y_mm: 0
+  width_mm: 300
+  height_mm: 250
+  size_source: explicit_official
+  position_source: pending_calibration
+battery: {width_mm: 70, height_mm: 80, count: 4, source: explicit_official}
+battery_slots:
+  A: {center_mm: [140.0, 94.5], yaw_deg: 0, source: map_calibrated}
+  B: {center_mm: [219.5, 94.5], yaw_deg: 0, source: map_calibrated}
+  C: {center_mm: [140.0, 181.5], yaw_deg: 0, source: map_calibrated}
+  D: {center_mm: [219.5, 181.5], yaw_deg: 0, source: map_calibrated}
+targets:
+  outer_size_mm: 150
+  inner_size_mm: 80
+  shape: circle
+  size_source: explicit_official
+  centers_mm: {P1: [434.5, 75.5], P2: [609.5, 75.5], P3: [609.5, 250.5]}
+  position_source: map_calibrated
+robot_base:
+  center_mm: [392.5, 439.5]
+  diameter_mm: 200
+  size_source: explicit_official
+  position_source: map_calibrated
+render: {pixels_per_mm: 2, background_bgr: [255, 255, 255], region_bgr: [235, 235, 235], target_bgr: [220, 220, 220]}
+camera_projection:
+  canvas_width_px: 1600
+  canvas_height_px: 1400
+  background_bgr: [72, 82, 88]
+  scale_range: [0.72, 0.86]
+  translation_fraction: 0.08
+  rotation_deg: 7
+  perspective_fraction: 0.035
+robustness:
+  medium: {brightness: [0.75, 1.25], contrast: [0.8, 1.2], gamma: [0.8, 1.25], saturation: [0.75, 1.25], hue_deg: 7, noise_sigma: [1, 7], jpeg_quality: [65, 95], perspective_multiplier: 1.35}
+  hard: {brightness: [0.5, 1.5], contrast: [0.55, 1.35], gamma: [0.6, 1.55], saturation: [0.45, 1.55], hue_deg: 15, noise_sigma: [4, 16], jpeg_quality: [35, 75], perspective_multiplier: 1.8}
+board_detection:
+  min_area_fraction: 0.24
+  threshold: 145
+  close_kernel_px: 31
+  approximation_epsilon_fraction: 0.02
+  expected_aspect_ratio_tolerance: 0.30
+renderer_colors:
+  simulation_only: true
+  bgr: {red: [40, 40, 210], yellow: [30, 220, 240], blue: [215, 130, 35], green: [65, 180, 80]}
+color_models:
+  independent_from_renderer: true
+  hsv_ranges:
+    red: [[0, 65, 45, 18, 255, 255], [165, 65, 45, 179, 255, 255]]
+    yellow: [[16, 55, 55, 42, 255, 255]]
+    blue: [[82, 45, 35, 138, 255, 255]]
+    green: [[35, 40, 35, 92, 255, 255]]
+augmentation:
+  brightness: {enabled: false, max_delta: 20}
+  contrast: {enabled: false, max_fraction: 0.12}
+  gaussian_noise: {enabled: false, sigma: 7}
+  gaussian_blur: {enabled: false, kernel: 3}
+  color_shift: {enabled: false, max_delta: 8}
+  perspective: {enabled: false, corner_fraction: 0.025}
+  rotation: {enabled: false, max_deg: 3}
+  shadow: {enabled: false, strength: 0.25}
+evaluation: {xy_threshold_mm: 5, yaw_threshold_deg: 8, corner_threshold_px: 8}

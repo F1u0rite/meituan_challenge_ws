@@ -1,0 +1,1 @@
+"""Synthetic board scene generation."""

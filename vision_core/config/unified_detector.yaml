@@ -1,0 +1,6 @@
+# Engineering starting values; validate on separate real sessions before live use.
+min_fill_ratio: 0.20
+max_aspect_ratio: 8.0
+conflict_box_iou: 0.35
+conflict_mask_overlap_small: 0.25
+classification_margin_ratio: 1.40

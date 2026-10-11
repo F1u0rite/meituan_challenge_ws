@@ -1,0 +1,11 @@
+# Provisional real-camera HSV ranges; tune from saved raw frames of the actual blocks.
+# OpenCV HSV: H 0..179, S/V 0..255. These are separate from synthetic thresholds.
+hsv_ranges:
+  red: [[0, 65, 45, 18, 255, 255], [165, 65, 45, 179, 255, 255]]
+  yellow: [[16, 55, 55, 42, 255, 255]]
+  blue: [[82, 45, 35, 138, 255, 255]]
+  green: [[35, 40, 35, 92, 255, 255]]
+min_contour_area_px: 500
+max_contour_area_fraction: 0.40
+morphology_kernel_px: 3
+tracking_match_radius_px: 80

@@ -1,0 +1,9 @@
+# 实物差异仅记录；未测量、不改变原始实体、不用于安全结论。
+source: measured_real_pending
+status: NOT_MEASURED
+hook_tip_width_mm: null
+hook_tip_thickness_mm: null
+ring_aperture_width_mm: null
+ring_aperture_height_mm: null
+measurement_source: null
+collision_geometry_source: original_STEP_only
