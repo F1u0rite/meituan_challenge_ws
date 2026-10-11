@@ -175,12 +175,13 @@ class TaskExecutorNode(Node):
         self.declare_parameter("pickplace_action_name", PICKPLACE_ACTION_NAME)
 
         # --- 依赖注入 -----------------------------------------------------
-        self._clock: Callable[[], float] = clock or self._ros_clock
+        # Node._clock belongs to rclpy; keep the FSM's callable separate.
+        self._fsm_clock: Callable[[], float] = clock or self._ros_clock
         self._perception_provider = perception_provider
         self._external_state_publisher = state_publisher
 
         config = fsm_config or self._config_from_parameters()
-        self.fsm = TaskFsm(clock=self._clock, config=config)
+        self.fsm = TaskFsm(clock=self._fsm_clock, config=config)
 
         if pickplace_client is not None:
             self._pickplace = pickplace_client

@@ -48,7 +48,7 @@ LOGGER = logging.getLogger("mtc_manipulation.pick_place_server")
 ACTION_NAME = "/mtc/manipulation/pick_place"
 TOOL_STATE_TOPIC = "/mtc/tool/state"
 PERCEPTION_TOPIC = "/mtc/perception/batteries"
-UNLOCK_SERVICE = "/mtc/tool/unlock"
+UNLOCK_SERVICE = "/mtc/tool/trigger_unlock"
 
 
 # ---------------------------------------------------------------------------
@@ -651,7 +651,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     config = PickPlaceConfig(
         tool_type=tool_type,
         placement_stability_sec=float(node.get_parameter("placement_stability_sec").value),
-        perception_max_age_sec=float(node.get_parameter("perception_max_age_sec").value),
+        perception_max_age_s=float(node.get_parameter("perception_max_age_sec").value),
         recovery_max_attempts=int(node.get_parameter("recovery_max_attempts").value),
         verify_test_lift=bool(node.get_parameter("verify_test_lift").value),
         verify_placement=bool(node.get_parameter("verify_placement").value),

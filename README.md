@@ -20,6 +20,7 @@ AUBO S3 实机抓放验收通过。
 - [ROS 2 驱动与 MoveIt 2 部署手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)：已验证环境、Mock 启动、控制器/TF 检查和 10 月 12 日团队 SOP。
 - [第一阶段最终安全验收报告](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)：缺陷复现、修复、318/269/15 测试证据及 TSan 限制。
 - [第二阶段 ROS 2 集成计划](docs/migration/PHASE2_ROS2_INTEGRATION_PLAN.md)：后续 Action / Planner / Mock 集成工作。
+- [Python ROS 接线修复与复验](docs/migration/ROS_WIRING_FIX_20261011.md)：B01/B02/B04 最小补丁、真实 ROS 回归，以及仍未通过的实际 Mock 任务链路。
 - [原版本开发指南](README_FSM_v0.1.md)：保留原入口，当前使用说明以 `README_FSM.md` 为准。
 
 ## 2. 项目目标与已完成范围
