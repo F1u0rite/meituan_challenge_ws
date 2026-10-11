@@ -88,22 +88,58 @@ def make_array(tracking,frame_id,timestamp):
                            'confidence':float(t['confidence']),'ring_pose_valid':False})
     return {'header':h,'detections':detections}
 
-def motion_rejection(message,now_s,max_age_s=.5,mode='replay'):
+def motion_rejection(message,now_s,max_age_s=.5,mode='replay',*,
+                     trusted_frames=(),target_frame=None,tf_validator=None):
+    """Fail closed unless the caller supplies trusted frames and verified TF.
+
+    tf_validator(source, target, stamp) must return exactly True only after
+    validating a usable TF into the trusted motion frame at the capture stamp.
+    Missing TF, timeout and lookup errors must reject. No TF trust is inferred
+    from a frame name. This independent helper does not wire the C++ FSM.
+    """
+    try:
+        return _motion_rejection(message,now_s,max_age_s,mode,
+                                 trusted_frames,target_frame,tf_validator)
+    except (KeyError,TypeError,ValueError,OverflowError,AttributeError):
+        return 'MALFORMED_INPUT'
+
+def _motion_rejection(message,now_s,max_age_s,mode,trusted_frames,target_frame,tf_validator):
     ids=[d['object_id'] for d in message['detections']]
     if len(ids)!=len(set(ids)): return 'DUPLICATE_ID'
     if mode!='live': return 'REPLAY_NOT_MOTION_INPUT'
-    stamp=message['header']['stamp']; age=now_s-stamp['sec']-stamp['nanosec']*1e-9
+    if not math.isfinite(now_s) or not math.isfinite(max_age_s) or max_age_s<=0:
+        return 'MALFORMED_INPUT'
+    stamp=message['header']['stamp']
+    if (type(stamp['sec']) is not int or type(stamp['nanosec']) is not int
+            or stamp['sec']<=0 or not 0<=stamp['nanosec']<1000000000):
+        return 'MALFORMED_INPUT'
+    age=now_s-stamp['sec']-stamp['nanosec']*1e-9
     if not math.isfinite(age) or age<0 or age>max_age_s: return 'STALE_OR_FUTURE'
     for d in message['detections']:
-        if not d['ring_pose_valid']: return 'RING_INVALID'
+        if d['ring_pose_valid'] is not True: return 'RING_INVALID'
         for name in ('body_pose','ring_pose'):
             p=d[name]
             if p['header']!=message['header']: return 'POSE_HEADER_MISMATCH'
-            values=list(p['pose']['position'].values())+list(p['pose']['orientation'].values())
+            values=[p['pose']['position'][key] for key in ('x','y','z')]+[p['pose']['orientation'][key] for key in ('x','y','z','w')]
             if any(v is None or not math.isfinite(v) for v in values): return 'POSE_INVALID'
-            q=list(p['pose']['orientation'].values())
+            q=[p['pose']['orientation'][key] for key in ('x','y','z','w')]
             if abs(sum(x*x for x in q)-1)>1e-3: return 'QUATERNION_INVALID'
-    return 'EMPTY' if not ids else 'NO_REJECTION'
+    if not ids: return 'EMPTY'
+    source=message['header']['frame_id']
+    if (not isinstance(source,str) or not source
+            or isinstance(trusted_frames,str) or source not in trusted_frames
+            or not isinstance(target_frame,str) or not target_frame
+            or target_frame not in trusted_frames):
+        return 'UNTRUSTED_FRAME'
+    if not callable(tf_validator): return 'TF_UNVERIFIED'
+    try:
+        # Require a transform at the capture timestamp, not latest TF.
+        # Strict True also rejects None, truthy objects and incomplete results.
+        verified=tf_validator(source,target_frame,dict(stamp)) is True
+    except Exception:
+        return 'TF_UNVERIFIED'
+    return 'NO_REJECTION' if verified else 'TF_UNVERIFIED'
+
 
 def to_ros(data,array_type,detection_type):
     """Dependency injection supports tests; production uses generated mtc_interfaces."""
