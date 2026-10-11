@@ -89,7 +89,7 @@ struct BackendResult
   double planning_time_s = 0.0;
   double cartesian_fraction = 0.0;  ///< 仅 CARTESIAN 有意义
   double time_scale_applied = 1.0;  ///< 为满足末端线速度/角速度上限而做的均匀拉伸倍数
-  std::string method;               ///< cartesian_preferred / ompl_seeded_ik / ompl / cartesian
+  std::string method;               ///< cartesian_preferred / joint_interpolated_ik / ompl_seeded_ik / ompl / cartesian
   double max_linear_speed_m_s = 0.0;   ///< 拉伸后实测末端最大线速度
   double max_angular_speed_rad_s = 0.0;
   RawTrajectory trajectory;         ///< 已时间参数化（含速度/加速度）

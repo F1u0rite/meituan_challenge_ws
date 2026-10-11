@@ -16,6 +16,7 @@
 #include <moveit_msgs/msg/constraints.hpp>
 #include <moveit_msgs/msg/joint_constraint.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
+#include <moveit_msgs/srv/get_state_validity.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #if __has_include(<moveit/move_group_interface/move_group_interface.hpp>)
@@ -27,6 +28,11 @@
 #include <moveit/robot_state/robot_state.hpp>
 #else
 #include <moveit/robot_state/robot_state.h>
+#endif
+#if __has_include(<moveit/robot_state/conversions.hpp>)
+#include <moveit/robot_state/conversions.hpp>
+#else
+#include <moveit/robot_state/conversions.h>
 #endif
 #if __has_include(<moveit/robot_trajectory/robot_trajectory.hpp>)
 #include <moveit/robot_trajectory/robot_trajectory.hpp>
@@ -118,6 +124,60 @@ struct MoveGroupBackend::Impl
   std::string planning_frame;
   std::vector<std::string> joint_names;
   std::unique_ptr<moveit::planning_interface::PlanningSceneInterface> scene;
+  rclcpp::Client<moveit_msgs::srv::GetStateValidity>::SharedPtr validity_client;
+
+  /// 关节空间直线插值（起点 → goal），逐点经 /check_state_validity 校验（含附着载荷与路径约束）。
+  /// 全部有效则写入 out 并返回 true；why 记录第一处无效原因。
+  bool joint_interpolated_path(
+    const moveit::core::RobotState & start_state, const std::vector<double> & goal,
+    const moveit_msgs::msg::Constraints & constraints, double max_step_rad,
+    moveit_msgs::msg::RobotTrajectory & out, std::string & why) const
+  {
+    std::vector<double> from;
+    start_state.copyJointGroupPositions(group, from);
+    if (from.size() != goal.size()) {
+      why = "joint dimension mismatch";
+      return false;
+    }
+    double span = 0.0;
+    for (size_t i = 0; i < from.size(); ++i) {
+      span = std::max(span, std::fabs(goal[i] - from[i]));
+    }
+    const int steps = std::max(2, static_cast<int>(std::ceil(span / max_step_rad)));
+    if (!validity_client->wait_for_service(std::chrono::seconds(2))) {
+      why = "/check_state_validity unavailable";
+      return false;
+    }
+    robot_trajectory::RobotTrajectory trajectory(model, group);
+    moveit::core::RobotState state(start_state);
+    std::vector<double> q(from.size());
+    for (int k = 0; k <= steps; ++k) {
+      const double s = static_cast<double>(k) / steps;
+      for (size_t i = 0; i < q.size(); ++i) {
+        q[i] = from[i] + (goal[i] - from[i]) * s;
+      }
+      state.setJointGroupPositions(group, q);
+      state.update();
+      auto request = std::make_shared<moveit_msgs::srv::GetStateValidity::Request>();
+      moveit::core::robotStateToRobotStateMsg(state, request->robot_state, true);
+      request->group_name = group->getName();
+      request->constraints = constraints;
+      auto future = validity_client->async_send_request(request);
+      if (future.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
+        why = "/check_state_validity timed out";
+        return false;
+      }
+      const auto response = future.get();
+      if (!response->valid) {
+        why = "joint-interpolated state " + std::to_string(k) + "/" + std::to_string(steps) +
+          " invalid (" + std::to_string(response->contacts.size()) + " contact(s))";
+        return false;
+      }
+      trajectory.addSuffixWayPoint(state, 0.0);
+    }
+    trajectory.getRobotTrajectoryMsg(out);
+    return true;
+  }
   std::vector<std::string> scene_ids;   ///< 本后端写入的静态障碍物
 
   moveit::core::RobotStatePtr state_from(const JointStateSnapshot & snapshot) const
@@ -170,6 +230,8 @@ MoveGroupBackend::MoveGroupBackend(
   impl_->move_group->setPlannerId(impl_->options.planner_id);
   impl_->move_group->setEndEffectorLink(impl_->options.end_effector_link);
   impl_->move_group->setNumPlanningAttempts(1);
+  impl_->validity_client = impl_->node->create_client<moveit_msgs::srv::GetStateValidity>(
+    "/check_state_validity");
 }
 
 MoveGroupBackend::~MoveGroupBackend() = default;
@@ -363,13 +425,23 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     {
       std::vector<double> joint_goal;
       seeded->copyJointGroupPositions(impl_->group, joint_goal);
-      mg.setStartState(*start);
-      mg.setJointValueTarget(impl_->joint_names, joint_goal);
-      code = mg.plan(plan);
-      result.method = "ompl_seeded_ik";
-      if (code != moveit::core::MoveItErrorCode::SUCCESS) {
-        result.message += "OMPL to seeded-IK joint goal returned " +
-          moveit::core::errorCodeToString(code) + "; ";
+      // 确定性优先：关节空间直线插值到种子 IK 解，逐点校验碰撞/约束；不行再交给 OMPL。
+      std::string why;
+      if (impl_->joint_interpolated_path(
+          *start, joint_goal, path_constraints, 0.02, plan.trajectory, why))
+      {
+        code = moveit::core::MoveItErrorCode(moveit_msgs::msg::MoveItErrorCodes::SUCCESS);
+        result.method = "joint_interpolated_ik";
+      } else {
+        result.message += "joint interpolation rejected (" + why + "); ";
+        mg.setStartState(*start);
+        mg.setJointValueTarget(impl_->joint_names, joint_goal);
+        code = mg.plan(plan);
+        result.method = "ompl_seeded_ik";
+        if (code != moveit::core::MoveItErrorCode::SUCCESS) {
+          result.message += "OMPL to seeded-IK joint goal returned " +
+            moveit::core::errorCodeToString(code) + "; ";
+        }
       }
     } else {
       result.message += "seeded IK found no solution within controller limits; ";

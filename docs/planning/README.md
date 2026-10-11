@@ -39,7 +39,7 @@ PickPlace FSM ◀──PlanResult（每个动作一条完整 TimedTrajectory）�
 | 同步最新 main（Phase 2A），全新构建，原 29 项 GTest 全过 → 开 PR #3 | ✅ |
 | **规划场景**：占位桌面障碍物 + 试提后末端挂电池碰撞体 | ✅ 目标放进桌面会被拒绝；V2 全流程在有桌面、带电池时仍 7 段成功 |
 | **起点一致性**：`check_trajectory_start()` + `replan_primitive()`，给执行适配在发轨迹前用 | ✅ |
-| **V1 规划**：以起点为种子求逆解再规划 | 预对准 116–196 s → 39.6 s，仍超看门狗（瓶颈是 90° 转向 × 0.1 rad/s），按要求保留为已知阻断 |
+| **V1 规划**：以起点为种子求逆解 + 关节空间插值（逐点碰撞校验） | 预对准 116–196 s → 39.6–42.1 s 且可重复，仍超看门狗（瓶颈是 90° 转向 × 0.1 rad/s），按要求保留为已知阻断 |
 | 测试 | 35 个 GTest 全过（新增起点检查 3、载荷/重规划 3） |
 
 ## 3. 规划模块保证的事（对 FSM 的契约）
@@ -81,7 +81,7 @@ MTC_RMW=rmw_cyclonedds_cpp bash src/mtc_moveit_planner/scripts/run_planning_evid
 
 | 问题 | 找谁 |
 |---|---|
-| V1 预对准仍需 39.6 s > 24 s（90° 转向 × 0.1 rad/s）：建议加 V1 就绪位或拆分接近/预对准 | 孙嘉明 |
+| V1 预对准仍需约 40 s > 24 s（90° 转向 × 0.1 rad/s）：建议加 V1 就绪位或拆分接近/预对准 | 孙嘉明 |
 | `test_lift` / `retreat` 起点依赖工具动作假设：执行前调用 `check_trajectory_start()`，不通过则 `replan_primitive()` | 孙嘉明（执行适配接入） |
 | PLAN_ACQUIRE 看门狗只有 2 s | 孙嘉明 |
 | TCP（ee_link→钩尖）、T0/P1–P3 位姿、提环轴向、相机外参 | 韩明赫 |

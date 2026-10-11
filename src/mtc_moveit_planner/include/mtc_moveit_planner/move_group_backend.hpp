@@ -6,7 +6,8 @@
 //   * CARTESIAN ：MoveGroupInterface::computeCartesianPath()，要求完整（fraction >= 阈值）；
 //   * 两种结果都用 TOTG 按 velocity/acceleration scaling 重新时间参数化，
 //     再按原语的末端线速度/角速度上限做**均匀时间拉伸**（路径不变）；
-//   * FREE_SPACE 依次尝试：末端直线 → 以起点为种子的 IK 关节目标 + OMPL → 位姿目标 OMPL；
+//   * FREE_SPACE 依次尝试：末端直线 → 种子 IK + 关节空间插值（逐点 /check_state_validity）
+//     → OMPL 到种子 IK 关节目标 → 位姿目标 OMPL；
 //   * 电池载荷附着在**起点 RobotState** 上随请求下发，不改 move_group 全局场景；
 //   * 静态障碍物（apply_scene）经 /apply_planning_scene 写入，只增删本类创建的对象；
 //   * 只规划、不执行：本类不调用 execute()/move()，不连接控制器 Action。
