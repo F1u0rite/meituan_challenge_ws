@@ -17,9 +17,14 @@ class RosFixture : public ::testing::Test
 protected:
   static void SetUpTestSuite()
   {
+    setenv("RMW_IMPLEMENTATION", "rmw_fastrtps_cpp", 1);
     setenv("ROS_DOMAIN_ID", std::to_string(30 + getpid() % 170).c_str(), 1);
     setenv("ROS_AUTOMATIC_DISCOVERY_RANGE", "LOCALHOST", 1);
     unsetenv("ROS_STATIC_PEERS");
+    unsetenv("ROS_LOCALHOST_ONLY");
+    unsetenv("FASTRTPS_DEFAULT_PROFILES_FILE");
+    unsetenv("FASTDDS_DEFAULT_PROFILES_FILE");
+    unsetenv("CYCLONEDDS_URI");
     setenv("ROS_LOG_DIR", "/tmp/mtc_phase2a_test_logs", 1);
     rclcpp::init(0, nullptr);
   }
