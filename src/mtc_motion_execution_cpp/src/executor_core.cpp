@@ -1,5 +1,6 @@
 // Copyright 2026 meituan_challenge_ws contributors
 #include "mtc_motion_execution_cpp/executor_core.hpp"
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <utility>
@@ -59,13 +60,16 @@ bool MotionExecutorCore::evidence_valid(
       config_.settle_velocity_tolerance_rad_s}) {
     if (!std::isfinite(threshold) || threshold <= 0.0) {return false;}
   }
+  const double stationary_for = f.stamp_s - e.stationary_since_s;
+  const double time_tolerance = std::min(1e-9, config_.settle_duration_s * 1e-9);
   if (e.command_id != *command_id || !e.communication_ok || !e.queue_empty ||
     !e.stationary_interval_verified ||
     (e.exec_state != ExecState::STOPPED && e.exec_state != ExecState::SETTLED) ||
     !std::isfinite(now) || !std::isfinite(f.stamp_s) || f.stamp_s < 0.0 ||
     !std::isfinite(e.stationary_since_s) || e.stationary_since_s < 0.0 ||
     f.stamp_s > now || now - f.stamp_s > config_.feedback_max_age_s ||
-    f.stamp_s - e.stationary_since_s + 1e-9 < config_.settle_duration_s ||
+    !std::isfinite(stationary_for) || stationary_for <= 0.0 ||
+    stationary_for + time_tolerance < config_.settle_duration_s ||
     f.position_rad.size() != config_.expected_joint_names.size() ||
     f.velocity_rad_s.size() != f.position_rad.size() || f.position_rad.empty())
   {return false;}

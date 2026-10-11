@@ -107,6 +107,21 @@ TEST(MockClockGate, MockInsufficientStationaryIntervalRejected)
   EXPECT_TRUE(core.motion_state_unknown());
 }
 
+TEST(MockClockGate, TinyPositiveSettleDurationCannotConfirmZeroInterval)
+{
+  class FrozenClock : public ManualClock {public: double now() const override {return 100.0;}};
+  auto clock = std::make_shared<FrozenClock>();
+  ValidationConfig config;
+  config.settle_duration_s = 1e-12;
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock, config);
+  mtc::motion::MotionExecutorCore core(adapter, config, clock);
+  Fixture fixture;
+  const auto result = core.execute_joint_move(fixture.make_command());
+  EXPECT_FALSE(result.success);
+  EXPECT_FALSE(result.stop_confirmed);
+  EXPECT_TRUE(core.motion_state_unknown());
+}
+
 TEST(MockClockGate, MockExecutorClockMismatchRejected)
 {
   Fixture fixture;
