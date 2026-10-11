@@ -15,7 +15,9 @@ import xml.etree.ElementTree as ET
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-base", type=Path, default=Path("build"))
-    parser.add_argument("--baseline", default="db9683af2394ce1c529fedddb3c8cb219e12f467")
+    parser.add_argument("--baseline", default="e2c48088b7c58fe34615d636f88da85b2f859ee6")
+    parser.add_argument("--baseline-count", type=int, default=290,
+                        help="Expected baseline identities; use 257 for the original migration HEAD")
     args = parser.parse_args()
     files = subprocess.check_output(
         ["git", "ls-tree", "-r", "--name-only", args.baseline, "src"], text=True
@@ -27,7 +29,7 @@ def main() -> None:
             continue
         source = subprocess.check_output(["git", "show", f"{args.baseline}:{filename}"], text=True)
         baseline.update(f"{suite}.{case}" for suite, case in pattern.findall(source))
-    if len(baseline) != 257:
+    if len(baseline) != args.baseline_count:
         raise SystemExit(f"FAIL: unexpected baseline inventory: {len(baseline)}")
     actual = Counter()
     by_package = Counter()
@@ -49,10 +51,13 @@ def main() -> None:
     for filename in Path("src").glob("mtc_*_cpp/test/test_*.cpp"):
         current.update(f"{suite}.{case}" for suite, case in pattern.findall(filename.read_text()))
     missing = sorted((baseline | current) - actual.keys())
+    unexpected = sorted(actual.keys() - current)
     duplicate = sorted(k for k, count in actual.items() if count != 1)
-    if missing or duplicate or bad or len(xmls) != 16:
-        raise SystemExit(f"FAIL: missing={missing}; duplicates={duplicate}; bad={bad}; executables={len(xmls)}")
-    print(f"PASS: original {len(baseline)}/257 executed; {len(actual) - len(baseline)} new cases executed")
+    if missing or unexpected or duplicate or bad or len(xmls) != 16:
+        raise SystemExit(f"FAIL: missing={missing}; unexpected={unexpected}; duplicates={duplicate}; "
+                         f"bad={bad}; executables={len(xmls)}")
+    print(f"PASS: original {len(baseline)}/{args.baseline_count} executed; "
+          f"{len(actual) - len(baseline)} new cases executed")
     print(f"PASS: {len(actual)} distinct cases in {len(xmls)} GTest executables; no failure/error/skip")
     for package, count in sorted(by_package.items()):
         print(f"  {package}: {count}")
