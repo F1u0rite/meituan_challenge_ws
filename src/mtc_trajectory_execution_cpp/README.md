@@ -5,9 +5,13 @@
 默认执行禁用；只支持明确核实的 `mock_components/GenericSystem`。不包含真实
 AUBO SDK、RPC/RTDE、工具IO或MoveIt Planner，不改变Phase 2A的三个Mock Server。
 
-2026-10-12本轮验证：30项转换/校验单元测试、36项真实本地ROS Action测试通过；
-原358项C++回归保留并执行，合计424项通过。GenericSystem多点执行、起点拒绝和
-关联取消实际运行记录见 [验收报告](../../docs/migration/PHASE2B_TRAJECTORY_EXECUTION_REPORT.md)。
+2026-10-12 Final Audit：30项转换/校验、46项真实本地ROS Action测试通过；
+保留原424项身份，加上本轮10项及合入main的29项Planner测试，共463项GTest通过。
+完整15包构建、269项Python、15项离线E2E和463项UBSan通过；TSan NOT RUN。
+GenericSystem四项验证通过，但默认move_group与FjtMotionPort共存时因第二FJT客户端
+被门禁拒绝，联合执行 **BLOCKED**。详见
+[最终集成门禁报告](../../docs/migration/PHASE2B_FINAL_INTEGRATION_GATE.md)；
+[首次验收报告](../../docs/migration/PHASE2B_TRAJECTORY_EXECUTION_REPORT.md)仅为历史证据。
 
 ## API 与执行所有权
 
@@ -103,7 +107,8 @@ colcon test --packages-select mtc_core_cpp mtc_task_cpp mtc_manipulation_cpp \
 python3 src/mtc_trajectory_execution_cpp/test/verify_results.py --build-base build
 ```
 
-新核验脚本比较Phase 2B基线358项、已编译且注册的测试身份与实际XML，拒绝未完成、
+核验脚本比较原358项Core/Action和66项Phase 2B身份，包含合入的Planner，
+比对已编译注册的测试与实际XML，拒绝未完成、
 遗漏、重复、FAIL和SKIP。历史Phase 2A脚本固定20个可执行文件，不用于当前22个集合。
 全目录test-result会包含保留的历史TSan失败，须与本轮各包结果分开报告。
 
@@ -167,6 +172,7 @@ ros2 topic echo /joint_states sensor_msgs/msg/JointState --once --timeout 5
 ros2 run mtc_trajectory_execution_cpp fake_trajectory_probe --verify-generic-system success
 ros2 run mtc_trajectory_execution_cpp fake_trajectory_probe --verify-generic-system mismatch
 ros2 run mtc_trajectory_execution_cpp fake_trajectory_probe --verify-generic-system cancel
+ros2 run mtc_trajectory_execution_cpp fake_trajectory_probe --verify-generic-system identity
 ```
 
 probe必须有显式验证参数，否则退出且不执行。它从新鲜JointState读取起点，构造
@@ -196,6 +202,22 @@ Phase 2A的AsyncMockMotion和三个默认Mock Server保持原样，本包不提�
 事件线程等待取消。后续宿主应先关联取消、在FSM外非阻塞等待Stop证据，冻结新的
 运动派发，确认后才交给FSM处理；逾期强制FAULT。该宿主尚未实现，本轮不改Core。
 
-常建烁维护的`feature/moveit-planner`未合并、未修改、未用于本轮验证。待负责人
-合入并回归后再验证完整规划轨迹、时基、接触能力、取消桥接及停止证据方案。
+已通过合入`origin/main`取得PR #3的Planner代码（main基线`f7eaa2c`），本轮未修改
+Planner源码或其成员分支。PR #4已关闭但未合并，不能假定具备其场景/起点功能。
+Planner仅规划，不调用execute；默认move_group仍加载可执行的控制器客户端。
+`exclusive_graph()`保持单客户端要求，不能把多客户端简单当成单一执行权。
+需要独立planning-only配置和指定执行管理者后再验收联合路径；图检查不是身份认证。
+
+Planner输出的command_id/trajectory_id由FSM派发时赋值。其stamp_s是生成时间
+（可能来自SteadyClock），FJT非零stamp则是ROS时域的计划启动时间。两者尚未统一；
+不能静默改为0、取消起点或spline校验。接触轨迹仍显式拒绝。
+
+完成结果仅允许原始命令的完全相同内容重读。适配器为在途及完成命令保存不可变
+MotionCommand副本，逐字段比较原始顺序、路点、ID、时戳、scaling、timeout、Pose和
+安全字段；相同ID内容变化返回REJECTED，零额外Goal/Cancel，不解除FAULT。
+完成账本仍限10000条、不自动淘汰；轮询比较成本随路点数增长。
+
+`fake_trajectory_probe --verify-generic-system topology`只检查图和健康状态，不发Goal。
+共存场景会打印clients=2、ready=0，退出码2表示BLOCKED。`identity`提交一次完整
+轨迹，再检查缓存重读及三种内容变更拒绝，Goal计数保持1、Cancel计数0。
 没有接入真实硬件；TSan本轮NOT RUN，普通多线程或UBSan通过不等于排除所有竞态。
