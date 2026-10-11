@@ -119,7 +119,7 @@ struct TaskRequest
   uint32_t timeout_ms = 0;
   /// ExecuteTask.action 本身没有 target_slot 字段；调用方可选附加以便交叉校验。
   std::optional<std::string> target_slot;
-  double placement_stability_sec = 0.0;
+  double placement_stability_sec = 3.0;
 
   std::string mode_name() const;
   size_t total_count() const {return ordered_colors.size();}
@@ -157,7 +157,7 @@ struct PickPlaceGoal
   std::string object_id;
   int expected_color = 0;
   std::string target_slot;
-  float placement_stability_sec = 0.0f;
+  float placement_stability_sec = 3.0f;
 };
 
 /// FSM 产出的动作意图；由 ROS 外壳翻译成真实调用。

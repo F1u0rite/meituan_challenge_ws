@@ -32,6 +32,7 @@ V1 / V2 差异只体现在 ENGAGE / VERIFY_ENGAGEMENT / DISENGAGE 三个阶段�
 from __future__ import annotations
 
 import logging
+from math import isfinite
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
@@ -618,6 +619,12 @@ class PickPlaceFSM:
         self.object_attached_estimated = False
         self.error_code = ErrorCode.OK
         self.message = ""
+
+        if not isfinite(self.placement_stability_sec) or self.placement_stability_sec <= 0.0:
+            self.error_code = ErrorCode.INVALID_TASK
+            self.message = "placement_stability_sec must be finite and strictly positive"
+            self._enter_state(PickPlaceState.FAILED)
+            return
 
         if self.target_slot not in ALLOWED_TARGET_SLOTS:
             self.error_code = ErrorCode.INVALID_TASK
@@ -1378,7 +1385,8 @@ class PickPlaceFSM:
                 self._stability_started_at = self.clock.now()
             stable_for = self.clock.now() - self._stability_started_at
             self.stability_verified_for_s = stable_for  # 日志/回放字段（设计 §10.2）
-            if stable_for + 1e-9 >= self.placement_stability_sec:
+            time_tolerance = min(1e-9, self.placement_stability_sec * 1e-9)
+            if stable_for > 0.0 and stable_for + time_tolerance >= self.placement_stability_sec:
                 self._set_placement_verified()
                 return StepResult(state=PickPlaceState.SUCCESS)
             return self._placement_wait_or_fail(

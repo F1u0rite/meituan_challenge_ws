@@ -169,10 +169,10 @@ void PickPlaceFsm::start(
   test_lift_motion_.reset();
   clear_port_results();
 
-  if (!std::isfinite(placement_stability_sec_) || placement_stability_sec_ < 0.0 ||
+  if (!std::isfinite(placement_stability_sec_) || placement_stability_sec_ <= 0.0 ||
     !std::isfinite(config_.perception_max_age_s) || config_.perception_max_age_s <= 0.0) {
     error_code_ = mtc::core::ErrorCodes::INVALID_TASK;
-    message_ = "invalid stability or perception age";
+    message_ = "stability and perception age must be finite and strictly positive";
     enter_state(PickPlaceState::FAILED);
     return;
   }
@@ -1276,7 +1276,9 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_verify_placed()
   }
   if (!stability_started_at_) {stability_started_at_ = stamp;}
   stability_verified_for_s_ = stamp - *stability_started_at_;
-  if (stability_verified_for_s_ + 1e-9 >= placement_stability_sec_) {
+  const double time_tolerance = std::min(1e-9, placement_stability_sec_ * 1e-9);
+  if (stability_verified_for_s_ > 0.0 &&
+    stability_verified_for_s_ + time_tolerance >= placement_stability_sec_) {
     set_placement_verified();
     StepResult result;
     result.state = PickPlaceState::SUCCESS;

@@ -55,6 +55,47 @@ TICK_SECONDS = 0.1
 RUN_TICK_SECONDS = 0.2
 
 
+def test_final_gate_invalid_stability_never_starts_motion() -> None:
+    for value in (0.0, -1.0, float("nan"), float("inf"), float("-inf")):
+        h = Harness()
+        h.fsm.start("battery_1", 1, "P1", "invalid", value)
+        for _ in range(30):
+            h.fsm.step()
+        assert h.fsm.state is PickPlaceState.FAILED
+        assert h.fsm.error_code == ErrorCode.INVALID_TASK
+        assert not h.fsm.placement_verified
+        assert not h.motion.calls
+        assert not h.planner.calls
+        assert h.tool.unlock_calls == 0
+
+
+def test_final_gate_invalid_configured_stability_never_starts_motion() -> None:
+    for value in (0.0, -1.0, float("nan"), float("inf"), float("-inf")):
+        h = Harness()
+        h.config.placement_stability_sec = value
+        h.start()
+        h.fsm.step()
+        assert h.fsm.state is PickPlaceState.FAILED
+        assert not h.motion.calls
+
+
+def test_final_gate_positive_window_requires_positive_elapsed_time() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "positive", 1e-12)
+    assert h.run_to(PickPlaceState.VERIFY_PLACED) is PickPlaceState.VERIFY_PLACED
+    h.fsm.step()
+    assert not h.fsm.placement_verified
+    h.clock.advance(0.1)
+    h.fsm.step()
+    assert h.fsm.placement_verified
+
+
+def test_final_gate_default_stability_remains_three_seconds() -> None:
+    h = Harness()
+    h.start()
+    assert h.fsm.placement_stability_sec == 3.0
+
+
 def test_watchdog_non_motion_updates_state_history_and_retry_context() -> None:
     h = Harness()
     h.fsm.start("battery_1", 1, "P1", "watchdog")

@@ -25,10 +25,10 @@ struct Fixture
     perception->clock = clock;
     build(motion);
   }
-  void build(MotionPortPtr port)
+  void build(MotionPortPtr port, PickPlaceConfig config = {})
   {
     fsm = std::make_unique<PickPlaceFsm>(perception, planner, port, tool, clock,
-      make_strategy(TOOL_PASSIVE_HOOK_V1));
+      make_strategy(TOOL_PASSIVE_HOOK_V1), config);
   }
   void start(const std::string & id = "audit") {fsm->start("battery_1", 1, "P1", id);}
   void reach(PickPlaceState state)
@@ -244,11 +244,49 @@ TEST(WatchdogAudit, LoadedContextCannotRecoverAndFaultCannotRestart)
 
 TEST(WatchdogAudit, InvalidStabilityNeverStartsMotion)
 {
-  for (double bad : {-1.0, std::numeric_limits<double>::quiet_NaN(),
-      std::numeric_limits<double>::infinity()}) {
+  for (double bad : {0.0, -1.0, std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}) {
     Fixture h;
     h.fsm->start("battery_1", 1, "P1", "bad", bad);
     EXPECT_EQ(h.fsm->state(), PickPlaceState::FAILED);
     EXPECT_EQ(h.motion->execute_calls, 0);
+  }
+}
+
+TEST(PlacementGate, ZeroStabilityRejectedBeforeFirstFrame)
+{
+  Fixture h;
+  h.fsm->start("battery_1", 1, "P1", "zero", 0.0);
+  EXPECT_EQ(h.fsm->state(), PickPlaceState::FAILED);
+  h.samples(30);
+  EXPECT_EQ(h.fsm->error_code(), ErrorCodes::INVALID_TASK);
+  EXPECT_FALSE(h.fsm->placement_verified());
+  EXPECT_EQ(h.motion->execute_calls, 0);
+  EXPECT_TRUE(h.planner->targets.empty());
+}
+
+TEST(PlacementGate, PositiveWindowNeedsTwoDistinctObservations)
+{
+  Fixture h;
+  h.fsm->start("battery_1", 1, "P1", "tiny", 1e-12);
+  h.reach(PickPlaceState::VERIFY_PLACED);
+  h.fsm->step();
+  EXPECT_FALSE(h.fsm->placement_verified());
+  h.clock->advance(0.1);
+  h.fsm->step();
+  EXPECT_TRUE(h.fsm->placement_verified());
+}
+
+TEST(PlacementGate, InvalidConfiguredStabilityNeverStartsMotion)
+{
+  for (double bad : {0.0, -1.0, std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}) {
+    Fixture h;
+    PickPlaceConfig config; config.placement_stability_sec = bad;
+    h.build(h.motion, config); h.start(); h.samples(30);
+    EXPECT_EQ(h.fsm->state(), PickPlaceState::FAILED);
+    EXPECT_FALSE(h.fsm->placement_verified());
+    EXPECT_EQ(h.motion->execute_calls, 0);
+    EXPECT_TRUE(h.planner->targets.empty());
   }
 }

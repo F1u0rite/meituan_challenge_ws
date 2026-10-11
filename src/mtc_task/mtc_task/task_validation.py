@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import isfinite
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 MODE_BASIC = 1
@@ -91,7 +92,7 @@ def normalize_task_request(goal: Any) -> Dict[str, Any]:
     if data["task_id"] is None:
         raise ValueError("missing field: task_id")
     stability = data.get("placement_stability_sec")
-    data["placement_stability_sec"] = 0.0 if stability is None else float(stability)
+    data["placement_stability_sec"] = 3.0 if stability is None else float(stability)
     for name in OPTIONAL_GOAL_FIELDS:
         value = _goal_field(goal, name)
         if value is not None:
@@ -169,11 +170,11 @@ def validate_task_request(goal_or_task: Any) -> ValidationResult:
 
     stability = raw.get("placement_stability_sec")
     try:
-        stability_value = float(stability) if stability is not None else 0.0
+        stability_value = float(stability) if stability is not None else 3.0
     except (TypeError, ValueError):
         return _fail("bad_stability", "placement_stability_sec must be a number")
-    if stability_value < 0.0:
-        return _fail("negative_stability", "placement_stability_sec must be >= 0")
+    if not isfinite(stability_value) or stability_value <= 0.0:
+        return _fail("stability_not_positive", "placement_stability_sec must be finite and > 0")
 
     explicit_slot = raw.get("target_slot")
     derived = [expected_slot_for_index(mode, i) for i in range(len(colors))]

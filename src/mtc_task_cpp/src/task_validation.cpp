@@ -102,8 +102,8 @@ ValidationResult validate_task_request(const TaskRequest & task)
     return fail("timeout_not_positive", "timeout_ms must be > 0, got 0");
   }
 
-  if (!std::isfinite(task.placement_stability_sec) || task.placement_stability_sec < 0.0) {
-    return fail("negative_stability", "placement_stability_sec must be >= 0");
+  if (!std::isfinite(task.placement_stability_sec) || task.placement_stability_sec <= 0.0) {
+    return fail("stability_not_positive", "placement_stability_sec must be finite and > 0");
   }
 
   std::vector<std::string> derived;

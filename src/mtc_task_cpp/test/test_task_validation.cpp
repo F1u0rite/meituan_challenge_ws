@@ -147,7 +147,7 @@ TEST(TaskValidation, NegativeStabilityRejected)
   task.placement_stability_sec = -1.0;
   const ValidationResult result = mtc::task::validate_task_request(task);
   EXPECT_FALSE(result.ok);
-  EXPECT_EQ(result.reason, "negative_stability");
+  EXPECT_EQ(result.reason, "stability_not_positive");
 }
 
 TEST(TaskValidation, ExplicitSlotMustMatchDerivedSlot)
@@ -232,4 +232,39 @@ TEST(TaskValidationAudit, NonFiniteStabilityRejected)
     task.placement_stability_sec = bad;
     EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
   }
+}
+
+TEST(StabilityGate, ZeroStabilityRejected)
+{
+  auto task = basic_request(); task.placement_stability_sec = 0.0;
+  EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
+}
+TEST(StabilityGate, NegativeStabilityRejected)
+{
+  auto task = basic_request(); task.placement_stability_sec = -0.1;
+  EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
+}
+TEST(StabilityGate, NaNStabilityRejected)
+{
+  auto task = basic_request(); task.placement_stability_sec = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
+}
+TEST(StabilityGate, InfiniteStabilityRejected)
+{
+  for (double value : {std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}) {
+    auto task = basic_request(); task.placement_stability_sec = value;
+    EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
+  }
+}
+TEST(StabilityGate, PositiveStabilityAccepted)
+{
+  for (double value : {0.1, 1.5, 3.0, 5.0}) {
+    auto task = basic_request(); task.placement_stability_sec = value;
+    EXPECT_TRUE(mtc::task::validate_task_request(task).ok);
+  }
+}
+TEST(StabilityGate, DefaultStabilityRemainsThreeSeconds)
+{
+  EXPECT_DOUBLE_EQ(basic_request().placement_stability_sec, 3.0);
+  EXPECT_TRUE(mtc::task::validate_task_request(basic_request()).ok);
 }

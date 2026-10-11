@@ -275,7 +275,7 @@ class TaskRequest:
     ordered_colors: List[int]
     timeout_ms: int
     target_slot: Optional[str] = None
-    placement_stability_sec: float = 0.0
+    placement_stability_sec: float = 3.0
 
     @classmethod
     def from_goal(cls, goal: Any, **overrides: Any) -> "TaskRequest":

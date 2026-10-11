@@ -60,6 +60,49 @@ RED, BLUE, YELLOW, GREEN = 1, 2, 3, 4
 FORBIDDEN_MODULES = ("rclpy", "mtc_interfaces", "rcl_interfaces")
 
 
+class TestStabilityFinalGate(unittest.TestCase):
+    def task(self, stability: float) -> TaskRequest:
+        return TaskRequest("stability-gate", MODE_BASIC, [RED], 60000,
+                           placement_stability_sec=stability)
+
+    def check_invalid(self, value: float) -> None:
+        result = validate_task_request(self.task(value))
+        self.assertFalse(result.ok)
+        self.assertEqual(result.error_code, ErrorCodes.INVALID_TASK)
+        self.assertEqual(result.reason, "stability_not_positive")
+
+    def test_zero_stability_rejected(self) -> None:
+        self.check_invalid(0.0)
+
+    def test_negative_stability_rejected(self) -> None:
+        self.check_invalid(-0.1)
+
+    def test_nan_stability_rejected(self) -> None:
+        self.check_invalid(float("nan"))
+
+    def test_infinite_stability_rejected(self) -> None:
+        self.check_invalid(float("inf"))
+        self.check_invalid(float("-inf"))
+
+    def test_positive_stability_accepted(self) -> None:
+        for value in (0.1, 1.5, 3.0, 5.0):
+            self.assertTrue(validate_task_request(self.task(value)).ok)
+
+    def test_default_stability_is_three_seconds(self) -> None:
+        task = TaskRequest("default", MODE_BASIC, [RED], 60000)
+        self.assertEqual(task.placement_stability_sec, 3.0)
+        self.assertTrue(validate_task_request(task).ok)
+        missing_field = dict(task_id="missing", mode=MODE_BASIC, ordered_colors=[RED], timeout_ms=60000)
+        self.assertEqual(TaskRequest.from_goal(missing_field).placement_stability_sec, 3.0)
+        self.assertTrue(validate_task_request(missing_field).ok)
+
+    def test_explicit_zero_is_not_replaced_with_default(self) -> None:
+        goal = dict(task_id="zero", mode=MODE_BASIC, ordered_colors=[RED], timeout_ms=60000,
+                    placement_stability_sec=0.0)
+        self.assertEqual(TaskRequest.from_goal(goal).placement_stability_sec, 0.0)
+        self.assertFalse(validate_task_request(goal).ok)
+
+
 class FakeClock:
     """可注入的假时钟（秒）。"""
 
