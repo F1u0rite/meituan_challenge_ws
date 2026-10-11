@@ -1,8 +1,8 @@
 # FSM Core 开发者使用指南（美团无人机挑战赛）
 
-> **当前状态：FSM Core v0.1 已完成第一阶段离线安全验收并合入 `main`。** 合并提交为 `c2be85724111f6fb4dfcc62a2c974f7be1233cba`；已存在的本地 Git tag `fsm-core-v0.1.0` 指向该提交。本指南依据合入的 C++ API 与 Final Gate 报告编写。第二阶段 ROS 2 Action、MoveIt 2 Planner 与 Mock Hardware 集成尚未完成。
+> **当前状态：Phase 1 FSM Core v0.1 已完成；Phase 2A C++ ROS 2 Action 已完成离线 Mock 验证，两者均已合入 `main`。** 交接基线为 `main@c0f7017`；Core历史合并提交为 `c2be85724111f6fb4dfcc62a2c974f7be1233cba`，本地 tag `fsm-core-v0.1.0` 仍指向该Core版本，不包含后续Action包。
 >
-> **适用范围：C++17 FSM Core / 离线 Mock 开发，不是已完成的 ROS 2 / MoveIt 2 / AUBO S3 实机控制系统。** 严禁将本文中的示例改为直接驱动真实机械臂。
+> **适用范围：C++17 FSM Core / ROS 2 Action 离线 Mock 开发。** 完整FSM + MoveIt 2 / FollowJointTrajectory / ros2_control Mock Hardware闭环尚未完成，未进行AUBO S3实机验收。严禁将本文示例改为直接驱动真实机械臂。
 
 ## 1. 团队交接：现在完成了什么？
 
@@ -25,7 +25,7 @@ C++ PickPlace FSM (mtc_manipulation_cpp)
      Motion Executor / Mock Adapter (mtc_motion_execution_cpp)
            │
            ▼
-     [第二阶段：ROS 2 Action / MoveIt 2 / FollowJointTrajectory / S3 Fake Hardware]
+     [待集成：MoveIt 2 / FollowJointTrajectory / S3 Fake Hardware]
 ```
 
 ### 四个 C++ 包
@@ -39,13 +39,20 @@ C++ PickPlace FSM (mtc_manipulation_cpp)
 
 **已实现：** 核心状态机和共享 C++ API；V1/V2 工具策略；纯逻辑 Fake 与 Mock 单元测试；单命令/整条轨迹的数据表达与保守执行校验。
 
-**未实现/未验收：** 新 C++ FSM 的 ROS 2 Action Server、MoveIt 2 C++ Planner、`FollowJointTrajectory` 端到端适配、完整 S3 Fake Hardware 抓放闭环和真实硬件控制。仓库保留部分历史 Python ROS 节点，但不等于新 C++ FSM 已经接入了这些节点。
+**Phase 2A已实现并通过Mock验证：** 独立包 `mtc_ros2_action_cpp` 提供三个C++
+Action Server，复用核心FSM；Task → PickPlace使用真正的ROS Action Client/Server。
+PickPlace使用本地Mock运动端口，独立Motion Action尚未连接到PickPlace。
+
+**未实现/未验收：** MoveIt 2 C++ Planner、`FollowJointTrajectory`端到端适配、完整
+S3 Fake Hardware抓放闭环和真实硬件控制。独立驱动工作空间的MoveIt 2 Mock验证
+已经完成，证据与SOP见 [驱动手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)，不能等同
+于本仓库完整FSM执行链路已打通。
 
 ## 2. 开发基线与团队使用方式
 
-`main` 已合并 Final Gate 修复，`fsm-core-v0.1.0` 为当前已存在的本地版本标签，
+`main@c0f7017` 已包含 Final Gate 与 Phase 2A；`fsm-core-v0.1.0` 为Core历史本地标签，
 目标提交为 `c2be857`。过期 Goal 误停、Mock 时基、零放置时长及零静止跨度等
-安全问题已有修复和负面测试；这份基线用于离线开发及下一阶段 Mock 集成。
+安全问题已有修复和负面测试；当前main用于离线Action系统集成及后续Mock开发。
 完整 TSan 尚未完成，不能称为已完成动态竞态验收或实机验收。
 
 首次克隆仅在目标目录不存在时执行；已有工作区先检查状态，不覆盖或重新初始化：
@@ -68,7 +75,8 @@ git switch -c feature/my-module-name main
 
 基线：Ubuntu 24.04、ROS 2 Jazzy、C++17、`colcon`、`ament_cmake`、
 `ament_cmake_gtest`，以及已注册Python包的pytest依赖。
-实际依赖见各包 `package.xml` / `CMakeLists.txt`；核心库不依赖ROS运行时。
+实际依赖见各包 `package.xml` / `CMakeLists.txt`；核心库不依赖ROS运行时，
+Action包依赖`rclcpp`、`rclcpp_action`和`mtc_interfaces`。
 下面各组命令在仓库根目录执行，不清空已有build/install/log。
 
 ### 完整工作空间
@@ -77,18 +85,20 @@ git switch -c feature/my-module-name main
 source /opt/ros/jazzy/setup.bash
 cd /home/aaet/meituan_challenge_ws
 colcon list
-colcon --log-base log/final_gate build \
-  --build-base build/final_gate --install-base install/final_gate
-source install/final_gate/setup.bash
-colcon --log-base log/final_gate test \
-  --build-base build/final_gate --install-base install/final_gate
-colcon test-result --test-result-base build/final_gate --all
-python3 tests/verify_cpp_audit_results.py --build-base build/final_gate
+colcon --log-base log/phase2a_mock build \
+  --build-base build/phase2a_mock --install-base install/phase2a_mock
+source install/phase2a_mock/setup.bash
+colcon --log-base log/phase2a_mock test \
+  --build-base build/phase2a_mock --install-base install/phase2a_mock
+colcon test-result --test-result-base build/phase2a_mock --all
+python3 src/mtc_ros2_action_cpp/test/verify_results.py --build-base build/phase2a_mock
 python3 tests/test_mock_end_to_end.py
 ```
 
-身份核验脚本检查原290项及当前全部318项是否真的执行，拒绝缺失、重复、失败、
-跳过或未完成项。E2E脚本未被colcon注册，必须单独执行；它是纯Python Mock，
+新身份核验脚本比较原318项、Action新增40项与实际XML，覆盖358项及20个
+可执行文件，拒绝缺失、重复、失败、跳过或未完成项。历史脚本
+`tests/verify_cpp_audit_results.py` 固定16个可执行文件，不适用于当前完整集合。
+E2E脚本未被colcon注册，必须单独执行；它是纯Python Mock，
 不是C++ ROS 2 E2E，也未接入真正的MoveIt Planner。
 
 ### 仅四个 C++ 核心包
@@ -106,21 +116,22 @@ colcon --log-base log/fsm_core test \
   --build-base build/fsm_core --install-base install/fsm_core \
   --packages-select mtc_core_cpp mtc_task_cpp mtc_motion_execution_cpp mtc_manipulation_cpp
 colcon test-result --test-result-base build/fsm_core --all
-python3 tests/verify_cpp_audit_results.py --build-base build/fsm_core
 ```
 
-此入口不执行Python包、XML或E2E，不能据此宣称全工作空间回归通过。
+此入口仅运行四个核心包的318项GTest，不执行Action包、Python包、接口XML或
+E2E，不能据此宣称全工作空间回归通过。完整身份核验需先执行五个C++包的全部
+测试并使用上一节的新脚本，不能对仅四包的结果调用它。
 
 ### 定向 GTest
 
-先完成相应目录的构建。在加载 `install/final_gate/setup.bash` 的终端可执行：
+先完成相应目录的构建。在加载 `install/phase2a_mock/setup.bash` 的终端可执行：
 
 ```bash
-build/final_gate/mtc_motion_execution_cpp/test_executor_concurrency \
+build/phase2a_mock/mtc_motion_execution_cpp/test_executor_concurrency \
   --gtest_filter='GoalCancelGate.*'
-build/final_gate/mtc_motion_execution_cpp/test_mock_adapter \
+build/phase2a_mock/mtc_motion_execution_cpp/test_mock_adapter \
   --gtest_filter='MockClockGate.*'
-build/final_gate/mtc_manipulation_cpp/test_pick_place_audit \
+build/phase2a_mock/mtc_manipulation_cpp/test_pick_place_audit \
   --gtest_filter='PlacementAudit.*:PlacementGate.*:WatchdogAudit.*'
 ```
 
@@ -128,25 +139,31 @@ build/final_gate/mtc_manipulation_cpp/test_pick_place_audit \
 
 ### 已记录的验收结果与 sanitizer
 
-以下结果来自 [2026-10-11最终安全验收报告](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)，
-本次README更新没有重新执行全量回归：
+以下结果来自 [2026-10-11 Phase 2A报告](docs/migration/PHASE2A_ROS2_ACTION_REPORT.md)，
+本次README交接更新没有重新执行构建或全量回归：
 
 | 验证 | 记录结果 |
 |---|---|
-| Jazzy全工作空间编译 | 12/12包 PASS |
-| C++ GTest | 318 PASS，原290项全部保留，新增28项，16个可执行文件 |
+| Jazzy全工作空间编译 | 13/13包 PASS |
+| C++ GTest | 358 PASS；原318项全部保留，Action新增40项，20个可执行文件 |
 | Python pytest | 269 PASS |
-| 显式离线E2E | 15 PASS / FAIL 0 / SKIP 0 |
-| XML、UBSan、git diff --check | PASS |
-| TSan | 未完成，NOT RUN；运行时启动报 `unexpected memory mapping` |
-| C++ ROS Action / MoveIt Planner / Mock Hardware集成 | 尚未完成，NOT RUN |
+| 显式Python离线E2E | 15 PASS / FAIL 0 / SKIP 0 |
+| C++ UBSan | 358 PASS，四个核心包及Action包 |
+| XML、git diff --check | PASS |
+| TSan | 本轮 NOT RUN；历史运行时`unexpected memory mapping`记录仍保留 |
+| Phase 2A C++ ROS 2 Action | Mock验证PASS，Task → PickPlace及独立Motion Action |
+| 完整FSM + MoveIt Planner / FollowJointTrajectory / Mock Hardware闭环 | 尚未完成，未验收 |
 | 实机与实体IO | NOT RUN，未授权 |
 
-C++包分布：core23、task87、manipulation120、motion88。
-318+269+15为602个测试场景；colcon汇总608项包含包装/lint条目，不能重复计数。
-E2E使用脚本MockPlanner，可选规划模块缺失不代表真正Planner集成通过。
-UBSan/TSan独立构建目录及实际错误记录见上述报告第7节。复跑sanitizer时沿用
-独立目录，不修改系统ASLR或安全设置；TSan启动失败不能标为PASS。
+C++包分布：core23、task87、manipulation120、motion88、action40。
+358+269+15为642个独立测试场景；CTest包装/lint条目不能重复计数。Python E2E使用
+脚本MockPlanner，不代表MoveIt成功；C++ Action通信证据来自Action包注册测试。
+
+报告记录全目录 `colcon test-result --all --verbose` 因历史TSan失败返回FAIL，
+当前13包结果分别检查通过。上面的独立目录可隔离历史结果；复用目录时仍需核对
+当前构建、执行和XML身份。UBSan命令与历史结果说明见Phase 2A报告第4、5节。
+TSan本轮没有运行，普通并发测试或UBSan不能替代动态竞态检测；不修改系统ASLR
+或安全设置，也不将未执行项写成PASS。
 
 ### 共享类型 API
 
@@ -371,45 +388,118 @@ FSM事件线程用它等待长轨迹。它未覆盖整条轨迹执行，因此�
 
 **并发：** Task FSM 和 PickPlace FSM 对象本身遵循**单一事件线程所有权**。ROS 2 多线程回调应把事件送入串行队列；不能从多个 ROS 回调线程同时调用 `step()/start()/request_cancel()`。`MotionExecutorCore` 独立处理执行/停止竞争，但不能代替 FSM 的事件串行化。
 
-## 6. 与 ROS 2 的关系：接口存在 ≠ C++ Action 已集成
+## 6. Phase 2A ROS 2 Action 与后续集成边界
 
-仓库有 `mtc_interfaces` 中的 `ExecuteTask.action`、`PickPlace.action`、`ExecuteJointMove.action` 等契约，旧 Python 包也有 ROS 2 适配代码；但**当前新 C++ FSM 核心库没有实现对应的 C++ `rclcpp_action` Server，也没有自动接入 MoveIt 2**。这是下一阶段的交付范围。
+核心库继续与ROS 2隔离，已实现的外壳位于
+[src/mtc_ros2_action_cpp](src/mtc_ros2_action_cpp/README.md)。三个Action使用原有
+`mtc_interfaces`契约，没有修改FSM状态转换或ROSIDL字段：
 
-未来集成时：
+| Action | 类型 | 当前可执行入口 |
+|---|---|---|
+| `/mtc/task/execute` | `mtc_interfaces/action/ExecuteTask` | `ros2 run mtc_ros2_action_cpp mock_task_server` |
+| `/mtc/manipulation/pick_place` | `mtc_interfaces/action/PickPlace` | `ros2 run mtc_ros2_action_cpp mock_pick_place_server` |
+| `/mtc/motion/execute_joint_move` | `mtc_interfaces/action/ExecuteJointMove` | `ros2 run mtc_ros2_action_cpp mock_motion_server` |
 
-- `ExecuteTask` Goal → `TaskRequest` → `TaskFsm`，`StepResult.actions` → ROS 2 子操作。
-- `PickPlace` Goal → `PickPlaceFsm::start()`；把 `feedback()` 转成 Action Feedback，把 `result()` 转成 Result。
-- Perception 的 `geometry_msgs/PoseStamped` → 完整 `Pose6D`，必须核对 TF、坐标系和时间戳。
-- MoveIt 2 完整时间参数化轨迹 → 一次 `control_msgs/action/FollowJointTrajectory` Goal；禁止多次 `ExecuteJointMove` 伪造轨迹。
-- `Goal accepted` ≠ `motion complete`；`cancel accepted` ≠ `stop confirmed`；`placement_verified` 只有真正连续新观测通过才可置真。
+```text
+TaskServer → ROS PickPlace Action Client → PickPlaceServer → PickPlaceFsm
+                                              ↓ MockPerception / MockPlanner / MockTool
+                                              ↓ 本地 AsyncMockMotion
+                                      MotionExecutorCore → MockMotionAdapter
 
-在完成正式 ROS 2 Mock 闭环前，不得宣称新的 C++ FSM 已有“开箱即用的机器人控制节点”。
+MotionServer（独立） → 另一套 MotionExecutorCore → MockMotionAdapter
+```
+
+ExecuteTask Goal转为 `TaskRequest` 后交给TaskFsm；`CALL_PICK_PLACE`产生真正的ROS
+子Goal，`CANCEL_CHILD`关联保存的子Goal handle/UUID。PickPlace Feedback/Result来自
+原FSM。ROS回调只登记Goal/Cancel和子事件；同一MutuallyExclusive CallbackGroup
+中的Timer推进FSM，执行和停止放到owned worker，以非阻塞方式轮询结果。
+
+**C++ PickPlace与独立Motion Action尚未连接。** Motion Server仅支持六关节单点目标，
+没有整条轨迹入口，不能拆分多点轨迹来宣称轨迹执行。PickPlace现在使用本地Mock
+执行器；三种Action存在不等于完整Task → PickPlace → Motion Action → Mock Hardware
+链路已打通。完整行为、测试及限制见 [Phase 2A报告](docs/migration/PHASE2A_ROS2_ACTION_REPORT.md)。
+
+取消受理与停稳确认继续分离；本包PickPlace只有核心 `CANCELLED && stop_confirmed`
+才返回ROS CANCELED。既有PickPlace Result没有独立的停稳证据字段，Task仅信任本包
+加强契约的Mock Server最终 `CANCELED/OK`，不能将第三方Server或Cancel ACK视为
+停止证明。FAULT、未知运动及挂载/未知负载保持锁定，没有自动人工复位。
+
+后续接入需要核对完整 `Pose6D`、TF、时戳/时基、规划结果和独立停稳证据；MoveIt 2
+完整时间参数化轨迹应由未来适配器作为一次FollowJointTrajectory Goal提交。目前未
+实现该适配，不得称为已完成机器人控制闭环。
+
+### 系统集成交接（张叔阳）
+
+交接以 `main@c0f7017` 为基线。现有
+[mock_bringup.launch.py](src/mtc_bringup/launch/mock_bringup.launch.py) 仍启动旧Python
+`mtc_task/task_executor`、`mtc_manipulation/pick_place_server`、
+`mtc_motion_execution/motion_executor`，以及Tool/Safety节点；它不是C++ Bringup。
+旧Python包暂不删除；同一domain内不得同时启动提供同名Action的Python/C++ Server。
+
+下一步在独立分支交付：
+
+1. 建立独立C++ Mock Bringup，明确节点、依赖顺序、命名空间与Mock环境隔离，避免同名Server共存。
+2. 复验Task → PickPlace ROS通信；覆盖Goal/Feedback/Result、关联Cancel、子失败、超时及FAULT锁定。独立Motion Action另行验证，不虚构PickPlace → Motion连接。
+3. 检查Node、Topic、Action类型、唯一Server、QoS和日志，将观察结果保存为可追溯证据。
+4. 提供团队可独立复现的Mock启动SOP，包括每个终端的source、运行顺序、预期结果、出错定位和正常退出；目前可参考 [Action包的逐终端方法](src/mtc_ros2_action_cpp/README.md)。
+5. 为MoveIt 2后续集成准备Launch和测试环境，参考 [驱动Mock部署手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)，区分独立驱动验证与完整FSM闭环。
+
+完成包指南中的source和本机domain隔离后，可在观察终端检查。若按本文独立目录
+构建，将包指南中的overlay source改为 `install/phase2a_mock/setup.bash`，所有
+终端加载同一构建环境：
+
+```bash
+ros2 node list --no-daemon --spin-time 2
+ros2 node info /mtc_mock_task
+ros2 node info /mtc_mock_pick_place
+ros2 action list -t
+ros2 action info /mtc/task/execute -t
+ros2 action info /mtc/manipulation/pick_place -t
+ros2 topic list -t --include-hidden-topics
+ros2 topic info /mtc/task/execute/_action/feedback --verbose
+ros2 topic info /mtc/manipulation/pick_place/_action/feedback --verbose
+```
+
+Task/PickPlace同域时每个Action应只有一个对应C++ Server，节点名分别为
+`/mtc_mock_task`、`/mtc_mock_pick_place`。独立启动Motion后检查
+`ros2 node info /mtc_mock_joint_move` 和
+`ros2 action info /mtc/motion/execute_joint_move -t`。
+Topic检查用于核对发布/订阅端、QoS及匹配情况；不能仅看Action名称存在就判定通信
+成功。SOP应记录 `ROS_LOG_DIR` 与实际日志位置，并展示Feedback及最终Result证据。
+
+本交接仅授权软件Mock；不连接真实机器人、不调用实体工具IO。不得更改既有停止、
+FAULT、未知状态或负载安全语义，也不得以自动重启清除锁定来宣称完成安全恢复。
 
 ## 7. 队友开发分工及 PR 验收
 
-推荐以已合入的 `main`/`fsm-core-v0.1.0` 作为共同基线，在独立分支实现：
+推荐以当前 `main`（已包含Phase 2A）作为共同基线，在独立分支实现；
+`fsm-core-v0.1.0` 仅用于追溯Core历史版本：
 
 | 方向 | 建议分支 | 首先交付 |
 |---|---|---|
 | 感知 | `feature/perception-adapter` | `PerceptionPort` Mock/转换测试、6D Pose、TF/时间戳拒绝场景 |
 | 规划 | `feature/moveit-planner` | `PlannerPort` Mock/规划输出测试，`PlanResult.commands` 完整性 |
 | 运动执行 | `feature/motion-controller` | Mock `FollowJointTrajectory` 单 Goal + 取消/停稳证据测试 |
-| ROS 2 | `feature/ros2-action` | `ExecuteTask`/`PickPlace` C++ Action 外壳，串行 FSM 事件队列 |
+| 系统集成（张叔阳） | `feature/cpp-mock-bringup` | 独立C++ Mock Launch、Task → PickPlace通信检查及可复现SOP |
 | 工具 | `feature/tool-adapter` | V1/V2 `ToolPort` Fake/Mock 与解锁联锁测试 |
 
 **提交 PR 前：** 必须附上相应 `colcon build`、`colcon test` 的实际结果，说明是否触及 IDL、TF、并发/停稳契约；包含负面测试；所有实机能力继续默认禁用。接口变更先讨论，不要各自修改同一 `.action/.msg/.srv` 使契约漂移。
 
 ## 8. 常见错误与注意事项
 
-- **找不到包或头文件：** 确认已经 `source /opt/ros/jazzy/setup.bash`，构建后在当前终端 `source install/final_gate/setup.bash`（仅核心目录则加载 `install/fsm_core/setup.bash`），消费者在 `package.xml`/CMake 中声明所依赖的 C++ 包。
+- **找不到包或头文件：** 确认已经 `source /opt/ros/jazzy/setup.bash`，构建后在当前终端 `source install/phase2a_mock/setup.bash`（仅核心目录则加载 `install/fsm_core/setup.bash`），消费者在 `package.xml`/CMake 中声明所依赖的 C++ 包。
 - **`test/fakes.hpp` 找不到：** 测试 Fake 不属于安装的公共 include 目录；不要把它当作正式后端。
 - **FSM 一直等待：** 检查 Port 是否返回 `std::nullopt`、是否由外部事件循环继续 tick、是否向 FSM 投递了对应完成事件；不要绕过看门狗。
 - **规划器报告 `ok=true` 但不执行：** `PlanResult.commands` 必须与请求原语一一对应，并满足完整轨迹/关节目标校验；不能只返回 `ok`。
 - **取消已请求但结果是 FAULT：** 停止请求被受理不等于后端已确认停稳，检查 StopEvidence 与关联 command_id；不要改写结果掩盖故障。
 - **Mock 运行时钟：** Final Gate 后 `MockMotionAdapter` 默认创建 `ManualClock`，`MotionExecutorCore` 若未显式传入时钟，会沿用适配器的同一实例；如显式注入时钟，**必须是同一 `ClockPtr` 实例**。不同 `ManualClock` 即使起点相同也会被拒绝；Mock 不支持 `SteadyClock`。
-- **想直接控制 S3：** 此 README 未授权任何实体控制；当前仅完成纯逻辑Mock。使用 `mock_components/GenericSystem` 的C++ FSM集成属于尚未完成的第二阶段。
+- **想直接控制 S3：** 此 README 未授权任何实体控制；当前C++仅完成Core及Action软件Mock。使用 `mock_components/GenericSystem` 的C++ FSM集成属于尚未完成的第二阶段。
 
 ## 9. 源码和进一步阅读
+
+- [C++ Action包指南](src/mtc_ros2_action_cpp/README.md)：当前三个Server的启动、线程所有权及安全契约。
+- [Phase 2A交付报告](docs/migration/PHASE2A_ROS2_ACTION_REPORT.md)：13包/358项C++/269项Python/15项E2E/358项UBSan实际证据；TSan本轮NOT RUN。
+- [AUBO S3 Jazzy驱动Mock手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)：独立驱动环境与后续集成参考。
 
 - [src/mtc_task_cpp/test/test_task_fsm_core.cpp](src/mtc_task_cpp/test/test_task_fsm_core.cpp)：Task FSM 从 INIT 到 CALL_PICK_PLACE 的真实测试使用方式。
 - [src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp](src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp)：V1 PickPlace 完整 Fake 测试流程。
