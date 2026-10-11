@@ -80,6 +80,9 @@ inline mtc::core::PoseEstimate make_pose_estimate(
 class FakePerception : public PerceptionPort
 {
 public:
+  mtc::core::ClockPtr clock;
+  std::optional<double> fixed_stamp;
+  std::optional<mtc::core::Pose6D> ring_override;
   // --- 抓取前核验（expected_color 有值）---
   bool found = true;
   bool unique = true;
@@ -132,6 +135,9 @@ public:
       result.stale = placement_stale;
       mtc::core::PoseEstimate estimate = make_pose_estimate(
         object_id, color, placement_at_target, placement_settled, false, true, true);
+      estimate.stamp_s = fixed_stamp.value_or(clock ? clock->now() : 0.0);
+      estimate.body_pose.stamp_s = estimate.stamp_s;
+      estimate.ring_pose.stamp_s = estimate.stamp_s;
       result.pose = estimate;
       return result;
     }
@@ -142,6 +148,7 @@ public:
     result.stale = stale;
     mtc::core::PoseEstimate estimate = make_pose_estimate(
       object_id, color, false, true, followed, ring_pose_valid, valid_ring_pose);
+    if (ring_override) {estimate.ring_pose = *ring_override;}
     result.pose = estimate;
     return result;
   }
@@ -155,6 +162,9 @@ class FakePlanner : public PlannerPort
 {
 public:
   bool ok = true;
+  bool provide_commands = true;
+  bool provide_trajectory = false;
+  std::vector<double> planned_target = {0.05, -0.02, 0.01, 0.03, -0.04, 0.02};
   uint16_t error_code = mtc::core::ErrorCodes::OK;
   std::string message;
 
@@ -180,6 +190,25 @@ public:
     result.ok = ok;
     result.error_code = error_code;
     result.message = message;
+    if (provide_commands) {
+      for (const auto & primitive : target.primitives) {
+        mtc::core::MotionCommand command;
+        command.primitive_name = primitive.name;
+        command.joint_names = PickPlaceConfig().joint_names;
+        command.target_rad = planned_target;
+        command.intent = primitive;
+        command.simulation_only = true; // Fake output cannot reach an executable backend.
+        if (provide_trajectory) {
+          mtc::core::TimedTrajectory trajectory;
+          trajectory.joint_names = command.joint_names;
+          trajectory.header_frame_id = "base_link";
+          trajectory.points = {{0.0, planned_target, {}, {}}, {1.0, planned_target, {}, {}}};
+          command.trajectory = trajectory;
+          command.target_rad.clear();
+        }
+        result.commands.push_back(command);
+      }
+    }
     return result;
   }
 };

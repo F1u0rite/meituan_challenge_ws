@@ -44,6 +44,7 @@ struct Harness
 
   Harness()
   {
+    perception->clock = clock;
     PickPlaceConfig config;
     config.tool_type = TOOL_PASSIVE_HOOK_V1;
     config.placement_stability_sec = 3.0;
@@ -262,16 +263,19 @@ TEST(PickPlaceSafety, NonMotionStateTimeoutReportsMotionTimeout)
 
   // RESOLVE_TARGET 超时 2.0s：非运动状态 -> MOTION_TIMEOUT(220) 且可恢复。
   //
-  // 基线行为（与 Python `_error()` 一致，已记录于映射表）：
-  // 看门狗超时返回的 StepResult 指向 RECOVERY，但 `_error()` 本身**不**改变
-  // 内部状态；下一次 step 会重新处理当前状态并再次判定超时。
+  // D-2: return state, internal state, history and recovery context must agree.
   harness.clock->advance(2.1);
   const auto result = harness.fsm->step();
 
   EXPECT_EQ(result.state, PickPlaceState::RECOVERY);
   EXPECT_EQ(result.error_code, ErrorCodes::MOTION_TIMEOUT);
   EXPECT_TRUE(result.resumable);
+  EXPECT_EQ(harness.fsm->state(), PickPlaceState::RECOVERY);
+  EXPECT_EQ(harness.fsm->states_history().back(), PickPlaceState::RECOVERY);
+  harness.fsm->step();
   EXPECT_EQ(harness.fsm->state(), PickPlaceState::RESOLVE_TARGET);
+  EXPECT_EQ(harness.fsm->recovery_attempts(), 1);
+  EXPECT_EQ(harness.fsm->step().state, PickPlaceState::RESOLVE_TARGET);
   // 非运动在途状态不锁定重发
   EXPECT_TRUE(harness.fsm->motion_resend_allowed());
 }
@@ -778,4 +782,28 @@ TEST(PickPlaceSafety, RecoveryIsRefusedWhenMotionResendDisallowed)
     harness.fsm->step();
   }
   EXPECT_EQ(harness.motion->execute_calls, executes);
+}
+
+TEST(PickPlaceAudit, RepeatedFrameForFiveSecondsCannotSucceed)
+{
+  Harness h;
+  h.perception->fixed_stamp = 0.0;
+  h.start();
+  ASSERT_EQ(h.advance_to(PickPlaceState::VERIFY_PLACED), PickPlaceState::VERIFY_PLACED);
+  for (int i = 0; i <= 25; ++i) {
+    h.fsm->step();
+    h.clock->advance(0.2);
+  }
+  EXPECT_FALSE(h.fsm->placement_verified());
+  EXPECT_NE(h.fsm->state(), PickPlaceState::SUCCESS);
+}
+
+TEST(PickPlaceAudit, MissingPlanOutputNeverExecutesZeroTarget)
+{
+  Harness h;
+  h.planner->provide_commands = false;
+  h.start();
+  h.run();
+  EXPECT_TRUE(h.motion->commands.empty());
+  EXPECT_FALSE(h.fsm->result().success);
 }

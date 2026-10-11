@@ -9,22 +9,32 @@ namespace mtc
 namespace manipulation
 {
 
-MotionAdapterPort::MotionAdapterPort(mtc::motion::MotionAdapterPtr adapter)
-: adapter_(std::move(adapter))
+MotionAdapterPort::MotionAdapterPort(mtc::motion::MotionAdapterPtr adapter,
+  mtc::motion::ValidationConfig config, mtc::core::ClockPtr clock)
+: adapter_(std::move(adapter)), executor_(adapter_, std::move(config), std::move(clock))
 {
 }
 
 std::optional<mtc::core::MotionResult> MotionAdapterPort::execute_joint_move(
   const mtc::core::MotionCommand & command)
 {
-  // 同步契约：适配器返回即为最终结论，不做任何"代为成功"的加工。
-  return adapter_->execute_joint_move(command);
+  // 同步契约；规划意图通过后仍须经执行器校验与停稳证据检查。
+  if (!command.intent || !command.intent->is_usable() ||
+    command.intent->name != command.primitive_name ||
+    (!adapter_->capabilities().simulation_only && !command.intent->target_pose)) {
+    mtc::core::MotionResult failure;
+    failure.exec_state = mtc::core::ExecState::REJECTED;
+    failure.error_code = mtc::core::ErrorCodes::PLANNING_FAILED;
+    failure.message = "missing executable planning intent or calibrated 6D target";
+    return failure;
+  }
+  return executor_.execute_joint_move(command);
 }
 
 mtc::core::StopResult MotionAdapterPort::request_stop(const std::string & reason)
 {
-  // stop_confirmed 原样透传：桥接层绝不代替后端确认停稳。
-  return adapter_->request_stop(reason);
+  // 执行器检查独立证据；后端受理停止请求不构成停稳。
+  return executor_.request_stop(reason);
 }
 
 }  // namespace manipulation

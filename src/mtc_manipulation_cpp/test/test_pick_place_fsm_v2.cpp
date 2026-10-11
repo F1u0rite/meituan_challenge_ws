@@ -47,6 +47,7 @@ struct Harness
 
   Harness()
   {
+    perception->clock = clock;
     PickPlaceConfig config;
     config.tool_type = TOOL_MAGNETIC_LATCH_V2;
     config.placement_stability_sec = 3.0;

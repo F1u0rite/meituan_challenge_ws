@@ -17,6 +17,7 @@
 
 #include "mtc_manipulation_cpp/pick_place_types.hpp"
 #include "mtc_motion_execution_cpp/motion_adapter.hpp"
+#include "mtc_motion_execution_cpp/executor_core.hpp"
 
 namespace mtc
 {
@@ -28,11 +29,12 @@ namespace manipulation
 /// 语义映射：
 ///   * 适配器返回结果 -> 立即返回该结果（非 nullopt），即"同步完成"；
 ///   * 若需要模拟"在途未完成"，应使用专门的 Fake 端口而非本桥接；
-///   * request_stop 直接转发，stop_confirmed 语义原样保留（绝不代为确认）。
+///   * 所有运动和停止均经 MotionExecutorCore 校验与关联停稳证据检查。
 class MotionAdapterPort : public MotionPort
 {
 public:
-  explicit MotionAdapterPort(mtc::motion::MotionAdapterPtr adapter);
+  explicit MotionAdapterPort(mtc::motion::MotionAdapterPtr adapter,
+    mtc::motion::ValidationConfig config = {}, mtc::core::ClockPtr clock = nullptr);
 
   std::optional<mtc::core::MotionResult> execute_joint_move(
     const mtc::core::MotionCommand & command) override;
@@ -43,6 +45,7 @@ public:
 
 private:
   mtc::motion::MotionAdapterPtr adapter_;
+  mtc::motion::MotionExecutorCore executor_;
 };
 
 }  // namespace manipulation

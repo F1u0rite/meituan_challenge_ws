@@ -38,6 +38,7 @@ struct Fixture
 
   PickPlaceConfig config()
   {
+    perception->clock = clock;
     PickPlaceConfig value;
     value.tool_type = mtc::manipulation::TOOL_PASSIVE_HOOK_V1;
     value.placement_stability_sec = 3.0;

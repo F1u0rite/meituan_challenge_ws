@@ -38,6 +38,8 @@ namespace mtc
 namespace manipulation
 {
 
+/// 单一事件线程所有：start/step/cancel 与查询均须串行化。
+/// ROS 多线程回调应入队；阻塞运动由工作线程运行并经线程安全执行器取消。
 class PickPlaceFsm
 {
 public:
@@ -208,6 +210,9 @@ protected:
   void clear_port_results();
 
   std::optional<StepResult> placement_wait_or_fail(const std::string & detail);
+  bool accept_plan(const mtc::core::PlanResult & plan,
+    const mtc::core::MotionPrimitiveList & requested);
+  std::optional<mtc::core::MotionResult> execute_motion(const mtc::core::MotionCommand & command);
 
   // -- 缓存辅助（每种端口结果独立缓存，键为 state:label）-----------------
 
@@ -278,9 +283,12 @@ protected:
   bool stop_confirmed_ = false;
   bool motion_resend_allowed_ = true;
   int command_seq_ = 0;
+  uint64_t invocation_id_ = 0;
   std::vector<std::string> command_ids_;
   std::vector<std::string> primitive_calls_;
   std::optional<double> stability_started_at_;
+  std::optional<double> placement_last_stamp_;
+  std::optional<double> placement_last_received_at_;
   double stability_verified_for_s_ = 0.0;
   std::optional<mtc::core::Vector3> placement_last_position_;
 
@@ -306,6 +314,7 @@ protected:
   // --- 在途命令（同一状态内复用，绝不重发）---
   std::optional<mtc::core::MotionCommand> pending_command_;
   std::string pending_command_label_;
+  std::map<std::string, mtc::core::MotionCommand> planned_commands_;
 
   static constexpr int MAX_COMMAND_ID = 1000000000;
 };

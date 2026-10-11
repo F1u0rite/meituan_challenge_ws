@@ -68,6 +68,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_pick_place_safety test/test_pick_place_safety.cpp)
   target_link_libraries(test_pick_place_safety mtc_manipulation_cpp)
+
+  ament_add_gtest(test_pick_place_audit test/test_pick_place_audit.cpp)
+  target_link_libraries(test_pick_place_audit mtc_manipulation_cpp)
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)

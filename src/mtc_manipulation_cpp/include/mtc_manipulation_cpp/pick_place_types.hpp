@@ -160,6 +160,7 @@ struct PlanTarget
   bool has_ring_pose = false;
   mtc::core::Pose6D ring_pose;   ///< 保留 6D 与 frame_id
   std::vector<std::string> primitive_names;
+  mtc::core::MotionPrimitiveList primitives; ///< Full intent, including pose and constraints.
 };
 
 class PerceptionPort
@@ -191,6 +192,18 @@ public:
   /// 返回 nullopt 表示"仍在执行"（由调用方按状态看门狗等待）。
   virtual std::optional<mtc::core::MotionResult> execute_joint_move(
     const mtc::core::MotionCommand & command) = 0;
+
+  /// One complete trajectory or an explicit refusal; never split into joint moves.
+  virtual std::optional<mtc::core::MotionResult> execute_trajectory(
+    const mtc::core::MotionCommand & command)
+  {
+    (void)command;
+    mtc::core::MotionResult result;
+    result.exec_state = mtc::core::ExecState::REJECTED;
+    result.error_code = mtc::core::ErrorCodes::EXECUTION_REJECTED;
+    result.message = "trajectory execution unsupported; splitting forbidden";
+    return result;
+  }
 
   /// 软件停止请求；stop_confirmed 必须由后端独立确认。
   virtual mtc::core::StopResult request_stop(const std::string & reason) = 0;

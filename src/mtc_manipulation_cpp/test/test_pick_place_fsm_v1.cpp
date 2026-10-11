@@ -46,6 +46,7 @@ struct Harness
 
   Harness()
   {
+    perception->clock = clock;
     PickPlaceConfig config;
     config.tool_type = TOOL_PASSIVE_HOOK_V1;
     config.placement_stability_sec = 3.0;
@@ -110,9 +111,8 @@ TEST(PickPlaceV1, HappyPathReachesSuccess)
   // placement_verified 只能由 VERIFY_PLACED 成功路径设置
   EXPECT_TRUE(result.placement_verified);
   EXPECT_TRUE(harness.fsm->placement_verified());
-  EXPECT_EQ(
-    std::find(harness.history().begin(), harness.history().end(), "VERIFY_PLACED") !=
-    harness.history().end(), true);
+  const auto history = harness.history();
+  EXPECT_NE(std::find(history.begin(), history.end(), "VERIFY_PLACED"), history.end());
 }
 
 TEST(PickPlaceV1, StateSequenceMatchesDesignOrder)

@@ -7,7 +7,10 @@
 #include "mtc_manipulation_cpp/pick_place_fsm.hpp"
 
 #include <algorithm>
-#include <cstdio>
+#include <atomic>
+#include <cmath>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 
@@ -117,6 +120,12 @@ void PickPlaceFsm::start(
   const std::string & request_id,
   std::optional<double> placement_stability_sec)
 {
+  if (started_ && (terminal_states().count(state_) == 0u ||
+    state_ == PickPlaceState::FAULT || !motion_resend_allowed_)) {
+    throw std::logic_error("cannot restart an active or fault-locked PickPlace FSM");
+  }
+  static std::atomic<uint64_t> invocation{0};
+  invocation_id_ = ++invocation;
   request_id_ = request_id;
   object_id_ = object_id;
   expected_color_ = expected_color;
@@ -136,6 +145,8 @@ void PickPlaceFsm::start(
   command_ids_.clear();
   primitive_calls_.clear();
   stability_started_at_.reset();
+  placement_last_stamp_.reset();
+  placement_last_received_at_.reset();
   stability_verified_for_s_ = 0.0;
   placement_last_position_.reset();
   pending_command_.reset();
@@ -158,6 +169,13 @@ void PickPlaceFsm::start(
   test_lift_motion_.reset();
   clear_port_results();
 
+  if (!std::isfinite(placement_stability_sec_) || placement_stability_sec_ < 0.0 ||
+    !std::isfinite(config_.perception_max_age_s) || config_.perception_max_age_s <= 0.0) {
+    error_code_ = mtc::core::ErrorCodes::INVALID_TASK;
+    message_ = "invalid stability or perception age";
+    enter_state(PickPlaceState::FAILED);
+    return;
+  }
   const auto & allowed = allowed_target_slots();
   if (std::find(allowed.begin(), allowed.end(), target_slot_) == allowed.end()) {
     error_code_ = mtc::core::ErrorCodes::INVALID_TASK;
@@ -214,7 +232,15 @@ StepResult PickPlaceFsm::step()
       std::string("未实现的状态处理: ") + to_string(state_));
   }
 
-  HandlerOutcome outcome = (this->*(found->second))();
+  HandlerOutcome outcome;
+  try {
+    outcome = (this->*(found->second))();
+  } catch (const std::exception & exc) {
+    return make_fault(mtc::core::ErrorCodes::HARDWARE_FAULT,
+      std::string("port exception; state uncertain: ") + exc.what(), false);
+  } catch (...) {
+    return make_fault(mtc::core::ErrorCodes::HARDWARE_FAULT, "port exception; state uncertain", false);
+  }
 
   if (!outcome.has_value()) {
     // 端口未完成：等待，并做看门狗超时判定。
@@ -229,11 +255,19 @@ StepResult PickPlaceFsm::step()
           std::to_string(timeout->second) + "s 未返回，运动状态未知，禁止重发",
           false);
       }
-      return make_error(
+      // Apply the same transition bookkeeping as a completed handler.
+      // Placement silence ends verification; a loaded/unknown context cannot retry.
+      const auto previous = state_;
+      const bool recoverable = state_ != PickPlaceState::VERIFY_PLACED && is_resumable_context();
+      const auto error = make_error(
+        state_ == PickPlaceState::VERIFY_PLACED ? mtc::core::ErrorCodes::PLACEMENT_FAILED :
         mtc::core::ErrorCodes::MOTION_TIMEOUT,
-        std::string("状态 ") + to_string(state_) + " 超时 " +
-        std::to_string(timeout->second) + "s",
-        true);
+        std::string("状态 ") + to_string(state_) + " 超时 " + std::to_string(timeout->second) + "s",
+        recoverable);
+      resumable_error_ = error.resumable;
+      last_resumable_state_ = previous;
+      enter_state(error.state);
+      return error;
     }
     StepResult result;
     result.state = state_;
@@ -358,9 +392,10 @@ std::string PickPlaceFsm::next_command_id(const std::string & label)
 {
   command_seq_ += 1;
   const std::string prefix = request_id_.empty() ? "req" : request_id_;
-  char buffer[32];
-  std::snprintf(buffer, sizeof(buffer), "%s#%s-%03d", prefix.c_str(), label.c_str(), command_seq_);
-  const std::string command_id(buffer);
+  std::ostringstream stream;
+  stream << prefix << "#" << invocation_id_ << ":" << label << "-"
+         << std::setfill('0') << std::setw(3) << command_seq_;
+  const std::string command_id = stream.str();
   command_ids_.push_back(command_id);
   return command_id;
 }
@@ -459,6 +494,7 @@ void PickPlaceFsm::clear_port_results()
   stop_cache_.clear();
   pending_command_.reset();
   pending_command_label_.clear();
+  planned_commands_.clear();
 }
 
 std::string PickPlaceFsm::make_cache_key(const std::string & label) const
@@ -497,16 +533,56 @@ mtc::core::MotionCommand PickPlaceFsm::cached_command(
 mtc::core::MotionCommand PickPlaceFsm::make_command(
   const std::string & label, const mtc::core::MotionPrimitive & primitive)
 {
-  mtc::core::MotionCommand command;
+  const auto found = planned_commands_.find(primitive.name);
+  if (found == planned_commands_.end()) {
+    throw std::logic_error("missing executable planner output: " + primitive.name);
+  }
+  mtc::core::MotionCommand command = found->second;
   command.command_id = next_command_id(label);
-  command.joint_names = config_.joint_names;
-  command.target_rad.assign(config_.joint_names.size(), 0.0);
-  command.velocity_scaling = config_.default_velocity_scaling;
-  command.acceleration_scaling = config_.default_acceleration_scaling;
-  command.timeout_ms = config_.default_timeout_ms;
   command.primitive_name = primitive.name;
   command.requires_contact = primitive.requires_contact;
+  command.intent = primitive;
+  if (command.trajectory) {command.trajectory->trajectory_id = command.command_id;}
+
   return command;
+}
+
+bool PickPlaceFsm::accept_plan(const mtc::core::PlanResult & plan,
+  const mtc::core::MotionPrimitiveList & requested)
+{
+  std::map<std::string, mtc::core::MotionCommand> accepted;
+  if (!plan.ok || requested.empty() || plan.commands.size() != requested.size()) {return false;}
+  for (const auto & primitive : requested) {
+    if (!primitive.is_usable()) {return false;}
+    const auto found = std::find_if(plan.commands.begin(), plan.commands.end(),
+      [&primitive](const auto & c) {return c.primitive_name == primitive.name;});
+    if (found == plan.commands.end() || accepted.count(primitive.name)) {return false;}
+    auto command = *found;
+    if (!std::isfinite(command.velocity_scaling) || command.velocity_scaling <= 0.0 ||
+      command.velocity_scaling > config_.default_velocity_scaling ||
+      !std::isfinite(command.acceleration_scaling) || command.acceleration_scaling <= 0.0 ||
+      command.acceleration_scaling > config_.default_acceleration_scaling || command.timeout_ms == 0)
+    {return false;}
+    if (command.trajectory) {
+      if (!command.target_rad.empty() || !command.trajectory->shape_is_valid() ||
+        command.trajectory->joint_names != config_.joint_names ||
+        command.trajectory->header_frame_id.empty() ||
+        command.trajectory->duration_s() * 1000.0 > command.timeout_ms) {return false;}
+    } else if (!command.shape_is_valid() || command.joint_names != config_.joint_names) {
+      return false;
+    }
+    command.intent = primitive;
+    command.requires_contact = primitive.requires_contact;
+    accepted.emplace(primitive.name, command);
+  }
+  for (const auto & entry : accepted) {planned_commands_[entry.first] = entry.second;}
+  return true;
+}
+
+std::optional<mtc::core::MotionResult> PickPlaceFsm::execute_motion(
+  const mtc::core::MotionCommand & command)
+{
+  return command.trajectory ? motion_->execute_trajectory(command) : motion_->execute_joint_move(command);
 }
 
 std::optional<StepResult> PickPlaceFsm::motion_failure(const mtc::core::MotionResult & result)
@@ -637,7 +713,10 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_plan_acquire()
           target.has_ring_pose = true;
           target.ring_pose = target_pose_->ring_pose;
         }
-        target.primitive_names = primitive_names(acquire);
+        target.primitives = acquire;
+        const auto extra = strategy_->make_test_lift_plan(*target_pose_);
+        target.primitives.insert(target.primitives.end(), extra.begin(), extra.end());
+        target.primitive_names = primitive_names(target.primitives);
         return planner_->plan(target);
       },
       plan))
@@ -649,6 +728,12 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_plan_acquire()
     return make_error(
       plan.error_code != 0 ? plan.error_code : mtc::core::ErrorCodes::PLANNING_FAILED,
       plan.message.empty() ? "接近段规划失败" : plan.message, true);
+  }
+  auto required = acquire;
+  required.insert(required.end(), test_lift.begin(), test_lift.end());
+  if (!accept_plan(plan, required)) {
+    return make_error(mtc::core::ErrorCodes::PLANNING_FAILED,
+      "planner reported success without complete executable output", is_resumable_context());
   }
   StepResult result;
   result.state = PickPlaceState::MOVE_PRE_ALIGN;
@@ -668,7 +753,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_move_pre_align()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -764,7 +849,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_test_lift()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -843,7 +928,17 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_lift()
         target.phase = "TRANSPORT";
         target.object_id = object_id_;
         target.slot = target_slot_;
-        target.primitive_names = primitive_names(primitives_list);
+        target.has_ring_pose = true;
+        target.ring_pose = target_pose_->ring_pose;
+        target.primitives = primitives_list;
+        for (const auto & extra : {
+            strategy_->make_transport_plan(*target_pose_, target_slot_),
+            strategy_->make_seat_plan(target_slot_),
+            strategy_->make_seat_contact_plan(target_slot_),
+            strategy_->make_retreat_plan(target_slot_)}) {
+          target.primitives.insert(target.primitives.end(), extra.begin(), extra.end());
+        }
+        target.primitive_names = primitive_names(target.primitives);
         return planner_->plan(target);
       },
       plan))
@@ -860,13 +955,24 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_lift()
     return make_fault(mtc::core::ErrorCodes::PLANNING_FAILED, "提升段无运动原语");
   }
 
+  auto required = primitives_list;
+  for (const auto & extra : {
+      strategy_->make_transport_plan(*target_pose_, target_slot_),
+      strategy_->make_seat_plan(target_slot_), strategy_->make_seat_contact_plan(target_slot_),
+      strategy_->make_retreat_plan(target_slot_)}) {
+    required.insert(required.end(), extra.begin(), extra.end());
+  }
+  if (!accept_plan(plan, required)) {
+    return make_fault(mtc::core::ErrorCodes::PLANNING_FAILED,
+      "missing executable transport/release output", false);
+  }
   const auto command = cached_command("lift", primitives_list.front());
   primitive_calls_.push_back(primitives_list.front().name);
 
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -892,7 +998,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_transport()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -917,7 +1023,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_move_pre_seat()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -942,7 +1048,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_seat()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -1105,7 +1211,7 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_retreat()
   mtc::core::MotionResult motion;
   if (!resolve_cached(
       motion_cache_, "motion",
-      [this, &command]() {return motion_->execute_joint_move(command);}, motion))
+      [this, &command]() {return execute_motion(command);}, motion))
   {
     return std::nullopt;
   }
@@ -1126,48 +1232,58 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_verify_placed()
       "placement 验证被配置关闭，不得声明放置成功");
   }
 
-  mtc::core::DetectionResult detection;
-  if (!resolve_cached(
-      detection_cache_, "placement_detection",
-      [this]() {return perception_->get_detection(object_id_, std::nullopt,
-        config_.perception_max_age_s);},
-      detection))
-  {
-    return std::nullopt;
+  const double now = clock_->now();
+  const auto reset_window = [this]() {
+      stability_started_at_.reset();
+      stability_verified_for_s_ = 0.0;
+    };
+  // Poll pending perception; completed observations are never put in a result cache.
+  const auto observed = perception_->get_detection(object_id_, std::nullopt,
+    config_.perception_max_age_s);
+  if (!observed) {
+    if (placement_last_received_at_ &&
+      now - *placement_last_received_at_ > config_.perception_max_age_s) {reset_window();}
+    return placement_wait_or_fail("waiting for a new placement observation");
   }
-
-  const bool usable =
-    detection.found && !detection.stale && detection.pose.has_value();
-  const bool in_target = usable && detection.pose->at_target;
-  const bool settled = usable && detection.pose->settled;
-
-  // 稳定性采样：每个 step 视为一次独立观察；
-  // 只要持续满足"在目标区域 + 已静止 + 数据新鲜"，就累计稳定时间。
-  // 一旦出现反例样本（数据过期/不在区域/仍振动），累计清零重新计时。
-  if (usable && in_target && settled) {
-    if (!stability_started_at_.has_value()) {
-      stability_started_at_ = clock_->now();
-    }
-    const double stable_for = clock_->now() - *stability_started_at_;
-    stability_verified_for_s_ = stable_for;   // 日志/回放字段（设计 §10.2）
-    if (stable_for + 1e-9 >= placement_stability_sec_) {
-      set_placement_verified();
-      StepResult result;
-      result.state = PickPlaceState::SUCCESS;
-      return result;
-    }
-    return placement_wait_or_fail(
-      "放置后稳定性累计 " + std::to_string(stable_for) + "s < " +
-      std::to_string(placement_stability_sec_) + "s");
+  const auto & detection = *observed;
+  const bool usable = detection.ok() && detection.pose->object_id == object_id_ &&
+    detection.pose->has_body_pose() && std::isfinite(detection.pose->stamp_s) &&
+    detection.pose->stamp_s >= 0.0 && detection.pose->stamp_s <= now &&
+    now - detection.pose->stamp_s <= config_.perception_max_age_s &&
+    detection.pose->body_pose.stamp_s <= now &&
+    now - detection.pose->body_pose.stamp_s <= config_.perception_max_age_s &&
+    detection.pose->body_pose.stamp_s == detection.pose->stamp_s;
+  if (!usable) {
+    reset_window();
+    return placement_wait_or_fail("invalid or stale placement observation");
   }
-
-  // 观察到不满足条件的样本：累计稳定性清零，继续观察。
-  stability_started_at_.reset();
-  return placement_wait_or_fail(
-    std::string("放置核验未通过：found=") + (detection.found ? "true" : "false") +
-    " stale=" + (detection.stale ? "true" : "false") +
-    " in_target=" + (in_target ? "true" : "false") +
-    " settled=" + (settled ? "true" : "false"));
+  const double stamp = detection.pose->stamp_s;
+  if (placement_last_stamp_ && stamp <= *placement_last_stamp_) {
+    if (stamp < *placement_last_stamp_ || !detection.pose->at_target ||
+      !detection.pose->settled || !placement_last_received_at_ ||
+      now - *placement_last_received_at_ > config_.perception_max_age_s) {reset_window();}
+    return placement_wait_or_fail("duplicate or backwards placement timestamp");
+  }
+  // Gaps longer than the allowed perception age break continuity, even with a new frame.
+  if (placement_last_stamp_ && stamp - *placement_last_stamp_ > config_.perception_max_age_s) {
+    reset_window();
+  }
+  placement_last_stamp_ = stamp;
+  placement_last_received_at_ = now;
+  if (!detection.pose->at_target || !detection.pose->settled) {
+    reset_window();
+    return placement_wait_or_fail("placement target lost or moving");
+  }
+  if (!stability_started_at_) {stability_started_at_ = stamp;}
+  stability_verified_for_s_ = stamp - *stability_started_at_;
+  if (stability_verified_for_s_ + 1e-9 >= placement_stability_sec_) {
+    set_placement_verified();
+    StepResult result;
+    result.state = PickPlaceState::SUCCESS;
+    return result;
+  }
+  return placement_wait_or_fail("放置后稳定性累计 " +
+    std::to_string(stability_verified_for_s_) + "s");
 }
 
 std::optional<StepResult> PickPlaceFsm::placement_wait_or_fail(const std::string & detail)
