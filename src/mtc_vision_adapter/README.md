@@ -1,32 +1,84 @@
-See ../../vision_core/README.md for installation and pending Jazzy checks.
+# ROS2 battery detection offline adapter
+
 Topic /mtc/perception/batteries; RELIABLE KEEP_LAST(5) VOLATILE.
 UNKNOWN=0 RED=1 BLUE=2 YELLOW=3 GREEN=4.
-Replay only; invalid poses JSON null -> ROS NaN; ring_pose_valid=false; no motion.
+Explicit replay/synthetic records remain publishable with their historical
+capture timestamps. Unmeasured JSON null poses become ROS NaN.
+The publisher always forces ring_pose_valid=false; no invented XYZ or
+quaternion makes offline data valid for motion.
 
 Motion safety contract:
-`motion_rejection(..., mode="live")` rejects by default. A caller must supply
-`trusted_frames`, a trusted `target_frame`, and a callable
-`tf_validator(source_frame, target_frame, capture_stamp)`. The validator must
-return exactly `True` only after resolving a usable transform at the capture
-stamp (not latest TF) into the trusted motion frame. Lookup failures, timeouts,
-and missing/uncertain results reject. Frame names alone never establish trust.
-This is an independent safety helper; it does not wire or validate the C++ FSM
-ROS adapter. Synthetic/replay publication remains allowed and cannot be motion
-input. The publisher forces `ring_pose_valid=false`.
+motion_rejection(..., mode="live") rejects by default. The caller must supply
+trusted_frames, a trusted target_frame and a callable
+tf_validator(source_frame, target_frame, capture_stamp). It must return
+exactly True after verifying usable TF at the capture stamp, not latest TF.
+Missing TF, timeout and uncertain results reject. A frame name alone does
+not establish trust. This helper does not wire or verify the C++ FSM.
 
-Jazzy validation: source `/opt/ros/jazzy/setup.bash`, build this package and
-`mtc_interfaces`, then run `python3 -m pytest -q src/mtc_vision_adapter/test`
-with the workspace overlay sourced. TF tests use a local buffer, without a
-network listener or motion execution.
+The replay node now stops its execution loop after the last publish and
+bounded RELIABLE acknowledgment, then destroys the node and calls
+rclpy.try_shutdown(). Normal completion and SIGINT both exit cleanly.
+For matched-subscriber acceptance, set wait_for_subscriber_s to a positive
+timeout (the default 0 preserves standalone offline publication).
+A subscriber discovery or acknowledgment timeout fails rather than claiming
+successful delivery. No subscriber means there is no delivery guarantee.
 
-Process validation: run python3 src/mtc_vision_adapter/test/ros_replay_validation.py
-with the overlay sourced and an isolated local ROS domain. Artifacts default to
-/tmp/mtc_vision_validation; override with MTC_VALIDATION_OUT.
-MTC_REPLAY_FIXTURE can select a replay JSONL fixture without changing capture stamps.
+The process tests directly launch the installed replay_publisher executable;
+they do not replace ROS publishers, timers or shutdown with mocks.
+For a standalone natural-exit validation, source the overlay, select a local
+ROS domain and run python3 src/mtc_vision_adapter/test/ros_replay_validation.py.
+Use --exit-mode sigint for an interruption test. MTC_REPLAY_FIXTURE selects
+a four-frame JSONL fixture; MTC_VALIDATION_OUT selects the evidence directory.
 
-QoS validation checks the profile on the created publisher and discovered
-endpoint compatibility. On this Jazzy RMW, discovery reports history UNKNOWN
-and depth 0; those fields do not verify publisher queue configuration.
-The process test waits for a matched subscriber before starting its timer.
-Replay validation may reuse synthetic records with mode=replay solely to test
-the replay path; this does not constitute a real camera recording.
+## ROS2 Jazzy / Ubuntu 24.04 acceptance (2026-10-12)
+
+Synced V4.2 by fast-forward to e09d00ede40b0fafad6cd5428ae1824442e74d3c,
+retaining the prior SIGINT and trusted-TF safety fix e53c09f.
+Acceptance used the formal workspace /home/shrmeituan/meituan_vision_ws.
+Only local Ubuntu ROS2 processes ran, with localhost discovery and isolated
+ROS domains 191-194. No D435i, cross-host data link or robot was started.
+
+| Check | Actual result |
+| --- | --- |
+| colcon build: mtc_interfaces, mtc_vision_adapter | PASS: 2 packages finished |
+| Adapter pytest (including real installed processes) | PASS: 57 passed in 16.59s |
+| synthetic natural completion | PASS: 4/4 arrays, lengths 0/4/4/4, exit 0; no signal sent |
+| replay natural completion | PASS: 4/4 arrays, lengths 0/4/4/4, exit 0; no signal sent |
+| synthetic and replay SIGINT during replay | PASS: interrupt after 2 received arrays; both exit 0 |
+| Message fields and historical capture stamps | Exact fixture matches; null poses become NaN; ring_pose_valid=false |
+| QoS | Created RELIABLE KEEP_LAST(5) VOLATILE; discovered endpoints compatible |
+| Cleanup | No traceback, duplicate-shutdown error or remaining replay node |
+| Motion rejection helper and local TF buffer | PASS: invalid ring/poses, untrusted frames, missing or historical TF mismatch reject |
+| Live D435i / USB acceptance | NOT RUN |
+| Windows D435i to Ubuntu ROS2 cross-host link | NOT RUN |
+| C++ FSM consumption and downstream safety acceptance | NOT RUN / NOT VERIFIED |
+| True XYZ/Yaw, ring pose and grasp accuracy | NOT VERIFIED |
+
+The replay test changes only the mode/source metadata of the synthetic
+fixture; it is not evidence of a real camera recording. SIGINT tests are
+mid-replay interruption checks and do not claim delivery of all four frames.
+Natural-exit tests independently verify complete four-frame delivery.
+The RMW discovery graph reports history UNKNOWN and depth 0; queue settings
+are checked on the created publisher's profile, not inferred from discovery.
+RELIABLE final-sample acknowledgment does not certify C++ FSM acceptance.
+
+Reproduce from the workspace root after installing ROS2 Jazzy dependencies:
+
+```sh
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select mtc_interfaces mtc_vision_adapter
+source install/setup.bash
+MTC_VALIDATION_OUT=/tmp/mtc_v42_validation_20261012 \
+  python3 -m pytest -q src/mtc_vision_adapter/test
+```
+
+Host-local evidence (runtime data is excluded from Git):
+- /tmp/mtc_v42_colcon.log
+- /tmp/mtc_v42_pytest.log
+- /tmp/mtc_v42_validation_20261012/{synthetic,replay}-{natural,sigint}/ros_results.json
+- The same case directories contain ros_publisher.log, ros_received.json and ros_logs/.
+
+The adapter is an offline replay publisher, not a live D435i ROS node.
+The next stage may prepare live input integration, but cross-host transport,
+capture-clock alignment, real TF/calibration and actual downstream rejection
+must be verified before any motion use.

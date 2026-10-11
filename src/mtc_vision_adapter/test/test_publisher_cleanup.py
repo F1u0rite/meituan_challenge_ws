@@ -10,9 +10,10 @@ class ExternalShutdownException(Exception):pass
 @pytest.fixture
 def fake_ros(monkeypatch,tmp_path):
     path=tmp_path/'replay.jsonl';path.write_text(json.dumps({'mode':'synthetic'})+'\n')
-    node=Mock();node.get_parameter.side_effect=lambda key:types.SimpleNamespace(value=str(path) if key=='input_jsonl' else 1.)
-    ros=types.ModuleType('rclpy');ros.init=Mock();ros.spin=Mock();ros.try_shutdown=Mock()
+    node=Mock();node.get_parameter.side_effect=lambda key:types.SimpleNamespace(value=str(path) if key=='input_jsonl' else (0. if key=='wait_for_subscriber_s' else 1.))
+    ros=types.ModuleType('rclpy');ros.init=Mock();ros.spin_once=Mock();ros.ok=Mock(side_effect=[True,False]);ros.try_shutdown=Mock()
     monkeypatch.setitem(sys.modules,'rclpy',ros)
+    monkeypatch.setitem(sys.modules,'rclpy.duration',types.SimpleNamespace(Duration=lambda **kw:kw))
     monkeypatch.setitem(sys.modules,'rclpy.node',types.SimpleNamespace(Node=Mock(return_value=node)))
     monkeypatch.setitem(sys.modules,'rclpy.executors',types.SimpleNamespace(ExternalShutdownException=ExternalShutdownException))
     monkeypatch.setitem(sys.modules,'rclpy.qos',types.SimpleNamespace(QoSProfile=lambda **kw:kw,ReliabilityPolicy=types.SimpleNamespace(RELIABLE=1),HistoryPolicy=types.SimpleNamespace(KEEP_LAST=1),DurabilityPolicy=types.SimpleNamespace(VOLATILE=1)))
@@ -22,7 +23,7 @@ def fake_ros(monkeypatch,tmp_path):
 @pytest.mark.parametrize('error',[KeyboardInterrupt,ExternalShutdownException,None])
 def test_signal_or_normal_spin_cleanup(fake_ros,error):
     ros,node,_=fake_ros
-    if error:ros.spin.side_effect=error()
+    if error:ros.spin_once.side_effect=error()
     assert main() is None
     node.destroy_node.assert_called_once();ros.try_shutdown.assert_called_once()
 
