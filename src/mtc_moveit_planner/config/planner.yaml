@@ -1,0 +1,53 @@
+# mtc_moveit_planner 规划工具参数（Mock / Fake Hardware 专用）。
+#
+# !! 安全声明 !!
+# TCP、工位、提环位姿均为 PLACEHOLDER（规划层为仿真临时填写），未经任何实物标定，
+# 禁止用于真实运动。实测值由韩明赫（Calibration/TF/TCP）提供后替换并改为 MEASURED。
+# 任一几何输入不是 MEASURED 时，规划输出强制 simulation_only=true。
+/**:
+  ros__parameters:
+    backend:
+      planning_group: "manipulator"        # aubo_robot.srdf
+      end_effector_link: "ee_link"         # SRDF chain tip；腕部法兰坐标，不含工具
+      planning_pipeline: "ompl"
+      planner_id: "RRTConnectkConfigDefault"
+      tf_timeout_s: 0.5
+      state_timeout_s: 5.0
+
+    planner:
+      velocity_scaling: 0.1                # config/manipulation.yaml；上限 0.2
+      acceleration_scaling: 0.1
+      planning_time_s: 1.0                 # PLAN_ACQUIRE 看门狗仅 2.0 s
+      cartesian_step_m: 0.005
+      insertion_axis: 2                    # 提环/TCP 局部 +Z = 插入方向（TF_CONVENTIONS §2.1 提案，待确认）
+      allow_uncalibrated_geometry: true    # 今晚 Mock 必须 true；实机前改 false
+      force_simulation_only: true          # 团队批准前保持 true
+
+    tcp:                                   # ee_link -> hook_tcp
+      xyz: [0.0, 0.0, 0.0]                 # PLACEHOLDER：单位变换，钩尖偏置未测
+      quat_xyzw: [0.0, 0.0, 0.0, 1.0]
+      status: "PLACEHOLDER"
+
+    slots:                                 # 工位中心（落座时 TCP 高度 = z）
+      names: ["T0", "P1", "P2", "P3"]
+      T0: {frame_id: "base_link", xyz: [0.35, -0.20, 0.10], status: "PLACEHOLDER"}
+      P1: {frame_id: "base_link", xyz: [0.35, -0.05, 0.10], status: "PLACEHOLDER"}
+      P2: {frame_id: "base_link", xyz: [0.35, 0.10, 0.10], status: "PLACEHOLDER"}
+      P3: {frame_id: "base_link", xyz: [0.35, 0.25, 0.10], status: "PLACEHOLDER"}
+
+    target:                                # plan_fixed_pose
+      mode: "named_state_fk"               # 或 "pose"（配合 target.frame_id/xyz/quat_xyzw）
+      named_state: "home"                  # aubo_robot.srdf group_state
+      max_linear_speed_m_s: 0.0            # 0 = 只按 velocity_scaling 时间参数化
+      max_angular_speed_rad_s: 0.0
+
+    sequence:                              # plan_battery_sequence（占位提环位姿）
+      tool_type: "passive_hook_v1"         # 或 "magnetic_latch_v2"
+      slot: "T0"
+      start_named_state: "home"           # 规划起点（SRDF 命名状态）；"" = 当前 /joint_states
+      object_id: "battery_1"
+      color: 1
+      ring:
+        frame_id: "base_link"
+        xyz: [0.40, -0.05, 0.20]           # PLACEHOLDER（靠近 home，避免超出 MOVE_PRE_ALIGN 看门狗）
+        quat_xyzw: [0.0, 0.70710678, 0.0, 0.70710678]  # 绕 y 90°：插入方向(+Z) 指向 +X
