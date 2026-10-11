@@ -55,6 +55,93 @@ TICK_SECONDS = 0.1
 RUN_TICK_SECONDS = 0.2
 
 
+def test_final_gate_invalid_stability_never_starts_motion() -> None:
+    for value in (0.0, -1.0, float("nan"), float("inf"), float("-inf")):
+        h = Harness()
+        h.fsm.start("battery_1", 1, "P1", "invalid", value)
+        for _ in range(30):
+            h.fsm.step()
+        assert h.fsm.state is PickPlaceState.FAILED
+        assert h.fsm.error_code == ErrorCode.INVALID_TASK
+        assert not h.fsm.placement_verified
+        assert not h.motion.calls
+        assert not h.planner.calls
+        assert h.tool.unlock_calls == 0
+
+
+def test_final_gate_invalid_configured_stability_never_starts_motion() -> None:
+    for value in (0.0, -1.0, float("nan"), float("inf"), float("-inf")):
+        h = Harness()
+        h.config.placement_stability_sec = value
+        h.start()
+        h.fsm.step()
+        assert h.fsm.state is PickPlaceState.FAILED
+        assert not h.motion.calls
+
+
+def test_final_gate_positive_window_requires_positive_elapsed_time() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "positive", 1e-12)
+    assert h.run_to(PickPlaceState.VERIFY_PLACED) is PickPlaceState.VERIFY_PLACED
+    h.fsm.step()
+    assert not h.fsm.placement_verified
+    h.clock.advance(0.1)
+    h.fsm.step()
+    assert h.fsm.placement_verified
+
+
+def test_final_gate_default_stability_remains_three_seconds() -> None:
+    h = Harness()
+    h.start()
+    assert h.fsm.placement_stability_sec == 3.0
+
+
+def test_watchdog_non_motion_updates_state_history_and_retry_context() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog")
+    h.perception.get_detection = lambda *args, **kwargs: None
+    h.clock.advance(2.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.RECOVERY
+    assert result.error_code == ErrorCode.MOTION_TIMEOUT
+    assert h.fsm.states_history[-1] is PickPlaceState.RECOVERY
+    assert h.fsm._last_resumable_state is PickPlaceState.RESOLVE_TARGET
+    assert h.fsm._state_entered_at == h.clock.now()
+    h.fsm.step()
+    assert h.fsm.state is PickPlaceState.RESOLVE_TARGET
+    assert h.fsm.recovery_attempts == 1
+    assert h.fsm.step().state is PickPlaceState.RESOLVE_TARGET
+
+
+def test_watchdog_non_motion_loaded_context_does_not_retry() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog-loaded")
+    h.perception.get_detection = lambda *args, **kwargs: None
+    h.tool.holding_state = lambda: "holding"
+    h.clock.advance(2.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.FAILED
+    assert not result.resumable
+    assert h.fsm.recovery_attempts == 0
+
+
+def test_watchdog_motion_timeout_remains_fault_locked() -> None:
+    h = Harness()
+    h.fsm.start("battery_1", 1, "P1", "watchdog-motion")
+    for _ in range(10):
+        if h.fsm.state is PickPlaceState.MOVE_PRE_ALIGN:
+            break
+        h.fsm.step()
+    assert h.fsm.state is PickPlaceState.MOVE_PRE_ALIGN
+    h.motion.execute_joint_move = lambda *args, **kwargs: None
+    h.fsm.step()
+    h.clock.advance(30.1)
+    result = h.fsm.step()
+    assert result.state is h.fsm.state is PickPlaceState.FAULT
+    assert result.error_code == ErrorCode.MOTION_STATUS_UNKNOWN
+    assert not h.fsm.motion_resend_allowed
+
+
 # ---------------------------------------------------------------------------
 # 测试装配（Harness）
 # ---------------------------------------------------------------------------
