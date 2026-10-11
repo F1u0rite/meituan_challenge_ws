@@ -73,7 +73,7 @@ public:
   /// 执行一次关节目标运动。绝不抛出（后端异常按"状态未知"处理）。
   mtc::core::MotionResult execute_joint_move(const mtc::core::MotionCommand & command);
 
-  /// 软件停止请求。
+  /// Compatibility wrapper: ID supplied -> cancel_goal; no ID -> supervisory_stop.
   ///
   /// **送达不等于停稳**：调用方不得据 request_delivered 直接宣告安全停止。
   /// `in_flight_command_id` 必须匹配内部命令记录；调用方不能覆盖执行所有权。
@@ -81,16 +81,25 @@ public:
     const std::string & reason,
     std::optional<std::string> in_flight_command_id = std::nullopt);
 
+  /// Cancel exactly this goal. A mismatched/empty ID has no executor/backend side effect.
+  mtc::core::StopResult cancel_goal(const std::string & command_id, const std::string & reason);
+
+  /// Explicit supervisory software stop of the current motion; not a safety E-stop.
+  mtc::core::StopResult supervisory_stop(const std::string & reason);
+
   /// 仅在人工现场核实后调用：解除"状态未知"锁定。
   ///
   /// 这是给人用的显式出口，任何自动流程都不得调用它。
   void clear_unknown_after_manual_confirmation(const std::string & note);
 
 private:
+  mtc::core::StopResult stop_impl(const std::string & reason,
+    const std::optional<std::string> & requested_id);
   bool evidence_valid(const std::optional<mtc::core::StopEvidence> & evidence,
     const std::optional<std::string> & command_id) const;
   mutable std::mutex mutex_;
   mtc::core::ClockPtr clock_;
+  mtc::core::ClockPtr adapter_clock_;
   MotionAdapterPtr adapter_;
   ValidationConfig config_;
   mtc::core::ExecState exec_state_ = mtc::core::ExecState::IDLE;

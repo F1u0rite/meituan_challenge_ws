@@ -22,10 +22,12 @@ void HandshakeRecord::mark(const std::string & step, const std::string & detail)
 }
 MotionExecutorCore::MotionExecutorCore(
   MotionAdapterPtr adapter, ValidationConfig config, mtc::core::ClockPtr clock)
-: clock_(clock ? std::move(clock) : std::make_shared<mtc::core::SteadyClock>()),
-  adapter_(std::move(adapter)), config_(std::move(config))
+: adapter_(std::move(adapter)), config_(std::move(config))
 {
   if (!adapter_) {throw std::invalid_argument("MotionAdapter must not be null");}
+  adapter_clock_ = adapter_->execution_clock();
+  clock_ = clock ? std::move(clock) : (adapter_clock_ ? adapter_clock_ :
+    std::make_shared<mtc::core::SteadyClock>());
 }
 mtc::core::MotionCapabilities MotionExecutorCore::capabilities() const
 {
@@ -48,7 +50,8 @@ bool MotionExecutorCore::evidence_valid(
   const std::optional<std::string> & command_id) const
 {
   using mtc::core::ExecState;
-  if (!evidence || !command_id || command_id->empty()) {return false;}
+  if (!evidence || !command_id || command_id->empty() ||
+    (adapter_clock_ && adapter_clock_ != clock_)) {return false;}
   const auto & e = *evidence;
   const auto & f = e.feedback;
   const double now = clock_->now();
@@ -105,7 +108,17 @@ mtc::core::MotionResult MotionExecutorCore::execute_joint_move(
   mtc::core::MotionResult result;
   std::optional<mtc::core::StopEvidence> evidence;
   try {
-    const auto validation = validate_joint_move(command, config_, adapter_->capabilities());
+    const auto capabilities = adapter_->capabilities();
+    auto validation = validate_joint_move(command, config_, capabilities);
+    const double now = clock_->now();
+    if ((adapter_clock_ && adapter_clock_ != clock_) || !std::isfinite(now) || now < 0.0) {
+      validation = {false, ErrorCodes::EXECUTION_REJECTED,
+        "execution clock mismatch/invalid: Mock requires the shared ManualClock"};
+    } else if (!capabilities.simulation_only &&
+      dynamic_cast<mtc::core::ManualClock *>(clock_.get())) {
+      validation = {false, ErrorCodes::SAFETY_INTERLOCK,
+        "virtual ManualClock is forbidden for executable backends"};
+    }
     if (!validation.ok) {
       result = rejected(validation.error_code, validation.message);
       record.mark("VALIDATE_REJECTED", validation.message);
@@ -177,15 +190,36 @@ mtc::core::MotionResult MotionExecutorCore::execute_joint_move(
 mtc::core::StopResult MotionExecutorCore::request_stop(
   const std::string & reason, std::optional<std::string> requested_id)
 {
+  return requested_id ? cancel_goal(*requested_id, reason) : supervisory_stop(reason);
+}
+mtc::core::StopResult MotionExecutorCore::cancel_goal(
+  const std::string & command_id, const std::string & reason)
+{
+  return stop_impl(reason, command_id);
+}
+mtc::core::StopResult MotionExecutorCore::supervisory_stop(const std::string & reason)
+{
+  return stop_impl(reason, std::nullopt);
+}
+mtc::core::StopResult MotionExecutorCore::stop_impl(
+  const std::string & reason, const std::optional<std::string> & requested_id)
+{
   std::optional<std::string> expected;
   uint64_t generation;
-  bool association_ok;
   {
     std::lock_guard<std::mutex> lock(mutex_);
     expected = active_command_id_ ? active_command_id_ : last_command_id_;
-    association_ok = !requested_id || requested_id == expected;
+    if (requested_id && (requested_id->empty() || requested_id != expected)) {
+      mtc::core::StopResult rejected_stop;
+      rejected_stop.error_code = mtc::core::ErrorCodes::EXECUTION_REJECTED;
+      rejected_stop.message = "command_id mismatch: requested=" + *requested_id +
+        " current=" + expected.value_or("<none>");
+      return rejected_stop; // BEFORE cancel/state/pending updates or any backend call.
+    }
     generation = generation_;
     ++stops_pending_;
+    // Pins this generation even if its execution result drains outside this lock.
+    // New admission remains forbidden until all accepted stop calls return.
     cancel_requested_ = true;
     stop_confirmed_ = false;
     exec_state_ = mtc::core::ExecState::CANCELLING;
@@ -194,9 +228,11 @@ mtc::core::StopResult MotionExecutorCore::request_stop(
   bool cancel_supported = false;
   bool confirmed = false;
   try {
-    result = adapter_->request_stop_for_command(reason, expected);
-    cancel_supported = adapter_->capabilities().cancel_supported;
-    confirmed = association_ok && cancel_supported && result.stop_confirmed &&
+    const auto capabilities = adapter_->capabilities();
+    cancel_supported = capabilities.cancel_supported;
+    result = (requested_id || capabilities.associated_cancel_supported) ?
+      adapter_->request_stop_for_command(reason, expected) : adapter_->request_stop(reason);
+    confirmed = cancel_supported && result.stop_confirmed &&
       evidence_valid(adapter_->stop_evidence(), expected);
     if (!cancel_supported) {
       result.request_delivered = false;
@@ -215,7 +251,10 @@ mtc::core::StopResult MotionExecutorCore::request_stop(
     result.stop_confirmed = confirmed;
     exec_state_ = confirmed ? mtc::core::ExecState::STOPPED :
       (cancel_supported ? mtc::core::ExecState::CANCELLING : mtc::core::ExecState::STOP_UNKNOWN);
-    if (!confirmed) {last_error_code_ = mtc::core::ErrorCodes::CANCEL_NOT_CONFIRMED;}
+    if (!confirmed) {
+      last_error_code_ = mtc::core::ErrorCodes::CANCEL_NOT_CONFIRMED;
+      result.error_code = last_error_code_;
+    }
   }
   return result;
 }

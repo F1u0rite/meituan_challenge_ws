@@ -48,12 +48,15 @@ struct MockMotionAdapterConfig
 class MockMotionAdapter : public MotionAdapter
 {
 public:
+  /// Missing clock creates a private offline ManualClock, exposed by execution_clock().
+  /// Explicit clocks must be ManualClock; SteadyClock is rejected, never virtually advanced.
   explicit MockMotionAdapter(
     MockMotionAdapterConfig config = MockMotionAdapterConfig(),
     mtc::core::ClockPtr clock = nullptr,
     ValidationConfig validation = ValidationConfig());
 
   mtc::core::MotionCapabilities capabilities() const override;
+  mtc::core::ClockPtr execution_clock() const override {return clock_;}
   mtc::core::MotionResult execute_joint_move(const mtc::core::MotionCommand & command) override;
   mtc::core::StopResult request_stop(const std::string & reason) override;
   mtc::core::StopResult request_stop_for_command(const std::string & reason,

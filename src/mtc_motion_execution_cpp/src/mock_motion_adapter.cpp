@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <stdexcept>
 #include <utility>
 
 #include "mtc_core_cpp/error_codes.hpp"
@@ -35,9 +36,13 @@ mtc::core::MotionResult make_result(
 MockMotionAdapter::MockMotionAdapter(
   MockMotionAdapterConfig config, mtc::core::ClockPtr clock, ValidationConfig validation)
 : config_(std::move(config)),
-  clock_(clock ? std::move(clock) : std::make_shared<mtc::core::SteadyClock>()),
+  clock_(clock ? std::move(clock) : std::make_shared<mtc::core::ManualClock>()),
   validation_(std::move(validation))
 {
+  if (!dynamic_cast<mtc::core::ManualClock *>(clock_.get()) ||
+    !std::isfinite(clock_->now()) || clock_->now() < 0.0) {
+    throw std::invalid_argument("MockMotionAdapter requires a finite nonnegative ManualClock; no real-time simulation");
+  }
   capabilities_.backend_name = config_.backend_name;
   capabilities_.simulation_only = true;
   capabilities_.associated_cancel_supported = true;
@@ -71,11 +76,8 @@ void MockMotionAdapter::advance_time(double seconds)
   if (seconds <= 0.0) {
     return;
   }
-  // 仅当注入的是 ManualClock 时才推进；SteadyClock 下不睡眠，
-  // 以免单元测试因模拟运动而变慢。
-  if (auto * manual = dynamic_cast<mtc::core::ManualClock *>(clock_.get())) {
-    manual->advance(seconds);
-  }
+  // Constructor enforces offline ManualClock. No SteadyClock fabrication or real waiting.
+  static_cast<mtc::core::ManualClock *>(clock_.get())->advance(seconds);
 }
 
 mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
@@ -217,6 +219,7 @@ mtc::core::StopResult MockMotionAdapter::request_stop(const std::string & reason
 
   if (stop_confirmed_) {
     velocity_.assign(velocity_.size(), 0.0);
+    const double stationary_since = clock_->now();
     advance_time(validation_.settle_duration_s);
     mtc::core::StopEvidence evidence;
     evidence.command_id = *active_command_;
@@ -225,7 +228,7 @@ mtc::core::StopResult MockMotionAdapter::request_stop(const std::string & reason
     evidence.queue_empty = true;
     evidence.stationary_interval_verified = true;
     evidence.feedback = joint_feedback();
-    evidence.stationary_since_s = evidence.feedback.stamp_s - validation_.settle_duration_s;
+    evidence.stationary_since_s = stationary_since;
     evidence_ = evidence;
     guard_.release(*active_command_);
     result.message = "停止请求已送达并确认停稳（原因：" + reason + "）";
@@ -245,7 +248,22 @@ mtc::core::StopResult MockMotionAdapter::request_stop_for_command(
   const std::string & reason, const std::optional<std::string> & command_id)
 {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
-  if (command_id) {cancelled_ids_.insert(*command_id);}
+  if (command_id && (command_id->empty() ||
+    (active_command_ && active_command_ != command_id))) {
+    mtc::core::StopResult result;
+    result.error_code = mtc::core::ErrorCodes::EXECUTION_REJECTED;
+    result.message = "command_id mismatch; current Mock motion was not stopped";
+    return result;
+  }
+  if (command_id) {
+    cancelled_ids_.insert(*command_id);
+    if (!active_command_ && (!evidence_ || evidence_->command_id != *command_id)) {
+      mtc::core::StopResult result;
+      result.request_delivered = true;
+      result.message = "goal-scoped cancel reserved before dispatch; no stationary evidence";
+      return result;
+    }
+  }
   return request_stop(reason);
 }
 

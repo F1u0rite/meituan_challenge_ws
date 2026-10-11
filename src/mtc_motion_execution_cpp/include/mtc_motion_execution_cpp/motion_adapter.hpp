@@ -24,6 +24,7 @@
 #include <string>
 
 #include "mtc_core_cpp/exec_state.hpp"
+#include "mtc_core_cpp/clock.hpp"
 #include "mtc_core_cpp/motion_primitive.hpp"
 #include "mtc_core_cpp/results.hpp"
 #include "mtc_core_cpp/timed_trajectory.hpp"
@@ -44,6 +45,10 @@ public:
   /// 不能仅因为 SDK 宣称存在某方法就置 true。
   virtual mtc::core::MotionCapabilities capabilities() const = 0;
 
+  /// Immutable clock domain for feedback/evidence, shared for the adapter lifetime.
+  /// Null means the ordinary monotonic real-time domain; no virtual time is inferred.
+  virtual mtc::core::ClockPtr execution_clock() const {return nullptr;}
+
   /// 执行一次单目标 6 关节运动（等价于 ExecuteJointMove.action 的能力）。
   ///
   /// 返回值的语义：
@@ -60,12 +65,15 @@ public:
   virtual mtc::core::StopResult request_stop(const std::string & reason) = 0;
 
   /// Preserve a cancel that races dispatch for this command. Executable adapters must
-  /// implement this association; the legacy fallback cannot provide stop evidence.
+  /// implement this association. Never upgrade a scoped cancel to a global stop.
   virtual mtc::core::StopResult request_stop_for_command(
     const std::string & reason, const std::optional<std::string> & command_id)
   {
-    (void)command_id;
-    return request_stop(reason);
+    if (!command_id) {return request_stop(reason);}
+    mtc::core::StopResult result;
+    result.error_code = mtc::core::ErrorCodes::EXECUTION_REJECTED;
+    result.message = "goal-scoped cancel unsupported; global stop was not called";
+    return result;
   }
 
   /// 关节反馈快照。

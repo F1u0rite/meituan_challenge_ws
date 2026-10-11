@@ -87,6 +87,8 @@ struct StopResult
   bool request_delivered = false;
   bool stop_confirmed = false;
   std::string message;
+  /// Internal C++ rejection/stop status; does not change any ROSIDL field.
+  uint16_t error_code = ErrorCodes::OK;
 };
 
 /// 工具端口返回的机构证据（对应 ToolState.msg）。

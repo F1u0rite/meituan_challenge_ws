@@ -9,12 +9,14 @@
 
 #include <memory>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "mtc_core_cpp/clock.hpp"
 #include "mtc_core_cpp/error_codes.hpp"
 #include "mtc_motion_execution_cpp/mock_motion_adapter.hpp"
+#include "mtc_motion_execution_cpp/executor_core.hpp"
 
 namespace
 {
@@ -68,6 +70,116 @@ struct Fixture
 };
 
 }  // namespace
+
+TEST(MockClockGate, MockDefaultClockExecutionContract)
+{
+  Fixture fixture;
+  auto adapter = std::make_shared<MockMotionAdapter>();
+  mtc::motion::MotionExecutorCore core(adapter);
+  const auto result = core.execute_joint_move(fixture.make_command());
+  EXPECT_TRUE(result.success);
+  EXPECT_TRUE(result.stop_confirmed);
+  EXPECT_FALSE(result.status_unknown);
+}
+
+TEST(MockClockGate, MockSharedManualClockSettlementSucceeds)
+{
+  Fixture fixture;
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), fixture.clock);
+  mtc::motion::MotionExecutorCore core(adapter, {}, fixture.clock);
+  EXPECT_TRUE(core.execute_joint_move(fixture.make_command()).success);
+  const auto evidence = adapter->stop_evidence();
+  ASSERT_TRUE(evidence);
+  EXPECT_NEAR(evidence->feedback.stamp_s - evidence->stationary_since_s, 0.2, 1e-9);
+  EXPECT_DOUBLE_EQ(evidence->feedback.stamp_s, fixture.clock->now());
+}
+
+TEST(MockClockGate, MockInsufficientStationaryIntervalRejected)
+{
+  class FrozenClock : public ManualClock {public: double now() const override {return 100.0;}};
+  auto clock = std::make_shared<FrozenClock>();
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
+  mtc::motion::MotionExecutorCore core(adapter, {}, clock);
+  Fixture fixture;
+  const auto result = core.execute_joint_move(fixture.make_command());
+  EXPECT_FALSE(result.success);
+  EXPECT_FALSE(result.stop_confirmed);
+  EXPECT_TRUE(core.motion_state_unknown());
+}
+
+TEST(MockClockGate, MockExecutorClockMismatchRejected)
+{
+  Fixture fixture;
+  auto adapter_clock = std::make_shared<ManualClock>(100);
+  auto executor_clock = std::make_shared<ManualClock>(100);
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), adapter_clock);
+  mtc::motion::MotionExecutorCore core(adapter, {}, executor_clock);
+  const auto result = core.execute_joint_move(fixture.make_command());
+  EXPECT_EQ(result.exec_state, ExecState::REJECTED);
+  EXPECT_FALSE(result.status_unknown);
+  EXPECT_TRUE(adapter->call_log().empty());
+  EXPECT_DOUBLE_EQ(adapter_clock->now(), 100.0);
+}
+
+TEST(MockClockGate, ExplicitRealTimeOrInvalidMockClockIsRejected)
+{
+  EXPECT_THROW(MockMotionAdapter(MockMotionAdapterConfig(),
+    std::make_shared<mtc::core::SteadyClock>()), std::invalid_argument);
+  for (double invalid : {-1.0, std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity()}) {
+    EXPECT_THROW(MockMotionAdapter(MockMotionAdapterConfig(),
+      std::make_shared<ManualClock>(invalid)), std::invalid_argument);
+  }
+}
+
+TEST(GoalCancelGate, AdapterScopedCancelCannotStopDifferentOwner)
+{
+  Fixture fixture;
+  MockMotionAdapter adapter(MockMotionAdapterConfig(), fixture.clock);
+  ASSERT_TRUE(adapter.force_begin_in_flight("B"));
+  const auto before = adapter.joint_feedback();
+  const auto stop = adapter.request_stop_for_command("old cancel", std::string("A"));
+  EXPECT_FALSE(stop.request_delivered);
+  EXPECT_EQ(stop.error_code, ErrorCodes::EXECUTION_REJECTED);
+  EXPECT_TRUE(adapter.has_in_flight());
+  EXPECT_FALSE(adapter.stop_confirmed_flag());
+  EXPECT_DOUBLE_EQ(adapter.joint_feedback().stamp_s, before.stamp_s);
+  EXPECT_FALSE(adapter.stop_evidence());
+  adapter.force_end_in_flight();
+}
+
+TEST(MockClockGate, VirtualClockCannotAuthorizeExecutableBackend)
+{
+  class ExecutableClaim : public MockMotionAdapter
+  {
+  public:
+    mtc::core::MotionCapabilities capabilities() const override
+    {
+      auto c = MockMotionAdapter::capabilities(); c.simulation_only = false; return c;
+    }
+  };
+  auto adapter = std::make_shared<ExecutableClaim>();
+  ValidationConfig config;
+  config.joint_limit_rad.assign(6, {-3.0, 3.0});
+  mtc::motion::MotionExecutorCore core(adapter, config);
+  Fixture fixture;
+  const auto result = core.execute_joint_move(fixture.make_command());
+  EXPECT_FALSE(result.success);
+  EXPECT_EQ(result.error_code, ErrorCodes::SAFETY_INTERLOCK);
+  EXPECT_NE(result.message.find("virtual ManualClock is forbidden"), std::string::npos);
+  EXPECT_TRUE(adapter->call_log().empty());
+}
+
+TEST(MockClockGate, StaleFeedbackCannotConfirmStop)
+{
+  Fixture fixture;
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), fixture.clock);
+  mtc::motion::MotionExecutorCore core(adapter, {}, fixture.clock);
+  EXPECT_TRUE(core.execute_joint_move(fixture.make_command()).success);
+  fixture.clock->advance(ValidationConfig().feedback_max_age_s + 0.01);
+  EXPECT_FALSE(core.cancel_goal("cmd-1", "completed but feedback stale").stop_confirmed);
+  EXPECT_TRUE(core.motion_state_unknown());
+}
 
 TEST(MockAudit, VirtualSettlementStartsAfterArrivalAndRejectsInvalidTravel)
 {
