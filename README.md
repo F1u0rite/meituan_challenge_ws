@@ -6,9 +6,10 @@
 `c2be85724111f6fb4dfcc62a2c974f7be1233cba`，本地 Git tag `fsm-core-v0.1.0`
 指向该提交，作为团队的 FSM Core 开发基线。
 
-**第二阶段尚未完成：新 C++ FSM 的 ROS 2 Action 外壳、MoveIt 2 C++ Planner、
-FollowJointTrajectory 与 Mock Hardware 抓放闭环仍待集成。** 当前成果是可离线测试的
-C++ 核心库，不代表已完成机器人控制节点或 AUBO S3 实机抓放验收。
+**独立 ROS 2 Jazzy 驱动与 MoveIt 2 Mock 验证已完成；完整 FSM + MoveIt 2 集成仍在进行。**
+第二阶段的新 C++ ROS 2 Action 外壳、MoveIt 2 C++ Planner Adapter、FollowJointTrajectory
+与 Mock Hardware 抓放闭环尚未完成。独立 Mock 成功不代表 FSM 已接入，也不代表
+AUBO S3 实机抓放验收通过。
 
 开发环境：Ubuntu 24.04、ROS 2 Jazzy、C++17。当前只允许 Mock / Fake / 离线开发；
 构建和测试不授权连接控制柜、调用真实 RPC/RTDE、发送实机轨迹或触发实体工具 IO。
@@ -16,6 +17,7 @@ C++ 核心库，不代表已完成机器人控制节点或 AUBO S3 实机抓放�
 ## 1. 从这里开始
 
 - [FSM 开发者使用指南](README_FSM.md)：四个 C++ 包、主要 API、Port 契约、示例、构建与测试。
+- [ROS 2 驱动与 MoveIt 2 部署手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)：已验证环境、Mock 启动、控制器/TF 检查和 10 月 12 日团队 SOP。
 - [第一阶段最终安全验收报告](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)：缺陷复现、修复、318/269/15 测试证据及 TSan 限制。
 - [第二阶段 ROS 2 集成计划](docs/migration/PHASE2_ROS2_INTEGRATION_PLAN.md)：后续 Action / Planner / Mock 集成工作。
 - [原版本开发指南](README_FSM_v0.1.md)：保留原入口，当前使用说明以 `README_FSM.md` 为准。
@@ -105,7 +107,19 @@ lint 条目，不能当作608个独立业务用例。离线 E2E 使用脚本自�
 - 规划输出必须进入执行命令；缺失规划结果时拒绝，不能执行默认全零目标。多点轨迹不得拆成多次 ExecuteJointMove。
 - Mock Adapter 和执行器共享同一个 ManualClock 实例；虚拟时间不用于真实后端。未配置关节限位的 Mock 成功不代表实机安全。
 
-## 6. 仓库目录与参考资料
+## 6. ROS 2 驱动与 MoveIt 2 环境
+
+官方驱动参考工作空间 `/home/aaet/aubo_driver_validation_ws` **只读**。其
+`install_no_symlink` 环境已有 GenericSystem、200Hz controller、FollowJointTrajectory
+和 MoveIt Plan → Execute 的实际成功日志。该环境包含一处已归档的 Fake Hardware
+Xacro 修复，纯上游 clone 不能直接当作同一已验证环境。
+
+[AUBO S3 ROS 2 Jazzy 驱动部署与运行手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)
+列出准确包名、Launch 参数、部署前置、三终端 Mock SOP，以及历史起点不匹配和
+MoveIt 退出异常。手册明确区分独立 Mock、待完成的 FSM 集成、需要现场单独授权的
+真实硬件操作；不提供实机运动命令。新机器修复快照和完整部署仍需独立复验。
+
+## 7. 仓库目录与参考资料
 
 ```text
 meituan_challenge_ws/
