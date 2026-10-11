@@ -1,0 +1,100 @@
+// Copyright 2026 meituan_challenge_ws contributors
+//
+// 运动执行核心：唯一执行权 + 能力校验 + 到位确认。
+//
+// 迁移自 Python src/mtc_motion_execution/mtc_motion_execution/executor_core.py。
+// 把设计 V0.1 §6.3 的七步握手落成可测试的状态转换：
+//   PREPARE -> ACCEPT -> VALIDATE -> SEND -> MONITOR -> CONFIRM -> STOP/FAULT
+//
+// 关键安全语义：
+//   * 只有同时满足到位、停稳、队列清空才返回 success=true；
+//   * 后端拒绝（REJECTED，从未开始运动）才允许立即重发；
+//   * 状态未知（STOP_UNKNOWN）时置位 unknown 标志，上层禁止自动重发；
+//   * 取消不等于已停稳，只有 stop_confirmed 才敢声称安全停止。
+
+#ifndef MTC_MOTION_EXECUTION_CPP__EXECUTOR_CORE_HPP_
+#define MTC_MOTION_EXECUTION_CPP__EXECUTOR_CORE_HPP_
+
+#include <map>
+#include <optional>
+#include <string>
+#include <vector>
+
+#include "mtc_motion_execution_cpp/motion_adapter.hpp"
+#include "mtc_motion_execution_cpp/validation.hpp"
+
+namespace mtc
+{
+namespace motion
+{
+
+/// 每一步握手的可追溯记录（设计 V0.1 §10.2 要求的日志字段）。
+struct HandshakeRecord
+{
+  std::string command_id;
+  std::vector<std::string> steps;
+
+  void mark(const std::string & step, const std::string & detail = "");
+};
+
+/// 执行器快照。
+struct ExecutorSnapshot
+{
+  mtc::core::ExecState exec_state = mtc::core::ExecState::IDLE;
+  std::optional<std::string> active_command_id;
+  uint16_t last_error_code = 0;
+  bool motion_state_unknown = false;
+  bool stop_confirmed = true;
+};
+
+class MotionExecutorCore
+{
+public:
+  explicit MotionExecutorCore(
+    MotionAdapterPtr adapter,
+    ValidationConfig config = ValidationConfig());
+
+  // -- 只读查询 ----------------------------------------------------------
+
+  const MotionAdapterPtr & adapter() const {return adapter_;}
+  mtc::core::MotionCapabilities capabilities() const;
+  mtc::core::ExecState exec_state() const {return exec_state_;}
+  bool motion_state_unknown() const {return motion_state_unknown_;}
+  ExecutorSnapshot snapshot() const;
+
+  /// 取得某次命令的握手记录；不存在时返回 nullptr。
+  const HandshakeRecord * handshake(const std::string & command_id) const;
+
+  // -- 主流程 ------------------------------------------------------------
+
+  /// 执行一次关节目标运动。绝不抛出（后端异常按"状态未知"处理）。
+  mtc::core::MotionResult execute_joint_move(const mtc::core::MotionCommand & command);
+
+  /// 软件停止请求。
+  ///
+  /// **送达不等于停稳**：调用方不得据 request_delivered 直接宣告安全停止。
+  /// `in_flight_command_id` 用于显式声明当前在途命令；不给时使用内部记录。
+  mtc::core::StopResult request_stop(
+    const std::string & reason,
+    std::optional<std::string> in_flight_command_id = std::nullopt);
+
+  /// 仅在人工现场核实后调用：解除"状态未知"锁定。
+  ///
+  /// 这是给人用的显式出口，任何自动流程都不得调用它。
+  void clear_unknown_after_manual_confirmation(const std::string & note);
+
+private:
+  MotionAdapterPtr adapter_;
+  ValidationConfig config_;
+  mtc::core::ExecState exec_state_ = mtc::core::ExecState::IDLE;
+  std::optional<std::string> active_command_id_;
+  uint16_t last_error_code_ = 0;
+  bool motion_state_unknown_ = false;
+  bool stop_confirmed_ = true;   ///< 初始静止
+  std::map<std::string, HandshakeRecord> handshakes_;
+};
+
+}  // namespace motion
+}  // namespace mtc
+
+#endif  // MTC_MOTION_EXECUTION_CPP__EXECUTOR_CORE_HPP_
