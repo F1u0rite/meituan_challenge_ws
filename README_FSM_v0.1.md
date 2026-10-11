@@ -1,6 +1,8 @@
-# FSM Core 开发者使用指南（美团无人机挑战赛）
+# FSM Core v0.1 开发者使用指南（版本化入口）
 
-> **发布准备状态：Final Gate 源码复审通过，等待 PR 合入 `main`。** 本指南已更新至 `fix/codex-cpp-fsm-final-gate`（`ca28d4c83295e0ac79997571d19a4678cd6b3e19`）的 C++ API。建议合并 README 与代码后发布 `fsm-core-v0.1.0` Git tag；**在 PR 合并并创建标签前，不能将它称为已经发布的版本**。
+正式入口为 [README_FSM.md](README_FSM.md)；本文保留版本化文件名，内容同步至main合并后的基线。
+
+> **当前状态：FSM Core v0.1 已完成第一阶段离线安全验收并合入 `main`。** 合并提交为 `c2be85724111f6fb4dfcc62a2c974f7be1233cba`；已存在的本地 Git tag `fsm-core-v0.1.0` 指向该提交。本指南依据合入的 C++ API 与 Final Gate 报告编写。第二阶段 ROS 2 Action、MoveIt 2 Planner 与 Mock Hardware 集成尚未完成。
 >
 > **适用范围：C++17 FSM Core / 离线 Mock 开发，不是已完成的 ROS 2 / MoveIt 2 / AUBO S3 实机控制系统。** 严禁将本文中的示例改为直接驱动真实机械臂。
 
@@ -32,64 +34,163 @@ C++ PickPlace FSM (mtc_manipulation_cpp)
 
 | 包 | 职责 | 代码入口 |
 |---|---|---|
-| `mtc_core_cpp` | 共享类型、错误码、6D Pose、TimedTrajectory、时钟与结果契约 | `src/mtc_core_cpp/include/mtc_core_cpp/` |
-| `mtc_task_cpp` | 整轮比赛 Task FSM、任务校验和动作意图 | `src/mtc_task_cpp/include/mtc_task_cpp/task_fsm.hpp` |
-| `mtc_manipulation_cpp` | 单块电池 PickPlace FSM、V1/V2 ToolStrategy、Port 接口 | `src/mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_fsm.hpp`、`pick_place_types.hpp` |
-| `mtc_motion_execution_cpp` | 单在途命令控制、校验、停稳证据、Mock/Disabled 运动适配器 | `src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/` |
+| `mtc_core_cpp` | 共享类型、错误码、6D Pose、TimedTrajectory、时钟与结果契约 | [src/mtc_core_cpp/include/mtc_core_cpp/](src/mtc_core_cpp/include/mtc_core_cpp/) |
+| `mtc_task_cpp` | 整轮比赛 Task FSM、任务校验和动作意图 | [src/mtc_task_cpp/include/mtc_task_cpp/task_fsm.hpp](src/mtc_task_cpp/include/mtc_task_cpp/task_fsm.hpp) |
+| `mtc_manipulation_cpp` | 单块电池 PickPlace FSM、V1/V2 ToolStrategy、Port 接口 | [src/mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_fsm.hpp](src/mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_fsm.hpp)、[Port契约](src/mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_types.hpp) |
+| `mtc_motion_execution_cpp` | 单在途命令控制、校验、停稳证据、Mock/Disabled 运动适配器 | [src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/](src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/) |
 
 **已实现：** 核心状态机和共享 C++ API；V1/V2 工具策略；纯逻辑 Fake 与 Mock 单元测试；单命令/整条轨迹的数据表达与保守执行校验。
 
 **未实现/未验收：** 新 C++ FSM 的 ROS 2 Action Server、MoveIt 2 C++ Planner、`FollowJointTrajectory` 端到端适配、完整 S3 Fake Hardware 抓放闭环和真实硬件控制。仓库保留部分历史 Python ROS 节点，但不等于新 C++ FSM 已经接入了这些节点。
 
-## 2. 哪个版本可供队友使用？
+## 2. 开发基线与团队使用方式
 
-**合并前：** Final Gate 已针对过期 Goal 取消误停、Mock 时钟不一致、零时长放置验证和零静止跨度误判完成针对性修复与负面测试。团队可以从此分支开始离线 Port 集成开发，但**不要把尚未合并的分支称为已发布稳定版**。
+`main` 已合并 Final Gate 修复，`fsm-core-v0.1.0` 为当前已存在的本地版本标签，
+目标提交为 `c2be857`。过期 Goal 误停、Mock 时基、零放置时长及零静止跨度等
+安全问题已有修复和负面测试；这份基线用于离线开发及下一阶段 Mock 集成。
+完整 TSan 尚未完成，不能称为已完成动态竞态验收或实机验收。
 
-**发布条件：** 本次 Final Gate 修复已通过源码复审，Codex 报告全量回归通过。请由队友审核 PR，并让此 README 与修复代码一起合入 `main`；合并后才创建 Git tag `fsm-core-v0.1.0`。完整 TSan 仍受容器环境限制，**不得称为已完成 TSan 动态竞态验证或实机验收**。
-
-**发布后：** 队友从 `main` 开分支，使用同一个 tag/commit 作为集成基线：
+首次克隆仅在目标目录不存在时执行；已有工作区先检查状态，不覆盖或重新初始化：
 
 ```bash
-# 只在不存在的目标目录中首次克隆；已有工作区禁止重复 clone、git init。
-git clone https://github.com/F1u0rite/meituan_challenge_ws.git
-cd meituan_challenge_ws
-git pull --ff-only origin main
+git clone https://github.com/F1u0rite/meituan_challenge_ws.git /home/aaet/meituan_challenge_ws
+cd /home/aaet/meituan_challenge_ws
+git status --short
+git branch --show-current
 git log -1 --oneline
 
-# 根据负责模块建立独立开发分支
-git switch -c feature/my-module-name
+# 从本地main创建自己的开发分支
+git switch -c feature/my-module-name main
 ```
+
+已有干净仓库可按团队流程更新本地 `main` 后再开分支。不要在有未提交工作时
+直接切换或覆盖。本文不要求推送、修改现有标签或操作任何真实设备。
 
 ## 3. 环境、编译与测试
 
-基线：Ubuntu 24.04、ROS 2 Jazzy、C++17、`colcon`、`ament_cmake`、`ament_cmake_gtest`。开发机不必是 NUC；实际依赖以各包 `package.xml` / `CMakeLists.txt` 为准。
+基线：Ubuntu 24.04、ROS 2 Jazzy、C++17、`colcon`、`ament_cmake`、
+`ament_cmake_gtest`，以及已注册Python包的pytest依赖。
+实际依赖见各包 `package.xml` / `CMakeLists.txt`；核心库不依赖ROS运行时。
+下面各组命令在仓库根目录执行，不清空已有build/install/log。
+
+### 完整工作空间
 
 ```bash
 source /opt/ros/jazzy/setup.bash
-cd /path/to/meituan_challenge_ws
-
-# 可查看 ROS 2 包；不要清空已有 build/install/log
+cd /home/aaet/meituan_challenge_ws
 colcon list
-
-# 仅构建四个 C++ 核心包（自动构建它们所依赖的包）
-colcon build --packages-up-to \
-  mtc_core_cpp mtc_task_cpp mtc_motion_execution_cpp mtc_manipulation_cpp
-
-source install/setup.bash
-
-# 对四个包执行已注册单元测试
-colcon test --packages-select \
-  mtc_core_cpp mtc_task_cpp mtc_motion_execution_cpp mtc_manipulation_cpp
-colcon test-result --all --verbose
-
-# 如需验证整个 ROS 2 workspace，请使用：
-# colcon build && colcon test && colcon test-result --all
-
-# 单独验证纯 Python 离线 E2E（这不是 C++ ROS 2 E2E）
+colcon --log-base log/final_gate build \
+  --build-base build/final_gate --install-base install/final_gate
+source install/final_gate/setup.bash
+colcon --log-base log/final_gate test \
+  --build-base build/final_gate --install-base install/final_gate
+colcon test-result --test-result-base build/final_gate --all
+python3 tests/verify_cpp_audit_results.py --build-base build/final_gate
 python3 tests/test_mock_end_to_end.py
 ```
 
-> **Final Gate 报告记录（2026-10-11，`ca28d4c`）**：ROS 2 Jazzy 12/12 包编译，**318/318 C++ GTest（原 290 项保留，新增 28 项）、269/269 Python pytest、15/15 显式离线 E2E**；XML、UBSan 和 `git diff --check` 通过。完整 TSan 因 `unexpected memory mapping` 无法启动，属于 **NOT RUN**，并非 PASS。以上为 Codex 在 NUC 的报告结果，不是本文作者在 NUC 独立重跑的结果。详见 [`docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md`](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)。
+身份核验脚本检查原290项及当前全部318项是否真的执行，拒绝缺失、重复、失败、
+跳过或未完成项。E2E脚本未被colcon注册，必须单独执行；它是纯Python Mock，
+不是C++ ROS 2 E2E，也未接入真正的MoveIt Planner。
+
+### 仅四个 C++ 核心包
+
+在新终端先加载Jazzy，再构建和加载对应目录，避免混用其他overlay：
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd /home/aaet/meituan_challenge_ws
+colcon --log-base log/fsm_core build \
+  --build-base build/fsm_core --install-base install/fsm_core \
+  --packages-up-to mtc_core_cpp mtc_task_cpp mtc_motion_execution_cpp mtc_manipulation_cpp
+source install/fsm_core/setup.bash
+colcon --log-base log/fsm_core test \
+  --build-base build/fsm_core --install-base install/fsm_core \
+  --packages-select mtc_core_cpp mtc_task_cpp mtc_motion_execution_cpp mtc_manipulation_cpp
+colcon test-result --test-result-base build/fsm_core --all
+python3 tests/verify_cpp_audit_results.py --build-base build/fsm_core
+```
+
+此入口不执行Python包、XML或E2E，不能据此宣称全工作空间回归通过。
+
+### 定向 GTest
+
+先完成相应目录的构建。在加载 `install/final_gate/setup.bash` 的终端可执行：
+
+```bash
+build/final_gate/mtc_motion_execution_cpp/test_executor_concurrency \
+  --gtest_filter='GoalCancelGate.*'
+build/final_gate/mtc_motion_execution_cpp/test_mock_adapter \
+  --gtest_filter='MockClockGate.*'
+build/final_gate/mtc_manipulation_cpp/test_pick_place_audit \
+  --gtest_filter='PlacementAudit.*:PlacementGate.*:WatchdogAudit.*'
+```
+
+定向运行不能替代colcon全量结果与身份核验。
+
+### 已记录的验收结果与 sanitizer
+
+以下结果来自 [2026-10-11最终安全验收报告](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)，
+本次README更新没有重新执行全量回归：
+
+| 验证 | 记录结果 |
+|---|---|
+| Jazzy全工作空间编译 | 12/12包 PASS |
+| C++ GTest | 318 PASS，原290项全部保留，新增28项，16个可执行文件 |
+| Python pytest | 269 PASS |
+| 显式离线E2E | 15 PASS / FAIL 0 / SKIP 0 |
+| XML、UBSan、git diff --check | PASS |
+| TSan | 未完成，NOT RUN；运行时启动报 `unexpected memory mapping` |
+| C++ ROS Action / MoveIt Planner / Mock Hardware集成 | 尚未完成，NOT RUN |
+| 实机与实体IO | NOT RUN，未授权 |
+
+C++包分布：core23、task87、manipulation120、motion88。
+318+269+15为602个测试场景；colcon汇总608项包含包装/lint条目，不能重复计数。
+E2E使用脚本MockPlanner，可选规划模块缺失不代表真正Planner集成通过。
+UBSan/TSan独立构建目录及实际错误记录见上述报告第7节。复跑sanitizer时沿用
+独立目录，不修改系统ASLR或安全设置；TSan启动失败不能标为PASS。
+
+### 共享类型 API
+
+公共namespace为 `mtc::core`，CMake导出target为 `mtc_core_cpp::mtc_core_cpp`。
+
+| 类型/入口 | 用法与契约 |
+|---|---|
+| [Clock / ManualClock / SteadyClock](src/mtc_core_cpp/include/mtc_core_cpp/clock.hpp) | 注入单调时间；ManualClock仅离线显式推进，相同数值起点不代表同一时基 |
+| [Pose6D / PoseEstimate](src/mtc_core_cpp/include/mtc_core_cpp/pose.hpp) | 保留位置、四元数、frame_id和时间戳；有限性、姿态及新鲜度须校验 |
+| [MotionPrimitive / MotionCommand](src/mtc_core_cpp/include/mtc_core_cpp/motion_primitive.hpp) | 前者为意图/约束，后者为规划后的关节目标或整条轨迹；按关节名与顺序关联 |
+| [TimedTrajectory](src/mtc_core_cpp/include/mtc_core_cpp/timed_trajectory.hpp) | 多点、时间参数化轨迹；shape_is_valid只是结构校验，还需执行层配置校验 |
+| [PlanResult / MotionResult / StopResult / StopEvidence](src/mtc_core_cpp/include/mtc_core_cpp/results.hpp) | 规划输出、运动结果、请求送达与独立停稳证据分别表达，不能互相推导 |
+| [ErrorCodes](src/mtc_core_cpp/include/mtc_core_cpp/error_codes.hpp) | 共享错误码，与既有接口常量对照测试 |
+
+### Motion Executor API
+
+公共namespace为 `mtc::motion`，CMake导出target为
+`mtc_motion_execution_cpp::mtc_motion_execution_cpp`。
+
+| API | 含义 |
+|---|---|
+| `MotionExecutorCore(adapter, config, clock)` | 唯一执行权、线程安全状态与严格证据检查；不持有状态锁等待后端执行 |
+| `execute_joint_move(command)` | 同步执行入口；实际完成/失败结果返回，不是异步ROS Goal接口 |
+| `cancel_goal(command_id, reason)` | 仅取消关联Goal；错ID错误210，后端0停止且当前状态不变 |
+| `supervisory_stop(reason)` | 显式监督软件停止，与Goal取消分别表达，不是安全急停 |
+| `request_stop(reason, optional_id)` | 兼容入口：有ID路由关联取消，无ID路由监督停止 |
+| `snapshot()` / `handshake(id)` | 加锁快照/握手副本，避免引用并发修改的存储 |
+| `motion_state_unknown()` | 状态未知时禁止新运动与自动重发 |
+| `clear_unknown_after_manual_confirmation(note)` | 仅人工确认出口；要求记录及无在途回调，自动流程不得调用 |
+| `validate_joint_move()` / `validate_timed_trajectory()` | [执行前校验](src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/validation.hpp)，包括能力、有限数值、限位/动力学等 |
+
+[MotionAdapter](src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/motion_adapter.hpp)
+是同步后端契约：`capabilities()`、`execution_clock()`、`execute_joint_move()`、
+`request_stop_for_command()`、`joint_feedback()`、`stop_evidence()`等。
+默认关联取消显式拒绝，不降级为全局停止；execute/stop可能并发，后端必须保证
+命令关联、取消预约和生命周期。默认 `execute_trajectory()` 拒绝，禁止静默拆分。
+当前Mock也拒绝真正轨迹跟踪，不能只打开能力位就宣称已经实现。
+
+[MockMotionAdapter / DisabledMotionAdapter](src/mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/mock_motion_adapter.hpp)
+分别提供离线模拟与明确拒绝。默认Mock创建ManualClock；默认执行器共享它，
+显式时钟必须为同一个实例。真实可执行后端不能继承虚拟时间授权，不能把
+无关节限位的Mock通过当作实机参数审核通过。
 
 ### Motion Executor 离线 Mock 最小装配
 
@@ -101,17 +202,28 @@ python3 tests/test_mock_end_to_end.py
 #include "mtc_motion_execution_cpp/mock_motion_adapter.hpp"
 #include "mtc_motion_execution_cpp/executor_core.hpp"
 
-auto clock = std::make_shared<mtc::core::ManualClock>(100.0);
-auto adapter = std::make_shared<mtc::motion::MockMotionAdapter>(
-    mtc::motion::MockMotionAdapterConfig{}, clock);
-mtc::motion::MotionExecutorCore executor(
-    adapter, mtc::motion::ValidationConfig{}, clock);
-// 只有经过验证的完整 MotionCommand 才允许调用 execute_joint_move()。
-// Goal-scoped 取消：executor.cancel_goal(command_id, "user canceled");
-// 监督停止：       executor.supervisory_stop("operator stop");
+int main()
+{
+  auto mock_clock = std::make_shared<mtc::core::ManualClock>(100.0);
+  mtc::motion::ValidationConfig validation;
+  auto adapter = std::make_shared<mtc::motion::MockMotionAdapter>(
+      mtc::motion::MockMotionAdapterConfig{}, mock_clock, validation);
+  mtc::motion::MotionExecutorCore executor(adapter, validation, mock_clock);
+
+  // 仅为离线Mock构造的非零关节目标，不是Planner输出或实机姿态。
+  mtc::core::MotionCommand command;
+  command.command_id = "offline-motion-demo-1";
+  command.joint_names = validation.expected_joint_names;
+  command.target_rad = {0.05, -0.05, 0.05, 0.0, 0.0, 0.0};
+  command.simulation_only = true;
+  const auto result = executor.execute_joint_move(command);
+  // Goal-scoped取消：executor.cancel_goal(command.command_id, "用户取消");
+  // 监督停止：executor.supervisory_stop("监督停止");
+  return result.success && result.stop_confirmed && !result.status_unknown ? 0 : 1;
+}
 ```
 
-CMake 中运动执行库的依赖为 `mtc_motion_execution_cpp::mtc_motion_execution_cpp`；完整可运行装配请参照 `src/mtc_motion_execution_cpp/test/test_mock_adapter.cpp`。
+CMake 中运动执行库的依赖为 `mtc_motion_execution_cpp::mtc_motion_execution_cpp`；完整可运行装配请参照 [src/mtc_motion_execution_cpp/test/test_mock_adapter.cpp](src/mtc_motion_execution_cpp/test/test_mock_adapter.cpp)。
 
 ### 无设备冒烟示例：运行 Task FSM 产生动作意图
 
@@ -158,10 +270,15 @@ int main()
 }
 ```
 
-消费者 `CMakeLists.txt` 的关键部分（在一个**独立的** `ament_cmake` 包中）：
+消费者 `CMakeLists.txt` 示例（在一个**独立的** `ament_cmake` 包中）：
 
 ```cmake
+cmake_minimum_required(VERSION 3.8)
+project(fsm_task_smoke LANGUAGES CXX)
+
 find_package(ament_cmake REQUIRED)
+# 当前Task导出target引用core target，消费者显式加载它
+find_package(mtc_core_cpp REQUIRED)
 find_package(mtc_task_cpp REQUIRED)
 
 add_executable(fsm_task_smoke src/fsm_task_smoke.cpp)
@@ -171,7 +288,7 @@ install(TARGETS fsm_task_smoke DESTINATION lib/${PROJECT_NAME})
 ament_package()
 ```
 
-消费者 `package.xml` 还需声明 `ament_cmake` 为构建工具依赖、`mtc_task_cpp` 为依赖；这是**代码示例而非一个已提交的独立示例包**，可直接参考 [`src/mtc_task_cpp/test/test_task_fsm_core.cpp`](src/mtc_task_cpp/test/test_task_fsm_core.cpp) 的测试装配方式。`MODE_BASIC` 仅需要一种颜色，对应 T0；`MODE_SEQUENCE` 需要三种不同颜色，按顺序对应 P1/P2/P3。颜色值：1 红、2 蓝、3 黄、4 绿；0 表示未知，不是合法口令。
+消费者 `package.xml` 还需声明 `ament_cmake` 为构建工具依赖、`mtc_core_cpp` 和 `mtc_task_cpp` 为依赖；这是**代码示例而非一个已提交的独立示例包**，可直接参考 [src/mtc_task_cpp/test/test_task_fsm_core.cpp](src/mtc_task_cpp/test/test_task_fsm_core.cpp) 的测试装配方式。`MODE_BASIC` 仅需要一种颜色，对应 T0；`MODE_SEQUENCE` 需要三种不同颜色，按顺序对应 P1/P2/P3。颜色值：1 红、2 蓝、3 黄、4 绿；0 表示未知，不是合法口令。
 
 ## 4. 如何对接 Task FSM
 
@@ -225,7 +342,7 @@ config.state_timeouts = mtc::manipulation::default_state_timeouts();
 // 在同一 FSM 事件线程中逐次 fsm.step() 并读取 fsm.feedback()。
 ```
 
-这段是**接口装配示意，不是独立可运行的完整抓放程序**；想看到可运行的纯逻辑 Fake，请从 `src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp` 与 `test/fakes.hpp` 复制测试思路。`test/fakes.hpp` 位于测试目录，**不是安装后提供的稳定公共 API**。
+这段是**接口装配示意，不是独立可运行的完整抓放程序**；想看到可运行的纯逻辑 Fake，请从 [src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp](src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp) 与 [test/fakes.hpp](src/mtc_manipulation_cpp/test/fakes.hpp) 复制测试思路。`test/fakes.hpp` 位于测试目录，**不是安装后提供的稳定公共 API**。
 
 ### Port 的责任与交付标准
 
@@ -233,10 +350,20 @@ config.state_timeouts = mtc::manipulation::default_state_timeouts();
 |---|---|---|
 | `PerceptionPort::get_detection()` | 返回 `DetectionResult`：目标 ID/颜色、唯一性、新鲜度、完整 `PoseEstimate`；放置后核验需要持续产生带新时间戳的观测 | 丢掉姿态或 `frame_id`；拿旧帧冒充新帧；伪造“物体已稳定” |
 | `PlannerPort::plan()` | 为每个 `PlanTarget.primitives` 返回对应的 `PlanResult.commands`，包括关节目标或整条 `TimedTrajectory`；保留 6D 位姿、TF、速度/接触约束 | 只返回 `ok=true`；使用默认全零关节目标；把轨迹拆成多次单点调用 |
-| `MotionPort` | 执行一个关节目标或一整条轨迹；支持异步在途语义和命令 ID 去重；取消需要独立停稳证据 | `accepted` 就当作 `arrived`，`request_delivered` 就当作 `stop_confirmed`；状态未知时重发 |
+| `MotionPort::execute_joint_move(command)` / `execute_trajectory(command)` / `request_stop(reason)` | 运动入口传MotionCommand；整条轨迹保存在command.trajectory；支持异步在途语义和命令ID去重，停止需要独立停稳证据 | `accepted` 就当作 `arrived`，`request_delivered` 就当作 `stop_confirmed`；状态未知时重发 |
 | `ToolPort` | 实现 `engage` / `test_lift` / `seat_verify` / `unload` / `unlock` / `disengage` / `holding_state`，返回独立 `ToolEvidence` | 解锁请求受理就报告已释放；在未落座或未卸载时解除 V2 锁止 |
 
-**异步语义：** Port 方法返回 `std::optional<Result>`，其中 `std::nullopt` 表示尚未完成。FSM 之后可能再次查询同一命令；**端口必须按 command_id 去重/复用结果，不可每次调用都重新发送运动指令**。注意 `VERIFY_PLACED` 需要不同的、新鲜观测，不能一味缓存成功帧。
+**异步语义：** 感知、规划、运动执行及大部分工具方法返回 `std::optional<Result>`，其中 `std::nullopt` 表示尚未完成。`MotionPort::request_stop()` 直接返回 `StopResult`，`ToolPort::seat_verify()` 直接返回 `ToolEvidence`，`holding_state()` 返回字符串，不能统一当作optional接口。FSM 之后可能再次查询同一命令；**端口必须按 command_id 去重/复用结果，不可每次调用都重新发送运动指令**。注意 `VERIFY_PLACED` 需要不同的、新鲜观测，不能一味缓存成功帧。
+
+[MotionAdapterPort](src/mtc_manipulation_cpp/include/mtc_manipulation_cpp/motion_adapter_port.hpp)
+当前为同步桥接：关节运动经MotionExecutorCore校验后立即返回结果，不能在串行
+FSM事件线程用它等待长轨迹。它未覆盖整条轨迹执行，因此继承MotionPort的明确
+拒绝；异步轨迹端口是第二阶段工作。其无ID `request_stop()` 表示监督停止，
+不能作为外部ROS Goal-scoped Cancel入口。
+
+纯逻辑Fake位于测试目录，Fake规划命令标记 `simulation_only=true`，不能送到
+可执行后端。规划必须逐原语返回 `PlanResult.commands`；FSM保留意图/6D约束，
+赋予本次command_id，按关节命令或完整轨迹派发。缺失结果不会执行默认回零。
 
 **V1/V2：** 默认 `TOOL_PASSIVE_HOOK_V1` 为被动舌规，不调用电磁解锁；`TOOL_MAGNETIC_LATCH_V2` 允许在落座、卸载两项独立核验完成后申请解锁。`ToolStrategy` 负责生成意图，不直接操作 IO。
 
@@ -262,7 +389,7 @@ config.state_timeouts = mtc::manipulation::default_state_timeouts();
 
 ## 7. 队友开发分工及 PR 验收
 
-推荐以合并后的 `main`/`fsm-core-v0.1.0` 作为共同基线，在独立分支实现：
+推荐以已合入的 `main`/`fsm-core-v0.1.0` 作为共同基线，在独立分支实现：
 
 | 方向 | 建议分支 | 首先交付 |
 |---|---|---|
@@ -276,26 +403,26 @@ config.state_timeouts = mtc::manipulation::default_state_timeouts();
 
 ## 8. 常见错误与注意事项
 
-- **找不到包或头文件：** 确认已经 `source /opt/ros/jazzy/setup.bash`，构建后在当前终端 `source install/setup.bash`，消费者在 `package.xml`/CMake 中声明所依赖的 C++ 包。
+- **找不到包或头文件：** 确认已经 `source /opt/ros/jazzy/setup.bash`，构建后在当前终端 `source install/final_gate/setup.bash`（仅核心目录则加载 `install/fsm_core/setup.bash`），消费者在 `package.xml`/CMake 中声明所依赖的 C++ 包。
 - **`test/fakes.hpp` 找不到：** 测试 Fake 不属于安装的公共 include 目录；不要把它当作正式后端。
 - **FSM 一直等待：** 检查 Port 是否返回 `std::nullopt`、是否由外部事件循环继续 tick、是否向 FSM 投递了对应完成事件；不要绕过看门狗。
 - **规划器报告 `ok=true` 但不执行：** `PlanResult.commands` 必须与请求原语一一对应，并满足完整轨迹/关节目标校验；不能只返回 `ok`。
 - **取消已请求但结果是 FAULT：** 停止请求被受理不等于后端已确认停稳，检查 StopEvidence 与关联 command_id；不要改写结果掩盖故障。
 - **Mock 运行时钟：** Final Gate 后 `MockMotionAdapter` 默认创建 `ManualClock`，`MotionExecutorCore` 若未显式传入时钟，会沿用适配器的同一实例；如显式注入时钟，**必须是同一 `ClockPtr` 实例**。不同 `ManualClock` 即使起点相同也会被拒绝；Mock 不支持 `SteadyClock`。
-- **想直接控制 S3：** 此 README 未授权任何实体控制；当前阶段只允许纯逻辑 Mock 和明确使用 `mock_components/GenericSystem` 的隔离仿真。
+- **想直接控制 S3：** 此 README 未授权任何实体控制；当前仅完成纯逻辑Mock。使用 `mock_components/GenericSystem` 的C++ FSM集成属于尚未完成的第二阶段。
 
 ## 9. 源码和进一步阅读
 
-- `src/mtc_task_cpp/test/test_task_fsm_core.cpp`：Task FSM 从 INIT 到 CALL_PICK_PLACE 的真实测试使用方式。
-- `src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp`：V1 PickPlace 完整 Fake 测试流程。
-- `src/mtc_manipulation_cpp/test/test_pick_place_fsm_v2.cpp`：V2 工具策略流程。
-- `src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp`：规划输出和新鲜放置观测的安全回归。
-- `src/mtc_motion_execution_cpp/test/test_executor_concurrency.cpp`：多线程执行和取消测试。
-- `docs/migration/FSM_BEHAVIOR_MAPPING.md`：Python ↔ C++ 行为映射。
-- `docs/migration/INTERFACE_COMPAT_AUDIT_CPP.md`：ROS 接口兼容与后续设计缺口。
-- `docs/migration/CODEX_CPP_FSM_AUDIT_FIX_REPORT.md`：当前审计分支的修复与测试报告。
-- `docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md`：Final Gate 修复、318/269/15 回归及未完成的 TSan 动态验收记录。
+- [src/mtc_task_cpp/test/test_task_fsm_core.cpp](src/mtc_task_cpp/test/test_task_fsm_core.cpp)：Task FSM 从 INIT 到 CALL_PICK_PLACE 的真实测试使用方式。
+- [src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp](src/mtc_manipulation_cpp/test/test_pick_place_fsm_v1.cpp)：V1 PickPlace 完整 Fake 测试流程。
+- [src/mtc_manipulation_cpp/test/test_pick_place_fsm_v2.cpp](src/mtc_manipulation_cpp/test/test_pick_place_fsm_v2.cpp)：V2 工具策略流程。
+- [src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp](src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp)：规划输出和新鲜放置观测的安全回归。
+- [src/mtc_motion_execution_cpp/test/test_executor_concurrency.cpp](src/mtc_motion_execution_cpp/test/test_executor_concurrency.cpp)：多线程执行和取消测试。
+- [docs/migration/FSM_BEHAVIOR_MAPPING.md](docs/migration/FSM_BEHAVIOR_MAPPING.md)：Python ↔ C++ 行为映射。
+- [docs/migration/INTERFACE_COMPAT_AUDIT_CPP.md](docs/migration/INTERFACE_COMPAT_AUDIT_CPP.md)：ROS 接口兼容与后续设计缺口。
+- [docs/migration/CODEX_CPP_FSM_AUDIT_FIX_REPORT.md](docs/migration/CODEX_CPP_FSM_AUDIT_FIX_REPORT.md)：上一轮审计修复与测试报告。
+- [docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)：Final Gate 修复、318/269/15 回归及未完成的 TSan 动态验收记录。
 
 ---
 
-**维护约定：** PR 合并后，请将文首状态更新为实际合并 commit 和 Git Tag；不得提前填入未创建的标签。每当 Port ABI/API 或 FSM 安全语义发生变化，负责 PR 的开发者必须同步更新本文。`main` 是团队共享的 Mock/集成开发基线，不是实机控制许可。
+**维护约定：** [README_FSM.md](README_FSM.md) 为正式开发者指南入口。每当 Port ABI/API 或 FSM 安全语义发生变化，负责 PR 的开发者必须同步更新指南和测试证据；版本信息以实际commit/tag为准。`main` 是团队共享的Mock/集成开发基线，不是实机控制许可。
