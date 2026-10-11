@@ -1,0 +1,52 @@
+{
+  "retrieved_on": "2026-10-11",
+  "local_evidence_directory": "D:\\RA\\美团比赛\\报告附件\\官方资料",
+  "documents_embedded_in_delta_archive": false,
+  "sources": [
+    {
+      "name": "aubo_S3.urdf",
+      "url": "https://raw.githubusercontent.com/AuboRobot/aubo_description/47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1/urdf/aubo_S3.urdf",
+      "bytes": 8895,
+      "sha256": "2ad1d85b3ab53b82f1944a373e3e41b36ca2535e0edf5b70c9c32641679e1924"
+    },
+    {
+      "name": "aubo_ros2_macro.xacro",
+      "url": "https://raw.githubusercontent.com/AuboRobot/aubo_description/47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1/urdf/xacro/inc/aubo_ros2_macro.xacro",
+      "bytes": 3538,
+      "sha256": "8bbf8f5e127650dd79760f3b2d3025d734fae4b6cfaaee3a923e923022e7a3b7"
+    },
+    {
+      "name": "link6.DAE",
+      "url": "https://raw.githubusercontent.com/AuboRobot/aubo_description/47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1/meshes/aubo_S3/visual/link6.DAE",
+      "bytes": 401011,
+      "sha256": "c54dfeda3c8ab4e44039d35ab220b118c8e175792b522f5faaf3959fc8aff92c"
+    },
+    {
+      "name": "link6.STL",
+      "url": "https://raw.githubusercontent.com/AuboRobot/aubo_description/47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1/meshes/aubo_S3/collision/link6.STL",
+      "bytes": 14484,
+      "sha256": "cbe69bf761e7d25110633f6c7fdf62481de52a2847a4960a9fc5c49288ba3eea"
+    },
+    {
+      "name": "RealSense_D400_Datasheet_202410.pdf",
+      "url": "https://realsenseai.com/wp-content/uploads/2024/10/Intel-RealSense-D400-Series-Datasheet-October-2024.pdf",
+      "bytes": 5433772,
+      "sha256": "b477ea8222e71a96b77d4c13667b804c94b2ef0a27bf9db150082d0c9aa0a590"
+    },
+    {
+      "name": "realsense_ros_README.md",
+      "url": "https://raw.githubusercontent.com/realsenseai/realsense-ros/ros2-master/README.md",
+      "bytes": 78958,
+      "sha256": "405ebcffd6bff44ce23df8c92ec0e1c7f3508d135dbb4199cb554659451df329"
+    }
+  ],
+  "visual_check": {
+    "RealSense_D400_Datasheet_202410.pdf": [
+      93,
+      94,
+      146
+    ]
+  },
+  "failed_reference": "AUBO_Robotics_ZH_202410_Catalog.pdf: download failed; indexed drawing title only, no verified flange dimensions",
+  "model_mesh_is_manufacturing_drawing": false
+}

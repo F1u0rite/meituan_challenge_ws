@@ -1,0 +1,24 @@
+[
+  {
+    "case": "snapshot",
+    "input": "first coordinate = 10**400",
+    "exit_code": 2,
+    "result": {
+      "status": "REJECTED",
+      "code": "INVALID_VECTOR",
+      "message": "INVALID_VECTOR: translation m cannot be represented as finite floats",
+      "motion_authorized": false
+    }
+  },
+  {
+    "case": "mount",
+    "input": "first coordinate = 10**400",
+    "exit_code": 2,
+    "result": {
+      "status": "REJECTED",
+      "code": "INVALID_VECTOR",
+      "message": "INVALID_VECTOR: translation m cannot be represented as finite floats",
+      "motion_authorized": false
+    }
+  }
+]
