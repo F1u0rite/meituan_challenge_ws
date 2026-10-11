@@ -7,8 +7,9 @@
 指向该提交，作为团队的 FSM Core 开发基线。
 
 **独立 ROS 2 Jazzy 驱动与 MoveIt 2 Mock 验证已完成；完整 FSM + MoveIt 2 集成仍在进行。**
-第二阶段的新 C++ ROS 2 Action 外壳、MoveIt 2 C++ Planner Adapter、FollowJointTrajectory
-与 Mock Hardware 抓放闭环尚未完成。独立 Mock 成功不代表 FSM 已接入，也不代表
+本分支新增 Phase 2A 的 C++ ROS 2 Action 离线 Mock 外壳，复用现有 FSM；
+MoveIt 2 C++ Planner Adapter、FollowJointTrajectory 与 ros2_control Mock Hardware
+抓放闭环尚未完成。独立 Mock 成功不代表已完成这些集成，也不代表
 AUBO S3 实机抓放验收通过。
 
 开发环境：Ubuntu 24.04、ROS 2 Jazzy、C++17。当前只允许 Mock / Fake / 离线开发；
@@ -17,6 +18,7 @@ AUBO S3 实机抓放验收通过。
 ## 1. 从这里开始
 
 - [FSM 开发者使用指南](README_FSM.md)：四个 C++ 包、主要 API、Port 契约、示例、构建与测试。
+- [Phase 2A C++ ROS Action 指南](src/mtc_ros2_action_cpp/README.md)：三个 Mock Action Server、子 Goal 关联、取消与故障锁定，以及运行/测试方法。
 - [ROS 2 驱动与 MoveIt 2 部署手册](docs/setup/AUBO_ROS2_DRIVER_JAZZY.md)：已验证环境、Mock 启动、控制器/TF 检查和 10 月 12 日团队 SOP。
 - [第一阶段最终安全验收报告](docs/migration/CPP_FSM_FINAL_SAFETY_GATE.md)：缺陷复现、修复、318/269/15 测试证据及 TSan 限制。
 - [第二阶段 ROS 2 集成计划](docs/migration/PHASE2_ROS2_INTEGRATION_PLAN.md)：后续 Action / Planner / Mock 集成工作。
