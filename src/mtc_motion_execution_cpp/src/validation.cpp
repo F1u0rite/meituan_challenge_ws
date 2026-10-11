@@ -31,6 +31,32 @@ bool has_duplicates(const std::vector<std::string> & names)
   return unique.size() != names.size();
 }
 
+bool valid_config(const ValidationConfig & config, size_t count, bool simulation)
+{
+  for (double v : {config.max_velocity_scaling, config.max_acceleration_scaling,
+      config.settle_position_tolerance_rad, config.settle_velocity_tolerance_rad_s,
+      config.settle_duration_s, config.feedback_max_age_s}) {
+    if (!std::isfinite(v) || v <= 0.0) {return false;}
+  }
+  if (config.max_velocity_scaling > 1.0 || config.max_acceleration_scaling > 1.0) {return false;}
+  if (!simulation && (config.expected_joint_names.size() != count || count != 6 ||
+    config.joint_limit_rad.size() != count)) {return false;}
+  if (!config.joint_limit_rad.empty() && config.joint_limit_rad.size() == count) {
+    for (const auto & limit : config.joint_limit_rad) {
+      if (!std::isfinite(limit.first) || !std::isfinite(limit.second) ||
+        limit.first >= limit.second) {return false;}
+    }
+  }
+  for (const auto & limits : {config.max_joint_velocity_rad_s,
+      config.max_joint_acceleration_rad_s2}) {
+    if (limits.size() != count) {return false;}
+    for (double v : limits) {
+      if (!std::isfinite(v) || v <= 0.0) {return false;}
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 ValidationOutcome validate_joint_move(
@@ -52,6 +78,20 @@ ValidationOutcome validate_joint_move(
   if (request.joint_names.empty()) {
     return make_outcome(
       false, mtc::core::ErrorCodes::EXECUTION_REJECTED, "joint_names 不能为空");
+  }
+  if (request.command_id.empty() || request.trajectory ||
+    !std::all_of(request.target_rad.begin(), request.target_rad.end(),
+    [](double v) {return std::isfinite(v);}) ||
+    std::any_of(request.joint_names.begin(), request.joint_names.end(),
+    [](const std::string & name) {return name.empty();})) {
+    return make_outcome(false, mtc::core::ErrorCodes::EXECUTION_REJECTED,
+      "非法 command_id / 关节目标 / 轨迹表示");
+  }
+  if (!valid_config(config, request.joint_names.size(), capabilities.simulation_only) ||
+    (request.simulation_only && !capabilities.simulation_only) ||
+    (!capabilities.simulation_only && !capabilities.associated_cancel_supported)) {
+    return make_outcome(false, mtc::core::ErrorCodes::SAFETY_INTERLOCK,
+      "非法安全配置；可执行后端必须配置六关节限位与动力学上限");
   }
   if (has_duplicates(request.joint_names)) {
     return make_outcome(
@@ -117,6 +157,23 @@ ValidationOutcome validate_timed_trajectory(
     return make_outcome(
       false, mtc::core::ErrorCodes::EXECUTION_REJECTED,
       "轨迹结构非法：关节名/路点维度/时间单调性校验未通过");
+  }
+  if (!valid_config(config, trajectory.joint_names.size(), capabilities.simulation_only) ||
+    trajectory.trajectory_id.empty() ||
+    (!capabilities.simulation_only && !capabilities.associated_cancel_supported)) {
+    return make_outcome(false, mtc::core::ErrorCodes::SAFETY_INTERLOCK,
+      "轨迹缺少身份或安全配置");
+  }
+  for (const auto & point : trajectory.points) {
+    for (size_t i = 0; i < trajectory.joint_names.size(); ++i) {
+      if ((!point.velocities_rad_s.empty() &&
+        std::abs(point.velocities_rad_s[i]) > config.max_joint_velocity_rad_s[i]) ||
+        (!point.accelerations_rad_s2.empty() &&
+        std::abs(point.accelerations_rad_s2[i]) > config.max_joint_acceleration_rad_s2[i])) {
+        return make_outcome(false, mtc::core::ErrorCodes::SAFETY_INTERLOCK,
+          "轨迹速度或加速度超出已审核上限");
+      }
+    }
   }
   if (!config.expected_joint_names.empty() &&
     trajectory.joint_names != config.expected_joint_names)

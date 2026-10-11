@@ -33,11 +33,15 @@ struct ValidationConfig
   };
   double max_velocity_scaling = 0.2;
   double max_acceleration_scaling = 0.2;
-  /// 每关节 (low, high)；为空表示不做限位校验。
+  /// 每关节 (low, high)；仅 simulation_only 后端允许为空。
   std::vector<std::pair<double, double>> joint_limit_rad;
   double settle_position_tolerance_rad = 0.001;
   double settle_velocity_tolerance_rad_s = 0.001;
   double settle_duration_s = 0.2;
+  double feedback_max_age_s = 0.3;
+  /// 离线默认值，不代表 AUBO 实机认证参数；可执行后端须完成配置审核。
+  std::vector<double> max_joint_velocity_rad_s = {1, 1, 1, 1, 1, 1};
+  std::vector<double> max_joint_acceleration_rad_s2 = {2, 2, 2, 2, 2, 2};
 };
 
 /// 执行前校验结论。

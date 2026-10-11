@@ -12,6 +12,7 @@
 #define MTC_MOTION_EXECUTION_CPP__IN_FLIGHT_GUARD_HPP_
 
 #include <optional>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -29,14 +30,19 @@ public:
   /// 释放执行权；仅当 command_id 与当前持有者一致时才生效。
   void release(const std::string & command_id);
 
-  bool is_free() const {return !in_flight_.has_value();}
-  const std::optional<std::string> & in_flight() const {return in_flight_;}
+  bool is_free() const {return !in_flight().has_value();}
+  std::optional<std::string> in_flight() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return in_flight_;
+  }
 
   /// 仅供人工现场核实后的显式复位（用于"状态未知已解除"的场景）。
   /// 自动流程不得调用。
   void force_release();
 
 private:
+  mutable std::mutex mutex_;
   std::optional<std::string> in_flight_;
 };
 

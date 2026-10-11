@@ -16,6 +16,7 @@
 #define MTC_CORE_CPP__TIMED_TRAJECTORY_HPP_
 
 #include <cstdint>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -47,7 +48,7 @@ struct TimedTrajectory
   /// 每个路点维度与关节数一致、时间严格递增。
   bool shape_is_valid() const
   {
-    if (joint_names.empty() || points.empty()) {
+    if (joint_names.empty() || points.empty() || !std::isfinite(stamp_s) || stamp_s < 0.0) {
       return false;
     }
     for (size_t i = 0; i < joint_names.size(); ++i) {
@@ -75,7 +76,14 @@ struct TimedTrajectory
       {
         return false;
       }
-      if (point.time_from_start_s <= previous_time) {
+      for (const auto & values : {point.positions_rad, point.velocities_rad_s,
+          point.accelerations_rad_s2}) {
+        for (double value : values) {
+          if (!std::isfinite(value)) {return false;}
+        }
+      }
+      if (!std::isfinite(point.time_from_start_s) || point.time_from_start_s < 0.0 ||
+        point.time_from_start_s <= previous_time) {
         return false;
       }
       previous_time = point.time_from_start_s;

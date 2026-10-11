@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <limits>
 #include <vector>
 
 #include "mtc_core_cpp/clock.hpp"
@@ -361,4 +362,56 @@ TEST(CoreExecState, StringMappingIsStable)
   EXPECT_STREQ(mtc::core::to_string(ExecState::TIMEOUT), "TIMEOUT");
   EXPECT_STREQ(mtc::core::to_string(ExecState::REJECTED), "REJECTED");
   EXPECT_STREQ(mtc::core::to_string(ExecState::FAULT), "FAULT");
+}
+
+TEST(CoreAudit, PoseRejectsNonFinitePositionStampAndQuaternion)
+{
+  for (double bad : {std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}) {
+    auto pose = make_usable_pose();
+    pose.position.x = bad;
+    EXPECT_FALSE(pose.is_usable());
+    pose = make_usable_pose();
+    pose.stamp_s = bad;
+    EXPECT_FALSE(pose.is_usable());
+    pose = make_usable_pose();
+    pose.orientation.w = bad;
+    EXPECT_FALSE(pose.is_usable());
+  }
+  auto pose = make_usable_pose();
+  pose.stamp_s = 0.0; // Valid epoch zero in an explicitly injected clock domain.
+  EXPECT_TRUE(pose.is_usable());
+  pose.stamp_s = -0.01;
+  EXPECT_FALSE(pose.is_usable());
+  pose = make_usable_pose();
+  pose.orientation = {0, 0, 0, 0};
+  EXPECT_FALSE(pose.is_usable());
+}
+
+TEST(CoreAudit, TrajectoryRejectsNonFiniteFieldsAndNegativeTimes)
+{
+  TimedTrajectory valid;
+  valid.joint_names = {"j1"};
+  valid.points = {{0.0, {0.1}, {0.1}, {0.1}}, {1.0, {0.2}, {}, {}}};
+  EXPECT_TRUE(valid.shape_is_valid());
+  for (double bad : {std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity()}) {
+    auto t = valid;
+    t.points[0].time_from_start_s = bad;
+    EXPECT_FALSE(t.shape_is_valid());
+    t = valid;
+    t.stamp_s = bad;
+    EXPECT_FALSE(t.shape_is_valid());
+    t = valid;
+    t.points[0].positions_rad[0] = bad;
+    EXPECT_FALSE(t.shape_is_valid());
+    t = valid;
+    t.points[0].velocities_rad_s[0] = bad;
+    EXPECT_FALSE(t.shape_is_valid());
+    t = valid;
+    t.points[0].accelerations_rad_s2[0] = bad;
+    EXPECT_FALSE(t.shape_is_valid());
+  }
+  valid.points[0].time_from_start_s = -0.1;
+  EXPECT_FALSE(valid.shape_is_valid());
 }

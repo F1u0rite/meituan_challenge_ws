@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,7 @@ using mtc::core::TrajectoryPoint;
 using mtc::motion::DisabledMotionAdapter;
 using mtc::motion::MockMotionAdapter;
 using mtc::motion::MockMotionAdapterConfig;
+using mtc::motion::ValidationConfig;
 
 struct Fixture
 {
@@ -67,6 +69,31 @@ struct Fixture
 
 }  // namespace
 
+TEST(MockAudit, VirtualSettlementStartsAfterArrivalAndRejectsInvalidTravel)
+{
+  for (double travel : {0.0, 0.5}) {
+    Fixture fixture;
+    MockMotionAdapterConfig config;
+    config.travel_time_s = travel;
+    MockMotionAdapter adapter(config, fixture.clock);
+    EXPECT_TRUE(adapter.execute_joint_move(fixture.make_command()).success);
+    const auto evidence = adapter.stop_evidence();
+    ASSERT_TRUE(evidence);
+    EXPECT_DOUBLE_EQ(evidence->stationary_since_s, travel);
+    EXPECT_DOUBLE_EQ(evidence->feedback.stamp_s, travel + ValidationConfig().settle_duration_s);
+  }
+  for (double travel : {-1.0, std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity()}) {
+    Fixture fixture;
+    MockMotionAdapterConfig config;
+    config.travel_time_s = travel;
+    MockMotionAdapter adapter(config, fixture.clock);
+    EXPECT_EQ(adapter.execute_joint_move(fixture.make_command()).exec_state, ExecState::REJECTED);
+    EXPECT_FALSE(adapter.stop_evidence());
+    EXPECT_DOUBLE_EQ(fixture.clock->now(), 0.0);
+  }
+}
+
 TEST(MockAdapter, CapabilitiesAreDeclaredExplicitly)
 {
   MockMotionAdapter adapter(MockMotionAdapterConfig(), std::make_shared<ManualClock>());
@@ -96,7 +123,7 @@ TEST(MockAdapter, SuccessfulMoveSettlesAndConfirmsStop)
   EXPECT_FALSE(result.status_unknown);
   EXPECT_FALSE(result.timed_out);
   // 模拟时间被推进到行程时间
-  EXPECT_DOUBLE_EQ(fixture.clock->now(), 0.5);
+  EXPECT_DOUBLE_EQ(fixture.clock->now(), 0.5 + ValidationConfig().settle_duration_s);
 }
 
 TEST(MockAdapter, RejectedRequestAllowsImmediateResend)
@@ -195,8 +222,8 @@ TEST(MockAdapter, StopWithoutInFlightIsConfirmedAndReported)
 
   const auto stop = adapter.request_stop("cancel requested");
   EXPECT_TRUE(stop.request_delivered);
-  EXPECT_TRUE(stop.stop_confirmed);
-  EXPECT_TRUE(adapter.stop_confirmed_flag());
+  EXPECT_FALSE(stop.stop_confirmed);
+  EXPECT_FALSE(adapter.stop_confirmed_flag());
 }
 
 TEST(MockAdapter, StopWithInFlightAndConfirmationSucceeds)
@@ -243,6 +270,7 @@ TEST(MockAdapter, StopConfirmationFlagIsExposedSeparately)
   EXPECT_FALSE(*initial);
 
   // 停止请求送达且后端确认后，显式标志才变为 true
+  adapter.force_begin_in_flight("cmd-evidence");
   adapter.request_stop("cancel");
   const auto after_stop = adapter.explicit_stop_confirmation();
   ASSERT_TRUE(after_stop.has_value());

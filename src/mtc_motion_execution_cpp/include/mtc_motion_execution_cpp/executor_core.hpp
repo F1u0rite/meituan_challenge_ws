@@ -16,12 +16,15 @@
 #define MTC_MOTION_EXECUTION_CPP__EXECUTOR_CORE_HPP_
 
 #include <map>
+#include <mutex>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "mtc_motion_execution_cpp/motion_adapter.hpp"
 #include "mtc_motion_execution_cpp/validation.hpp"
+#include "mtc_core_cpp/clock.hpp"
 
 namespace mtc
 {
@@ -44,7 +47,7 @@ struct ExecutorSnapshot
   std::optional<std::string> active_command_id;
   uint16_t last_error_code = 0;
   bool motion_state_unknown = false;
-  bool stop_confirmed = true;
+  bool stop_confirmed = false;
 };
 
 class MotionExecutorCore
@@ -52,18 +55,18 @@ class MotionExecutorCore
 public:
   explicit MotionExecutorCore(
     MotionAdapterPtr adapter,
-    ValidationConfig config = ValidationConfig());
+    ValidationConfig config = ValidationConfig(), mtc::core::ClockPtr clock = nullptr);
 
   // -- 只读查询 ----------------------------------------------------------
 
   const MotionAdapterPtr & adapter() const {return adapter_;}
   mtc::core::MotionCapabilities capabilities() const;
-  mtc::core::ExecState exec_state() const {return exec_state_;}
-  bool motion_state_unknown() const {return motion_state_unknown_;}
+  mtc::core::ExecState exec_state() const {return snapshot().exec_state;}
+  bool motion_state_unknown() const {return snapshot().motion_state_unknown;}
   ExecutorSnapshot snapshot() const;
 
-  /// 取得某次命令的握手记录；不存在时返回 nullptr。
-  const HandshakeRecord * handshake(const std::string & command_id) const;
+  /// 取得某次命令的握手记录副本；不存在时返回 nullopt。
+  std::optional<HandshakeRecord> handshake(const std::string & command_id) const;
 
   // -- 主流程 ------------------------------------------------------------
 
@@ -73,7 +76,7 @@ public:
   /// 软件停止请求。
   ///
   /// **送达不等于停稳**：调用方不得据 request_delivered 直接宣告安全停止。
-  /// `in_flight_command_id` 用于显式声明当前在途命令；不给时使用内部记录。
+  /// `in_flight_command_id` 必须匹配内部命令记录；调用方不能覆盖执行所有权。
   mtc::core::StopResult request_stop(
     const std::string & reason,
     std::optional<std::string> in_flight_command_id = std::nullopt);
@@ -84,13 +87,22 @@ public:
   void clear_unknown_after_manual_confirmation(const std::string & note);
 
 private:
+  bool evidence_valid(const std::optional<mtc::core::StopEvidence> & evidence,
+    const std::optional<std::string> & command_id) const;
+  mutable std::mutex mutex_;
+  mtc::core::ClockPtr clock_;
   MotionAdapterPtr adapter_;
   ValidationConfig config_;
   mtc::core::ExecState exec_state_ = mtc::core::ExecState::IDLE;
   std::optional<std::string> active_command_id_;
   uint16_t last_error_code_ = 0;
   bool motion_state_unknown_ = false;
-  bool stop_confirmed_ = true;   ///< 初始静止
+  bool stop_confirmed_ = false;  ///< Startup is not stationary evidence.
+  bool cancel_requested_ = false;
+  size_t stops_pending_ = 0;
+  uint64_t generation_ = 0;
+  std::optional<std::string> last_command_id_;
+  std::set<std::string> executed_ids_;
   std::map<std::string, HandshakeRecord> handshakes_;
 };
 

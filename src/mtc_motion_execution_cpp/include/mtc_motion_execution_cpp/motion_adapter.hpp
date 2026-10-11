@@ -59,6 +59,15 @@ public:
   /// `request_delivered` 直接宣告安全停止。
   virtual mtc::core::StopResult request_stop(const std::string & reason) = 0;
 
+  /// Preserve a cancel that races dispatch for this command. Executable adapters must
+  /// implement this association; the legacy fallback cannot provide stop evidence.
+  virtual mtc::core::StopResult request_stop_for_command(
+    const std::string & reason, const std::optional<std::string> & command_id)
+  {
+    (void)command_id;
+    return request_stop(reason);
+  }
+
   /// 关节反馈快照。
   virtual mtc::core::JointFeedback joint_feedback() const = 0;
 
@@ -68,6 +77,11 @@ public:
   /// 绝不允许仅凭 StopResult::request_delivered 宣告已停稳。
   /// 迁移自 Python 对 `stop_confirmed_flag()` 的鸭子类型探测。
   virtual std::optional<bool> explicit_stop_confirmation() const {return std::nullopt;}
+
+  /// Thread-safe snapshot with command identity and a continuously stationary interval.
+  /// execute/stop may overlap. Implementations must preserve a cancel that races dispatch;
+  /// acceptance/cancellation callbacks alone cannot populate this evidence.
+  virtual std::optional<mtc::core::StopEvidence> stop_evidence() const {return std::nullopt;}
 
   /// 执行一条时间参数化轨迹（多点、带时间戳）。
   ///

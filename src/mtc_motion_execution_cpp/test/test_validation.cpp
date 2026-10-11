@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <limits>
 #include <vector>
 
 #include "mtc_core_cpp/error_codes.hpp"
@@ -24,6 +25,7 @@ MotionCapabilities joint_only_capabilities()
 {
   MotionCapabilities capabilities;
   capabilities.backend_name = "mock";
+  capabilities.simulation_only = true;
   capabilities.joint_goal_supported = true;
   capabilities.timed_trajectory_supported = false;
   capabilities.cancel_supported = true;
@@ -317,4 +319,54 @@ TEST(ValidationTrajectory, JointLimitsEnforcedOnEveryPoint)
     mtc::motion::validate_timed_trajectory(make_trajectory(), config, capabilities);
   EXPECT_FALSE(outcome.ok);
   EXPECT_EQ(outcome.error_code, ErrorCodes::SAFETY_INTERLOCK);
+}
+
+TEST(ValidationAudit, NonFiniteTargetsRejectedWithoutLimits)
+{
+  for (double bad : {std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity()}) {
+    auto c = make_command();
+    c.target_rad[2] = bad;
+    EXPECT_FALSE(mtc::motion::validate_joint_move(c, {}, joint_only_capabilities()).ok);
+    c = make_command();
+    c.velocity_scaling = bad;
+    EXPECT_FALSE(mtc::motion::validate_joint_move(c, {}, joint_only_capabilities()).ok);
+    c = make_command();
+    c.acceleration_scaling = bad;
+    EXPECT_FALSE(mtc::motion::validate_joint_move(c, {}, joint_only_capabilities()).ok);
+  }
+}
+
+TEST(ValidationAudit, ExecutableBackendRequiresLimitsAndRejectsFakePlan)
+{
+  auto caps = joint_only_capabilities();
+  caps.simulation_only = false;
+  caps.associated_cancel_supported = true;
+  ValidationConfig config;
+  EXPECT_FALSE(mtc::motion::validate_joint_move(make_command(), config, caps).ok);
+  config.joint_limit_rad.assign(6, {-1.0, 1.0});
+  EXPECT_TRUE(mtc::motion::validate_joint_move(make_command(), config, caps).ok);
+  auto c = make_command();
+  c.simulation_only = true;
+  EXPECT_FALSE(mtc::motion::validate_joint_move(c, config, caps).ok);
+  config.joint_limit_rad[0] = {1.0, -1.0};
+  EXPECT_FALSE(mtc::motion::validate_joint_move(make_command(), config, caps).ok);
+}
+
+TEST(ValidationAudit, TrajectoryRejectsExcessiveDynamicsAndInvalidLimits)
+{
+  auto caps = joint_only_capabilities();
+  caps.timed_trajectory_supported = true;
+  auto t = make_trajectory();
+  t.points[1].velocities_rad_s.assign(6, 999.0);
+  EXPECT_FALSE(mtc::motion::validate_timed_trajectory(t, {}, caps).ok);
+  t = make_trajectory();
+  t.points[1].accelerations_rad_s2.assign(6, 999.0);
+  EXPECT_FALSE(mtc::motion::validate_timed_trajectory(t, {}, caps).ok);
+  ValidationConfig config;
+  config.max_joint_velocity_rad_s[0] = std::numeric_limits<double>::infinity();
+  EXPECT_FALSE(mtc::motion::validate_timed_trajectory(make_trajectory(), config, caps).ok);
+  config = {};
+  config.max_velocity_scaling = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_FALSE(mtc::motion::validate_joint_move(make_command(), config, caps).ok);
 }

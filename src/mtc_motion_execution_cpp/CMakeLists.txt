@@ -13,6 +13,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(mtc_core_cpp REQUIRED)
+find_package(Threads REQUIRED)
 
 # ---------------------------------------------------------------------------
 # 运动适配层：MotionAdapter 接口 + Mock/Disabled 实现 + 七步握手执行核心
@@ -32,7 +33,7 @@ target_include_directories(mtc_motion_execution_cpp PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(mtc_motion_execution_cpp PUBLIC mtc_core_cpp::mtc_core_cpp)
+target_link_libraries(mtc_motion_execution_cpp PUBLIC mtc_core_cpp::mtc_core_cpp Threads::Threads)
 target_compile_features(mtc_motion_execution_cpp PUBLIC cxx_std_17)
 
 install(TARGETS mtc_motion_execution_cpp
@@ -63,10 +64,13 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_executor_core test/test_executor_core.cpp)
   target_link_libraries(test_executor_core mtc_motion_execution_cpp)
+
+  ament_add_gtest(test_executor_concurrency test/test_executor_concurrency.cpp TIMEOUT 30)
+  target_link_libraries(test_executor_concurrency mtc_motion_execution_cpp Threads::Threads)
 endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_libraries(mtc_motion_execution_cpp)
-ament_export_dependencies(mtc_core_cpp)
+ament_export_dependencies(mtc_core_cpp Threads)
 ament_package()

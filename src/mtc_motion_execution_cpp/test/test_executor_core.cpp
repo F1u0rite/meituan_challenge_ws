@@ -61,11 +61,14 @@ public:
   bool nested_done = false;
   bool throw_on_execute = false;
   bool report_status_unknown = false;
+  bool timeout_without_unknown = false;
+  std::string last_command;
 
   MotionCapabilities capabilities() const override
   {
     MotionCapabilities capabilities;
     capabilities.backend_name = "reentrant";
+    capabilities.simulation_only = true;
     capabilities.joint_goal_supported = true;
     capabilities.cancel_supported = true;
     return capabilities;
@@ -82,7 +85,13 @@ public:
       nested_result = core->execute_joint_move(nested);
     }
 
+    last_command = command.command_id;
     MotionResult result;
+    if (timeout_without_unknown) {
+      result.timed_out = true;
+      result.exec_state = ExecState::TIMEOUT;
+      return result;
+    }
     if (report_status_unknown) {
       result.success = false;
       result.arrived = false;
@@ -102,6 +111,19 @@ public:
     return result;
   }
 
+  std::optional<mtc::core::StopEvidence> stop_evidence() const override
+  {
+    if (last_command.empty() || timeout_without_unknown || report_status_unknown) {return std::nullopt;}
+    mtc::core::StopEvidence e;
+    e.command_id = last_command;
+    e.exec_state = ExecState::SETTLED;
+    e.communication_ok = e.queue_empty = e.stationary_interval_verified = true;
+    e.feedback.stamp_s = mtc::core::SteadyClock().now();
+    e.stationary_since_s = e.feedback.stamp_s - 0.2;
+    e.feedback.position_rad.assign(6, 0.0);
+    e.feedback.velocity_rad_s.assign(6, 0.0);
+    return e;
+  }
   StopResult request_stop(const std::string & reason) override
   {
     StopResult result;
@@ -151,7 +173,7 @@ TEST(ExecutorCore, SuccessfulMoveGoesThroughSevenStepHandshake)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto result = core.execute_joint_move(make_command());
 
@@ -161,8 +183,8 @@ TEST(ExecutorCore, SuccessfulMoveGoesThroughSevenStepHandshake)
   EXPECT_TRUE(result.stop_confirmed);
   EXPECT_EQ(core.exec_state(), ExecState::SETTLED);
 
-  const auto * record = core.handshake("cmd-1");
-  ASSERT_NE(record, nullptr);
+  const auto record = core.handshake("cmd-1");
+  ASSERT_TRUE(record.has_value());
   ASSERT_FALSE(record->steps.empty());
   EXPECT_EQ(record->steps[0], "PREPARE");
   EXPECT_NE(
@@ -180,7 +202,7 @@ TEST(ExecutorCore, CapabilitiesAreForwardedFromAdapter)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   EXPECT_EQ(core.capabilities().backend_name, "mock");
   EXPECT_TRUE(core.capabilities().joint_goal_supported);
@@ -191,7 +213,7 @@ TEST(ExecutorCore, ValidationFailureRejectsWithoutStartingMotion)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   MotionCommand command = make_command();
   command.velocity_scaling = 0.9;   // 超出上限
@@ -204,8 +226,8 @@ TEST(ExecutorCore, ValidationFailureRejectsWithoutStartingMotion)
   EXPECT_TRUE(result.retry_allowed_without_reobservation());
   EXPECT_TRUE(adapter->call_log().empty());
 
-  const auto * record = core.handshake("cmd-1");
-  ASSERT_NE(record, nullptr);
+  const auto record = core.handshake("cmd-1");
+  ASSERT_TRUE(record.has_value());
   EXPECT_NE(
     std::find(record->steps.begin(), record->steps.end(),
       "VALIDATE_REJECTED:" + result.message), record->steps.end());
@@ -217,8 +239,9 @@ TEST(ExecutorCore, ValidationFailureRejectsWithoutStartingMotion)
 
 TEST(ExecutorCore, ConcurrentGoalDuringMotionIsRejected)
 {
+  const auto clock = std::make_shared<mtc::core::SteadyClock>();
   auto adapter = std::make_shared<ReentrantAdapter>();
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
   adapter->core = &core;
 
   const auto outer = core.execute_joint_move(make_command("cmd-outer"));
@@ -231,8 +254,8 @@ TEST(ExecutorCore, ConcurrentGoalDuringMotionIsRejected)
   EXPECT_EQ(adapter->nested_result.error_code, ErrorCodes::EXECUTION_REJECTED);
   EXPECT_NE(adapter->nested_result.message.find("cmd-outer"), std::string::npos);
 
-  const auto * record = core.handshake("cmd-nested");
-  ASSERT_NE(record, nullptr);
+  const auto record = core.handshake("cmd-nested");
+  ASSERT_TRUE(record.has_value());
   EXPECT_NE(
     std::find(record->steps.begin(), record->steps.end(), "ACCEPT_REJECTED:in_flight=cmd-outer"),
     record->steps.end());
@@ -248,7 +271,7 @@ TEST(ExecutorCore, StatusUnknownLocksSubsequentRequests)
   MockMotionAdapterConfig config;
   config.status_unknown = true;
   auto adapter = std::make_shared<MockMotionAdapter>(config, clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto first = core.execute_joint_move(make_command("cmd-1"));
   EXPECT_FALSE(first.success);
@@ -266,8 +289,8 @@ TEST(ExecutorCore, StatusUnknownLocksSubsequentRequests)
   EXPECT_NE(second.message.find("禁止自动重发"), std::string::npos);
   EXPECT_EQ(adapter->call_log().size(), calls_before);   // 未再次发令
 
-  const auto * record = core.handshake("cmd-2");
-  ASSERT_NE(record, nullptr);
+  const auto record = core.handshake("cmd-2");
+  ASSERT_TRUE(record.has_value());
   EXPECT_NE(
     std::find(record->steps.begin(), record->steps.end(),
       "PREPARE_REJECTED:motion_state_unknown"), record->steps.end());
@@ -279,7 +302,7 @@ TEST(ExecutorCore, ManualConfirmationClearsUnknownLock)
   MockMotionAdapterConfig config;
   config.status_unknown = true;
   auto adapter = std::make_shared<MockMotionAdapter>(config, clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   core.execute_joint_move(make_command("cmd-1"));
   ASSERT_TRUE(core.motion_state_unknown());
@@ -291,8 +314,8 @@ TEST(ExecutorCore, ManualConfirmationClearsUnknownLock)
   EXPECT_EQ(core.exec_state(), ExecState::IDLE);
   EXPECT_TRUE(core.snapshot().stop_confirmed);
 
-  const auto * record = core.handshake("manual");
-  ASSERT_NE(record, nullptr);
+  const auto record = core.handshake("manual");
+  ASSERT_TRUE(record.has_value());
   ASSERT_FALSE(record->steps.empty());
   EXPECT_NE(
     record->steps[0].find("MANUAL_CONFIRMATION"), std::string::npos);
@@ -300,9 +323,10 @@ TEST(ExecutorCore, ManualConfirmationClearsUnknownLock)
 
 TEST(ExecutorCore, BackendExceptionIsTreatedAsUnknownState)
 {
+  const auto clock = std::make_shared<mtc::core::SteadyClock>();
   auto adapter = std::make_shared<ReentrantAdapter>();
   adapter->throw_on_execute = true;
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto result = core.execute_joint_move(make_command("cmd-1"));
   EXPECT_FALSE(result.success);
@@ -319,7 +343,7 @@ TEST(ExecutorCore, TimeoutMarksStateUnknown)
   MockMotionAdapterConfig config;
   config.travel_time_s = 99.0;
   auto adapter = std::make_shared<MockMotionAdapter>(config, clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto result = core.execute_joint_move(make_command("cmd-1", 1000));
   EXPECT_FALSE(result.success);
@@ -333,7 +357,7 @@ TEST(ExecutorCore, BackendRejectionPropagatesRejectedStateAllowingResend)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   // 后端已被占用：核心自身校验通过，但适配器的唯一执行权拒绝该请求。
   ASSERT_TRUE(adapter->force_begin_in_flight("cmd-inflight"));
@@ -356,12 +380,12 @@ TEST(ExecutorCore, StopWithoutInFlightIsConfirmed)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto stop = core.request_stop("cancel requested");
   EXPECT_TRUE(stop.request_delivered);
-  EXPECT_TRUE(stop.stop_confirmed);
-  EXPECT_EQ(core.exec_state(), ExecState::STOPPED);
+  EXPECT_FALSE(stop.stop_confirmed);
+  EXPECT_EQ(core.exec_state(), ExecState::CANCELLING);
 }
 
 TEST(ExecutorCore, StopDeliveryIsNotConfirmationWhenBackendCannotConfirm)
@@ -370,7 +394,7 @@ TEST(ExecutorCore, StopDeliveryIsNotConfirmationWhenBackendCannotConfirm)
   MockMotionAdapterConfig config;
   config.cancel_confirms = false;
   auto adapter = std::make_shared<MockMotionAdapter>(config, clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   ASSERT_TRUE(adapter->force_begin_in_flight("cmd-inflight"));
   const auto stop = core.request_stop("cancel");
@@ -384,8 +408,9 @@ TEST(ExecutorCore, StopDeliveryIsNotConfirmationWhenBackendCannotConfirm)
 
 TEST(ExecutorCore, UnsupportedCancelNeverFabricatesStopConfirmed)
 {
+  const auto clock = std::make_shared<mtc::core::SteadyClock>();
   auto adapter = std::make_shared<NoCancelAdapter>();
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   const auto stop = core.request_stop("cancel");
 
@@ -404,7 +429,7 @@ TEST(ExecutorCore, StopAfterUnknownStateIsNeverConfirmed)
   MockMotionAdapterConfig config;
   config.status_unknown = true;
   auto adapter = std::make_shared<MockMotionAdapter>(config, clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   core.execute_joint_move(make_command("cmd-1"));
   ASSERT_TRUE(core.motion_state_unknown());
@@ -423,12 +448,12 @@ TEST(ExecutorCore, SnapshotReflectsInternalState)
 {
   const auto clock = std::make_shared<ManualClock>(0.0);
   auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
-  MotionExecutorCore core(adapter, ValidationConfig());
+  MotionExecutorCore core(adapter, ValidationConfig(), clock);
 
   auto snapshot = core.snapshot();
   EXPECT_EQ(snapshot.exec_state, ExecState::IDLE);
   EXPECT_FALSE(snapshot.active_command_id.has_value());
-  EXPECT_TRUE(snapshot.stop_confirmed);   // 初始静止
+  EXPECT_FALSE(snapshot.stop_confirmed);   // Startup has no stationary evidence.
   EXPECT_FALSE(snapshot.motion_state_unknown);
 
   core.execute_joint_move(make_command("cmd-1"));
@@ -436,4 +461,48 @@ TEST(ExecutorCore, SnapshotReflectsInternalState)
   EXPECT_EQ(snapshot.exec_state, ExecState::SETTLED);
   EXPECT_TRUE(snapshot.stop_confirmed);
   EXPECT_EQ(snapshot.last_error_code, ErrorCodes::OK);
+}
+
+TEST(ExecutorAudit, DeliveryWithoutEvidenceAndWithoutCommandNeverConfirms)
+{
+  const auto clock = std::make_shared<mtc::core::SteadyClock>();
+  auto adapter = std::make_shared<ReentrantAdapter>();
+  MotionExecutorCore core(adapter);
+  const auto stop = core.request_stop("delivered but robot state unknown");
+  EXPECT_TRUE(stop.request_delivered);
+  EXPECT_FALSE(stop.stop_confirmed);
+}
+
+TEST(ExecutorAudit, TimeoutWithoutUnknownFlagStillLocks)
+{
+  const auto clock = std::make_shared<mtc::core::SteadyClock>();
+  auto adapter = std::make_shared<ReentrantAdapter>();
+  adapter->timeout_without_unknown = true;
+  MotionExecutorCore core(adapter);
+  const auto first = core.execute_joint_move(make_command());
+  EXPECT_TRUE(first.timed_out);
+  EXPECT_TRUE(core.motion_state_unknown());
+  EXPECT_EQ(core.execute_joint_move(make_command("cmd-2")).error_code,
+    ErrorCodes::MOTION_STATUS_UNKNOWN);
+}
+
+TEST(ExecutorAudit, CompletedCommandIdCannotExecuteTwice)
+{
+  auto clock = std::make_shared<ManualClock>();
+  auto adapter = std::make_shared<MockMotionAdapter>(MockMotionAdapterConfig(), clock);
+  MotionExecutorCore core(adapter, {}, clock);
+  EXPECT_TRUE(core.execute_joint_move(make_command("unique")).success);
+  EXPECT_EQ(core.execute_joint_move(make_command("unique")).exec_state, ExecState::REJECTED);
+  EXPECT_EQ(adapter->call_log().size(), 1u);
+}
+
+TEST(ExecutorAudit, CancelBeforeBackendDispatchIsSticky)
+{
+  auto clock = std::make_shared<ManualClock>();
+  MockMotionAdapter adapter(MockMotionAdapterConfig(), clock);
+  EXPECT_FALSE(adapter.request_stop_for_command("early cancel", std::string("future")).stop_confirmed);
+  const auto result = adapter.execute_joint_move(make_command("future"));
+  EXPECT_EQ(result.exec_state, ExecState::REJECTED);
+  EXPECT_DOUBLE_EQ(clock->now(), 0.0);
+  EXPECT_EQ(adapter.joint_feedback().position_rad, std::vector<double>(6, 0.0));
 }

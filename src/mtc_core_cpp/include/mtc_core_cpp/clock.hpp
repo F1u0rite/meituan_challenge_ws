@@ -10,6 +10,7 @@
 #define MTC_CORE_CPP__CLOCK_HPP_
 
 #include <chrono>
+#include <atomic>
 #include <memory>
 
 namespace mtc
@@ -45,19 +46,20 @@ public:
   explicit ManualClock(double start_s = 0.0)
   : now_s_(start_s) {}
 
-  double now() const override {return now_s_;}
+  double now() const override {return now_s_.load();}
 
   void advance(double seconds)
   {
     if (seconds > 0.0) {
-      now_s_ += seconds;
+      double previous = now_s_.load();
+      while (!now_s_.compare_exchange_weak(previous, previous + seconds)) {}
     }
   }
 
   void set(double seconds) {now_s_ = seconds;}
 
 private:
-  double now_s_ = 0.0;
+  std::atomic<double> now_s_{0.0};
 };
 
 }  // namespace core

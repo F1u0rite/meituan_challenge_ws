@@ -80,7 +80,9 @@ struct Pose6D
   /// 有效性要求：显式 valid、frame_id 非空、且四元数已归一化。
   bool is_usable() const
   {
-    return valid && !frame_id.empty() && orientation.is_normalized();
+    return valid && !frame_id.empty() && orientation.is_normalized() &&
+           std::isfinite(position.x) && std::isfinite(position.y) &&
+           std::isfinite(position.z) && std::isfinite(stamp_s) && stamp_s >= 0.0;
   }
 
   bool operator==(const Pose6D & other) const

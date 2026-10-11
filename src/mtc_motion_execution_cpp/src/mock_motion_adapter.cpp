@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <utility>
 
 #include "mtc_core_cpp/error_codes.hpp"
@@ -38,6 +39,8 @@ MockMotionAdapter::MockMotionAdapter(
   validation_(std::move(validation))
 {
   capabilities_.backend_name = config_.backend_name;
+  capabilities_.simulation_only = true;
+  capabilities_.associated_cancel_supported = true;
   capabilities_.joint_goal_supported = config_.joint_goal_supported;
   capabilities_.timed_trajectory_supported = config_.timed_trajectory_supported;
   capabilities_.cartesian_motion_supported = config_.cartesian_motion_supported;
@@ -55,6 +58,7 @@ mtc::core::MotionCapabilities MockMotionAdapter::capabilities() const
 
 mtc::core::JointFeedback MockMotionAdapter::joint_feedback() const
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   mtc::core::JointFeedback feedback;
   feedback.position_rad = position_;
   feedback.velocity_rad_s = velocity_;
@@ -77,7 +81,12 @@ void MockMotionAdapter::advance_time(double seconds)
 mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
   const mtc::core::MotionCommand & command)
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   call_log_.push_back(command);
+  if (cancelled_ids_.count(command.command_id)) {
+    return make_result(false, false, mtc::core::ExecState::REJECTED,
+      mtc::core::ErrorCodes::EXECUTION_REJECTED, "command cancelled before backend dispatch");
+  }
 
   const ValidationOutcome validation =
     validate_joint_move(command, validation_, capabilities_);
@@ -85,6 +94,10 @@ mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
     last_validation_ = validation;
     return make_result(
       false, false, mtc::core::ExecState::REJECTED, validation.error_code, validation.message);
+  }
+  if (!std::isfinite(config_.travel_time_s) || config_.travel_time_s < 0.0) {
+    return make_result(false, false, mtc::core::ExecState::REJECTED,
+      mtc::core::ErrorCodes::EXECUTION_REJECTED, "invalid Mock travel time");
   }
 
   const auto acquired = guard_.acquire(command.command_id);
@@ -94,6 +107,7 @@ mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
       mtc::core::ErrorCodes::EXECUTION_REJECTED, acquired.second);
   }
 
+  evidence_.reset();
   active_command_ = command.command_id;
   cancel_requested_ = false;
   stop_confirmed_ = false;
@@ -114,7 +128,8 @@ mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
   const double budget_s = static_cast<double>(command.timeout_ms) / 1000.0;
   const double simulated_s = std::min(config_.travel_time_s, budget_s);
 
-  if (config_.fail_at == "timeout" || config_.timeout || config_.travel_time_s > budget_s) {
+  if (config_.fail_at == "timeout" || config_.timeout ||
+    config_.travel_time_s + validation_.settle_duration_s > budget_s) {
     advance_time(budget_s);
     if (cancel_requested_) {
       guard_.release(command.command_id);
@@ -140,19 +155,9 @@ mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
     return result;
   }
 
-  // 逐步"运动"：中途允许被取消。
-  const int steps = std::max(1, static_cast<int>(simulated_s / 0.05));
-  for (int i = 0; i < steps; ++i) {
-    if (cancel_requested_) {
-      break;
-    }
-    advance_time(simulated_s / steps);
-    velocity_.clear();
-    for (size_t j = 0; j < position_.size() && j < command.target_rad.size(); ++j) {
-      velocity_.push_back(
-        (command.target_rad[j] - position_[j]) / std::max(simulated_s / steps, 1e-9));
-    }
-  }
+  // Constant-time virtual movement: no sleep or duration-proportional loop under the lock.
+  // Concurrent dispatch/cancel is serialized for this instantaneous offline simulation.
+  advance_time(simulated_s);
 
   if (cancel_requested_) {
     guard_.release(command.command_id);
@@ -170,25 +175,38 @@ mtc::core::MotionResult MockMotionAdapter::execute_joint_move(
 
   position_ = command.target_rad;
   velocity_.assign(position_.size(), 0.0);
+  const double stationary_since = clock_->now();
+  advance_time(validation_.settle_duration_s);
   guard_.release(command.command_id);
   active_command_.reset();
 
   mtc::core::MotionResult result = make_result(
     true, true, mtc::core::ExecState::SETTLED, mtc::core::ErrorCodes::OK, "已到位并停稳");
   result.stop_confirmed = true;
+  stop_confirmed_ = true;
+  mtc::core::StopEvidence evidence;
+  evidence.command_id = command.command_id;
+  evidence.exec_state = mtc::core::ExecState::SETTLED;
+  evidence.communication_ok = true;
+  evidence.queue_empty = true;
+  evidence.stationary_interval_verified = true;
+  evidence.feedback = joint_feedback();
+  evidence.stationary_since_s = stationary_since;
+  evidence_ = evidence; // Virtual stationary interval, exclusively for offline Mock.
   result.final_position_rad = position_;
   return result;
 }
 
 mtc::core::StopResult MockMotionAdapter::request_stop(const std::string & reason)
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   mtc::core::StopResult result;
 
   if (!active_command_.has_value()) {
-    stop_confirmed_ = true;
+    // Missing command records never constitute stationary evidence.
     result.request_delivered = true;
-    result.stop_confirmed = true;
-    result.message = "无在途命令，已确认停稳（原因：" + reason + "）";
+    result.stop_confirmed = evidence_.has_value() && stop_confirmed_;
+    result.message = "无在途命令；停稳必须由关联证据确认：" + reason;
     return result;
   }
 
@@ -199,6 +217,16 @@ mtc::core::StopResult MockMotionAdapter::request_stop(const std::string & reason
 
   if (stop_confirmed_) {
     velocity_.assign(velocity_.size(), 0.0);
+    advance_time(validation_.settle_duration_s);
+    mtc::core::StopEvidence evidence;
+    evidence.command_id = *active_command_;
+    evidence.exec_state = mtc::core::ExecState::STOPPED;
+    evidence.communication_ok = true;
+    evidence.queue_empty = true;
+    evidence.stationary_interval_verified = true;
+    evidence.feedback = joint_feedback();
+    evidence.stationary_since_s = evidence.feedback.stamp_s - validation_.settle_duration_s;
+    evidence_ = evidence;
     guard_.release(*active_command_);
     result.message = "停止请求已送达并确认停稳（原因：" + reason + "）";
     return result;
@@ -209,11 +237,27 @@ mtc::core::StopResult MockMotionAdapter::request_stop(const std::string & reason
 
 std::optional<bool> MockMotionAdapter::explicit_stop_confirmation() const
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   return stop_confirmed_;
+}
+
+mtc::core::StopResult MockMotionAdapter::request_stop_for_command(
+  const std::string & reason, const std::optional<std::string> & command_id)
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  if (command_id) {cancelled_ids_.insert(*command_id);}
+  return request_stop(reason);
+}
+
+std::optional<mtc::core::StopEvidence> MockMotionAdapter::stop_evidence() const
+{
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  return evidence_;
 }
 
 bool MockMotionAdapter::force_begin_in_flight(const std::string & command_id)
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   const auto acquired = guard_.acquire(command_id);
   if (!acquired.first) {
     return false;
@@ -221,11 +265,13 @@ bool MockMotionAdapter::force_begin_in_flight(const std::string & command_id)
   active_command_ = command_id;
   cancel_requested_ = false;
   stop_confirmed_ = false;
+  evidence_.reset();
   return true;
 }
 
 void MockMotionAdapter::force_end_in_flight()
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   guard_.force_release();
   active_command_.reset();
   cancel_requested_ = false;
@@ -234,6 +280,7 @@ void MockMotionAdapter::force_end_in_flight()
 mtc::core::MotionResult MockMotionAdapter::execute_trajectory(
   const mtc::core::TimedTrajectory & trajectory)
 {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
   // 记录调用以便测试断言"轨迹只被当作一条轨迹提交一次"，
   // 而不是被拆成多次单点调用。
   trajectory_call_log_.push_back(trajectory);

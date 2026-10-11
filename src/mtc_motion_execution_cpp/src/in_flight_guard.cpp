@@ -9,6 +9,7 @@ namespace motion
 
 std::pair<bool, std::string> InFlightGuard::acquire(const std::string & command_id)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (command_id.empty()) {
     return {false, "command_id 不能为空"};
   }
@@ -23,6 +24,7 @@ std::pair<bool, std::string> InFlightGuard::acquire(const std::string & command_
 
 void InFlightGuard::release(const std::string & command_id)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (in_flight_.has_value() && *in_flight_ == command_id) {
     in_flight_.reset();
   }
@@ -30,6 +32,7 @@ void InFlightGuard::release(const std::string & command_id)
 
 void InFlightGuard::force_release()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   in_flight_.reset();
 }
 

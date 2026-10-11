@@ -47,6 +47,8 @@ struct PlanResult
   uint16_t error_code = ErrorCodes::OK;
   std::string message;
   MotionPrimitiveList primitives;
+  /// One complete executable output per requested motion primitive. No default targets.
+  std::vector<MotionCommand> commands;
 };
 
 /// 运动执行结论（等价于 ExecuteJointMove.action 的 Result/Feedback 可观测部分）。
@@ -72,7 +74,7 @@ struct MotionResult
   /// （重新感知 / 重新规划 / 人工确认）后才允许再次发令。
   bool retry_allowed_without_reobservation() const
   {
-    return !success && exec_state == ExecState::REJECTED;
+    return !success && exec_state == ExecState::REJECTED && !status_unknown && !timed_out;
   }
 };
 
@@ -119,6 +121,9 @@ struct MotionCapabilities
   bool cartesian_motion_supported = false;
   bool cancel_supported = false;
   std::string detail;
+  /// Explicit offline capability; never infer this from backend_name.
+  bool simulation_only = false;
+  bool associated_cancel_supported = false;
 };
 
 /// 关节反馈快照。
@@ -127,6 +132,19 @@ struct JointFeedback
   std::vector<double> position_rad;
   std::vector<double> velocity_rad_s;
   double stamp_s = 0.0;
+};
+
+/// Independent backend evidence. All stamps share the executor's monotonic clock.
+/// The backend must check EVERY sample in this interval, not just its endpoints.
+struct StopEvidence
+{
+  std::string command_id;
+  ExecState exec_state = ExecState::STOP_UNKNOWN;
+  bool communication_ok = false;
+  bool queue_empty = false;
+  bool stationary_interval_verified = false;
+  double stationary_since_s = 0.0;
+  JointFeedback feedback;
 };
 
 }  // namespace core

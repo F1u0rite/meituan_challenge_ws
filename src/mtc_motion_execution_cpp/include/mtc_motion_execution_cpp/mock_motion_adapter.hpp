@@ -11,6 +11,8 @@
 #define MTC_MOTION_EXECUTION_CPP__MOCK_MOTION_ADAPTER_HPP_
 
 #include <memory>
+#include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,17 +56,25 @@ public:
   mtc::core::MotionCapabilities capabilities() const override;
   mtc::core::MotionResult execute_joint_move(const mtc::core::MotionCommand & command) override;
   mtc::core::StopResult request_stop(const std::string & reason) override;
+  mtc::core::StopResult request_stop_for_command(const std::string & reason,
+    const std::optional<std::string> & command_id) override;
   mtc::core::JointFeedback joint_feedback() const override;
   std::optional<bool> explicit_stop_confirmation() const override;
+  std::optional<mtc::core::StopEvidence> stop_evidence() const override;
   mtc::core::MotionResult execute_trajectory(const mtc::core::TimedTrajectory & trajectory) override;
 
   /// 最近一次停止请求是否已被确认停稳（显式语义，供上层判断）。
-  bool stop_confirmed_flag() const {return stop_confirmed_;}
+  bool stop_confirmed_flag() const {return explicit_stop_confirmation().value_or(false);}
 
   /// 可观测的执行轨迹记录，便于断言"没有把轨迹拆成多次调用"。
-  const std::vector<mtc::core::MotionCommand> & call_log() const {return call_log_;}
-  const std::vector<mtc::core::TimedTrajectory> & trajectory_call_log() const
+  std::vector<mtc::core::MotionCommand> call_log() const
   {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    return call_log_;
+  }
+  std::vector<mtc::core::TimedTrajectory> trajectory_call_log() const
+  {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return trajectory_call_log_;
   }
 
@@ -85,6 +95,9 @@ public:
   void force_end_in_flight();
 
 private:
+  mutable std::recursive_mutex mutex_;
+  std::optional<mtc::core::StopEvidence> evidence_;
+  std::set<std::string> cancelled_ids_;
   /// 推进模拟时间：仅当注入的是 ManualClock 时生效，
   /// 以便单元测试在不睡眠的前提下验证超时。
   void advance_time(double seconds);
