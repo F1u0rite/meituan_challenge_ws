@@ -1,21 +1,21 @@
-# 10/11 Calibration / TF / TCP 交接
+# Calibration / TF / TCP 交接（10/12 更新）
 
 适用：AUBO S3、法兰附近安装的 D435i、V1 舌规。依据任务书第 05 节，交付范围为坐标定义、已有/待测表、离线校验和 10/12 现场标定流程。V2 参数不用于明天 V1。
 
-**当前结论：今晚可完成的软件/文档已有产物；真实内外参、V1 TCP、台面和工位标定尚未完成。** 最终运行验证结果见 [验收记录](docs/calibration/VALIDATION_REPORT.md)。分支和最终 commit 见交付目录外的 `CALIBRATION_DELIVERY_RECEIPT.md`。
+**当前结论：离线软件/文档与 fake 模型证据核验已有产物；真实内外参、V1 TCP、台面和工位标定尚未完成。** 最终运行验证结果见 [验收记录](docs/calibration/VALIDATION_REPORT.md)。本分支 `feat/calibration-tf-v1` 已同步下列 main；最终提交和 PR 以 GitHub 分支为准。
 
 ## 1. 阅读基线与确认条件
 
 | 项目 | 已确认内容 | 确认来源 |
 | --- | --- | --- |
-| 团队仓库 | `F1u0rite/meituan_challenge_ws`，main=`1d940f7c5f12561fed6641457c0b4b630a282b05` | 本轮 GitHub API 核对 |
+| 团队仓库 | `F1u0rite/meituan_challenge_ws`，本轮 main=`f7eaa2c0d2887aeada4fd635112c63c237962ff7`；初版基线为 `1d940f7` | git fetch 后同步；含规划 PR #3 |
 | 环境 | Ubuntu 24.04 / ROS 2 Jazzy；离线脚本 Python ≥3.10，无 ROS/NumPy 依赖 | 团队 README；本机 Python 3.11.9 |
 | 机械臂 | AUBO S3 | 实物照片、团队模型文档 |
 | 相机 | D435i，固定安装在法兰附近，随末端运动 | 用户本轮确认 |
 | 工具 | 明天使用 V1 舌规 | 用户本轮确认 |
 | 真实数据 | 当前没有提供图像、CameraInfo、同步机械臂位姿或标定结果 | 当前交付输入 |
 
-末端 `wrist3_Link → ee_link` 在官方固定模型中有 **+π/2 的 Z 轴旋转**，不能视为相同坐标系。[模型核验及来源](docs/calibration/MODEL_FRAME_AUDIT.md)。实际 Planning Frame、相机 frame 与 TCP 最终名称仍需运行确认。
+末端 `wrist3_Link → ee_link` 在官方固定模型中有 **+π/2 的 Z 轴旋转**，不能视为相同坐标系。[模型核验及来源](docs/calibration/MODEL_FRAME_AUDIT.md)。常提供的 fake 模型/日志已核验一致，规划运行报告确认 Planning Frame=`world`、EE=`ee_link`；真实部署还需复核，相机 frame 与 TCP 最终名称仍待确认。材料与接入说明见 [FAKE_RUNTIME_AUDIT.md](docs/calibration/FAKE_RUNTIME_AUDIT.md)。
 
 ## 2. 坐标链与责任
 
@@ -23,7 +23,7 @@
 
 ```mermaid
 flowchart TD
-    W[world：模型参考] --> B[base_link：候选规划参考]
+    W[world：fake 已核验规划参考] --> B[base_link：模型基座]
     B -->|机器人动态 TF：观测时刻 t| E[wrist3_Link]
     E -->|模型固定：Z 旋转 +π/2| EE[ee_link]
     E -.->|安装外参 UNKNOWN| C[D435i camera_link：实际名称待核验]
@@ -72,11 +72,12 @@ flowchart TD
 
 [测量清单 CSV](docs/calibration/measurement_inventory.csv) 和 [真实站点清单 JSON](config/calibration/site_inventory.json) 可直接交接。状态：MEASURED 有实测/设备读取证据；ESTIMATED 有模型/CAD 等估计来源；UNKNOWN 无数值，JSON 用 null。
 
-模型固定关节（如 `wrist3_Link→ee_link`）仅凭源码时是 ESTIMATED；保存运行时读数（`tf2_echo` 输出与 `robot_description` 哈希）后，才可按“运行时读取”标 MEASURED，evidence 写明读数文件。离线 REAL 诊断要求所经每条边都是 MEASURED，因此在读数之前经过该关节的 REAL 查询会被拒绝——这是有意的保守行为，不要为通过诊断而改标签。
+模型固定关节（如 `wrist3_Link→ee_link`）的几何来自模型，记 ESTIMATED；在真实部署下核对实际模型并保存运行时读数（`tf2_echo` 输出与 `robot_description` 哈希）后，可按“已部署 TF 读取”记录 MEASURED，evidence 必须注明范围。这不证明模型符合实物，也不证明物理 F 已对齐。此次 fake 材料另记 FAKE_RUNTIME_CAPTURE，不能将真实清单改为 MEASURED。离线 REAL 诊断要求所经每条边都是 MEASURED，不要为通过诊断而改标签。
 
 | 项目 | 状态 | 下一步 |
 | --- | --- | --- |
-| 官方末端固定旋转 | ESTIMATED：模型来源已核验 | 核对实际部署模型与标定参考系 |
+| 官方末端固定旋转 | ESTIMATED：官方模型与 fake 展开模型已核验一致 | 核对真实部署模型、物理 F 与标定参考系 |
+| 规划参考 / 末端 | fake 运行报告：world / ee_link | 现场核对；规划已负责 TCP 逆补偿，勿重复补偿 |
 | D435i 彩色/深度内参与内部外参 | UNKNOWN：官方支持设备读取 | 读取本设备/实际流参数，保存版本与分辨率 |
 | 末端至相机安装外参 | UNKNOWN | 固定支架后采集手眼数据；CAD 只作 ESTIMATED |
 | V1 TCP 位置与姿态 | UNKNOWN | 定义舌规工作点与轴向，分别验证位置/朝向 |
@@ -141,4 +142,4 @@ ros2 run tf2_ros tf2_echo wrist3_Link ee_link
 - 孙嘉明：机器人位姿记录、完整 Pose6D 适配、失败传播和 ROS/Core 时间契约。
 - 张叔阳：现有节点启动、ROS graph、日志、现场采集/复核记录。
 
-明日阻断：实际相机外参、V1 TCP、T0/台面位姿、提环进入方向与真实定位、时间与 TF 连通性。全部仍为 UNKNOWN/待运行核验，本次没有用占位值消除阻断。
+现场阻断：实际相机外参、V1 TCP、T0/台面位姿、提环进入方向与真实定位、时间与历史 TF 连通性。当前规划 backend 查询 latest TF，需先完成采集时间的适配；当前工位规划未消费独立工位朝向。接入责任与参数方向详见 [FAKE_RUNTIME_AUDIT.md §3–4](docs/calibration/FAKE_RUNTIME_AUDIT.md)。这些事项仍待测或待集成，本次没有用占位值消除阻断。

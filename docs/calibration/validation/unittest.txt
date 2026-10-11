@@ -35,6 +35,12 @@ test_nonunit_quaternion_is_not_silently_normalized (test_calibration.GeometryTes
 test_rotation_and_translation_transform_position_and_orientation (test_calibration.GeometryTests.test_rotation_and_translation_transform_position_and_orientation) ... ok
 test_tcp_compensation_is_inverse_and_includes_rotation (test_calibration.GeometryTests.test_tcp_compensation_is_inverse_and_includes_rotation) ... ok
 test_zero_quaternion_rejected (test_calibration.GeometryTests.test_zero_quaternion_rejected) ... ok
+test_audit_available (test_fake_model_audit.FakeAuditGate.test_audit_available) ... ok
+test_missing_valid_samples_cannot_pass (test_fake_model_audit.FakeAuditTests.test_missing_valid_samples_cannot_pass) ... ok
+test_omitting_ee_quarter_turn_disagrees_with_saved_orientation (test_fake_model_audit.FakeAuditTests.test_omitting_ee_quarter_turn_disagrees_with_saved_orientation) ... ok
+test_saved_fake_chain_matches_fk_with_rounding_and_no_motion_permission (test_fake_model_audit.FakeAuditTests.test_saved_fake_chain_matches_fk_with_rounding_and_no_motion_permission) ... ok
+test_wrong_log_translation_is_detected (test_fake_model_audit.FakeAuditTests.test_wrong_log_translation_is_detected) ... ok
+test_wrong_moveit_tip_is_detected (test_fake_model_audit.FakeAuditTests.test_wrong_moveit_tip_is_detected) ... ok
 test_camera_link_axes_follow_ros_convention_independently (test_nominal_mount.MountDesignTests.test_camera_link_axes_follow_ros_convention_independently) ... ok
 test_camera_model_selects_datasheet_zero_depth_offset (test_nominal_mount.MountDesignTests.test_camera_model_selects_datasheet_zero_depth_offset) ... ok
 test_cli_rejections_exit_2_and_never_authorize_motion (test_nominal_mount.MountDesignTests.test_cli_rejections_exit_2_and_never_authorize_motion) ... ok
@@ -48,6 +54,6 @@ test_sensor_offset_rotates_with_camera_housing (test_nominal_mount.MountDesignTe
 test_nominal_mount_feature_exists (test_nominal_mount.MountFeatureGate.test_nominal_mount_feature_exists) ... ok
 
 ----------------------------------------------------------------------
-Ran 48 tests in 2.083s
+Ran 54 tests in 2.173s
 
 OK

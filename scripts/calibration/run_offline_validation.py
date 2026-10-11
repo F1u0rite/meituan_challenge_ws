@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CHECK = 'scripts/calibration/check_calibration.py'
 DERIVE = 'scripts/calibration/derive_nominal_mount.py'
+AUDIT = 'scripts/calibration/audit_fake_model.py'
 SYNTHETIC = 'examples/calibration/synthetic_case.json'
 UNKNOWN = 'examples/calibration/unknown_extrinsic_case.json'
 DESIGN = 'examples/calibration/nominal_mount_design.json'
@@ -187,8 +188,12 @@ def main():
                    note='schema mismatch only; status isolation is covered by unit tests'),
         check_case('site_inventory_not_a_case', [CHECK, INVENTORY], 2, {'status': 'REJECTED', 'code': 'INVALID_POSE'},
                    note='inventory has no observation and cannot produce a target'),
+        check_case('fake_model_audit', [AUDIT], 0,
+                   {'all_passed': True, 'evidence_kind': 'FAKE_RUNTIME_CAPTURE',
+                    'real_calibration_verified': False},
+                   note='archived mock hardware model and TF logs; no live ROS or physical measurements'),
     ]
-    for record in documented[:4]:
+    for record in documented[:4] + documented[5:]:
         write_json(args.out / f"{record['name']}.json", record['result'])
     with tempfile.TemporaryDirectory() as temp:
         negatives = negative_cases(Path(temp))

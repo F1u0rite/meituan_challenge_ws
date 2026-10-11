@@ -1,6 +1,8 @@
 # S3 模型与末端 frame 核验
 
-2026-10-11，静态源码核验；运行 TF、实物安装未核验。
+2026-10-11 初版；2026-10-12 补充 fake 展开模型及 TF 日志核验。真实运行 TF、实物安装未核验。
+
+最新 main 的共享 URDF/SRDF/TF 与官方链一致；独立 FK 和全部有效日志样本的复算见 [FAKE_RUNTIME_AUDIT.md](FAKE_RUNTIME_AUDIT.md)。常的 fake 运行报告已确认 Planning Frame=`world`、EE=`ee_link`；下述初版来源仍保留固定版本供溯源，现场需核对真实部署，fake 证据不提升真实测量状态。
 
 团队 `main` 固定快照 `1d940f7c5f12561fed6641457c0b4b630a282b05` 的驱动文档给出：
 

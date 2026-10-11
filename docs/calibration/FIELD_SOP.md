@@ -18,6 +18,8 @@ mkdir -p runtime_logs/calibration/{device,handeye,tcp,table,validation}
 
 按 [交接主文档](../../TF_AND_CALIBRATION_HANDOFF.md) 第 7 节收集 ROS graph 和 TF 图，核对实际 Planning Frame、`wrist3_Link`/`ee_link`、camera_link/optical frame。用 [官方参数流程](D435I_OFFICIAL_PARAMETERS.md) 导出 CameraInfo 和内部外参。
 
+常提供的 fake 材料已确认规划 `world`、末端 `ee_link`、world→base 为固定单位阵；[核验及规划参数映射](FAKE_RUNTIME_AUDIT.md) 不替代真实部署检查。交 V1 TCP 时保存 `T_ee_link_TCP`，规划器已经补偿该偏置；先处理采集 stamp 与历史动态 TF，当前 backend 的 latest 查询不能作为移动相机的时间同步方案。
+
 确认实际图像尺寸、rectified/raw、深度编码/比例、深度是否对齐彩色、采集 stamp 与 ROS 时基。记录后再决定要不要重新标定内参；已有设备参数不意味着安装外参完成。
 
 另记录：机身标签型号（D435i 与 D435if 深度零平面分别为玻璃后 4.2 / 4.7 mm）；`robot_description` 哈希及 `tf2_echo wrist3_Link ee_link` 读数；法兰上标记的 F +X 物理特征（如定位销孔）及其在 RViz 中对应的 `wrist3_Link` 轴向。对齐到彩色的深度图属于彩色光学系，视觉输出的 frame_id 应与之一致。
