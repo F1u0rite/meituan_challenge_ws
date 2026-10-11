@@ -384,3 +384,90 @@ TEST_F(FjtAction, DirectFsmCancelKeepsOriginalFaultWhenStopIsStillPending) {
   ASSERT_TRUE(wait([&](){return port->snapshot().result && port->snapshot().result->stop_confirmed;}));
   fsm.step(); EXPECT_EQ(fsm.state(),mtc::manipulation::PickPlaceState::FAULT); EXPECT_EQ(server->cancels,1u);
 }
+
+TEST_F(FjtAction, CompletedGoalSameIdSameContentReturnsCachedResult) {
+  auto c=command(); send(c); auto original=result(c); ASSERT_TRUE(original.success);
+  for(int i=0;i<10;++i) {auto r=port->execute_trajectory(c); ASSERT_TRUE(r); EXPECT_TRUE(r->success); EXPECT_EQ(r->message,original.message);}
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, CompletedGoalSameIdDifferentTrajectoryRejected) {
+  auto c=command(); send(c); ASSERT_TRUE(result(c).success);
+  auto changed=c; changed.trajectory->points.back().positions_rad[0]+=0.001;
+  auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, CompletedGoalSameIdDifferentTimeoutRejected) {
+  auto c=command(); send(c); ASSERT_TRUE(result(c).success); ++c.timeout_ms;
+  auto r=port->execute_trajectory(c); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, CompletedGoalSameIdDifferentSafetySemanticsRejected) {
+  auto c=command(); send(c); ASSERT_TRUE(result(c).success);
+  for(int field=0;field<4;++field) {
+    auto changed=c;
+    if(field==0) {changed.simulation_only=false;}
+    if(field==1) {changed.requires_contact=true;}
+    if(field==2) {changed.velocity_scaling=0.1;}
+    if(field==3) {changed.acceleration_scaling=0.1;}
+    auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  }
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, CompletedGoalIdentityMismatchNeverSendsAgain) {
+  auto c=command("completed"); send(c); ASSERT_TRUE(result(c).success);
+  server->aborted=true; auto next=command("faulted");
+  for(auto & p:next.trajectory->points) {for(auto & x:p.positions_rad) {x+=0.02;}}
+  send(next); ASSERT_FALSE(result(next).success); ASSERT_TRUE(port->snapshot().fault_locked);
+  auto changed=c; changed.trajectory->trajectory_id="another-plan";
+  auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_EQ(server->goals,2u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, InFlightIdentityIncludesOriginalOrderAndIntentPose) {
+  server->no_result=true; auto c=command();
+  mtc::core::MotionPrimitive intent; intent.name="pre_align";
+  mtc::core::Pose6D pose; pose.valid=true; pose.frame_id="base_link"; intent.target_pose=pose; c.intent=intent;
+  send(c);
+  for(int field=0;field<4;++field) {
+    auto changed=c;
+    if(field==0) {std::reverse(changed.trajectory->joint_names.begin(),changed.trajectory->joint_names.end());}
+    if(field==1) {changed.intent->target_pose->position.x=0.01;}
+    if(field==2) {changed.trajectory->trajectory_id="changed";}
+    if(field==3) {changed.velocity_scaling=0.1;}
+    auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  }
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+  port->cancel_command(c.command_id,"cleanup"); EXPECT_TRUE(result(c).stop_confirmed);
+}
+
+TEST_F(FjtAction, CompletedIdentityPreservesEveryOriginalTrajectoryField) {
+  auto c=command(); mtc::core::MotionPrimitive intent; intent.name="pre_align";
+  mtc::core::Pose6D pose; pose.valid=true; pose.frame_id="base_link"; intent.target_pose=pose; c.intent=intent;
+  send(c); ASSERT_TRUE(result(c).success);
+  for(int field=0;field<14;++field) {
+    auto changed=c; auto & t=*changed.trajectory;
+    if(field==0) {std::reverse(t.joint_names.begin(),t.joint_names.end());}
+    if(field==1) {t.points[1].positions_rad[0]+=0.001;}
+    if(field==2) {t.points[1].velocities_rad_s[0]=0.001;}
+    if(field==3) {t.points[1].accelerations_rad_s2[0]=0.001;}
+    if(field==4) {t.points[1].time_from_start_s+=0.001;}
+    if(field==5) {t.header_frame_id="other_frame";}
+    if(field==6) {t.stamp_s=0.0000000001;} // Same ROS nanoseconds after rounding, different intent.
+    if(field==7) {t.trajectory_id="other_plan";}
+    if(field==8) {changed.primitive_name="other";}
+    if(field==9) {changed.intent->target_pose->orientation.z=0.0001;}
+    if(field==10) {changed.intent->target_pose->stamp_s=1;}
+    if(field==11) {changed.intent->max_linear_speed=0.04;}
+    if(field==12) {changed.intent->target_label="other";}
+    if(field==13) {changed.joint_names=cfg.joints;}
+    auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED) << field;
+  }
+  EXPECT_TRUE(port->execute_trajectory(c)->success); EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, FaultedIdentityMismatchPreservesLockAndResult) {
+  server->aborted=true; auto c=command(); send(c); auto original=result(c);
+  ASSERT_TRUE(port->snapshot().fault_locked); auto before=port->snapshot(); auto changed=c; ++changed.timeout_ms;
+  auto r=port->execute_trajectory(changed); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_EQ(port->execute_trajectory(c)->message,original.message);
+  EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_EQ(port->snapshot().goal_uuid,before.goal_uuid);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}

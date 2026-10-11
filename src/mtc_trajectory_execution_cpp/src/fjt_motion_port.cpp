@@ -38,10 +38,33 @@ static std::string uuid_text(const rclcpp_action::GoalUUID & u)
 {
   std::ostringstream s; for (auto b:u) {s<<std::hex<<std::setw(2)<<std::setfill('0')<<int(b);} return s.str();
 }
+// Compare the original, immutable command semantics before ROS normalization.
+// In particular MotionPrimitive::operator== omits target_pose, so compare it here.
+static bool same_command(const mtc::core::MotionCommand & a,const mtc::core::MotionCommand & b)
+{
+  if (a.command_id!=b.command_id || a.joint_names!=b.joint_names || a.target_rad!=b.target_rad ||
+    a.velocity_scaling!=b.velocity_scaling || a.acceleration_scaling!=b.acceleration_scaling ||
+    a.timeout_ms!=b.timeout_ms || a.primitive_name!=b.primitive_name ||
+    a.requires_contact!=b.requires_contact || a.simulation_only!=b.simulation_only ||
+    a.intent.has_value()!=b.intent.has_value() || a.trajectory.has_value()!=b.trajectory.has_value()) {return false;}
+  if (a.intent && (!(*a.intent==*b.intent) || a.intent->target_pose!=b.intent->target_pose)) {return false;}
+  if (!a.trajectory) {return true;}
+  const auto & x=*a.trajectory; const auto & y=*b.trajectory;
+  if (x.trajectory_id!=y.trajectory_id || x.joint_names!=y.joint_names ||
+    x.header_frame_id!=y.header_frame_id || x.stamp_s!=y.stamp_s || x.points.size()!=y.points.size()) {return false;}
+  for (size_t i=0;i<x.points.size();++i) {
+    const auto & p=x.points[i]; const auto & q=y.points[i];
+    if (p.time_from_start_s!=q.time_from_start_s || p.positions_rad!=q.positions_rad ||
+      p.velocities_rad_s!=q.velocities_rad_s || p.accelerations_rad_s2!=q.accelerations_rad_s2) {return false;}
+  }
+  return true;
+}
 struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
 {
   struct Session
   {
+    const mtc::core::MotionCommand identity;
+    explicit Session(const mtc::core::MotionCommand & c) : identity(c),id(c.command_id) {}
     std::string id, uuid;
     trajectory_msgs::msg::JointTrajectory trajectory;
     uint32_t timeout_ms;
@@ -70,7 +93,12 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   rclcpp::TimerBase::SharedPtr timer;
   mutable std::mutex mutex;
   std::shared_ptr<Session> active;
-  std::map<std::string, MotionResult> completed;
+  struct Completed
+  {
+    const mtc::core::MotionCommand identity;
+    const MotionResult result;
+  };
+  std::map<std::string, Completed> completed;
   std::optional<JointSample> sample;
   Time sample_at{}, hw_at{}, controller_at{}, last_proof{};
   std::optional<std::pair<int64_t,Time>> hw_pending, controllers_pending;
@@ -278,7 +306,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       else if (s.cancel && s.code==rclcpp_action::ResultCode::CANCELED)
       {r.exec_state=ExecState::STOPPED; r.message="owned Goal terminal CANCELED; independent stationary interval verified";}
       else {r.exec_state=ExecState::FAULT; r.error_code=E::HARDWARE_FAULT; r.message="controller terminal failure: "+s.controller_message; locked=true;}
-      s.result=r; completed[s.id]=r; detail=r.message;
+      s.result=r; completed.emplace(s.id,Completed{s.identity,r}); detail=r.message;
     } catch (const std::exception & e) {fault(std::string("runtime exception: ")+e.what()); issue_cancel();}
   }
   void init()
@@ -310,7 +338,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;
       }
       if (!handle) {
-        if (!s->result) {s->result=rejected("FJT Goal rejected before execution"); self->completed[s->id]=*s->result;}
+        if (!s->result) {s->result=rejected("FJT Goal rejected before execution"); self->completed.emplace(s->id,Completed{s->identity,*s->result});}
         s->terminal=true; return;
       }
       s->handle=handle; s->uuid=uuid_text(handle->get_goal_id()); self->issue_cancel();
@@ -378,14 +406,14 @@ std::optional<MotionResult> FjtMotionPort::execute_joint_move(const mtc::core::M
 std::optional<MotionResult> FjtMotionPort::execute_trajectory(const mtc::core::MotionCommand & c)
 {
   auto self=impl_; std::lock_guard<std::mutex> lock(self->mutex);
-  auto done=self->completed.find(c.command_id); if (done!=self->completed.end()) {return done->second;}
+  auto done=self->completed.find(c.command_id);
+  if (done!=self->completed.end()) {
+    if (!same_command(c,done->second.identity)) {return rejected("command identity reused with changed content");}
+    return done->second.result;
+  }
   if (self->active && self->active->id==c.command_id) {
-    if (self->active->result) {return self->active->result;}
-    auto v=convert(c,self->cfg);
-    if (!v.trajectory || *v.trajectory!=self->active->trajectory || c.timeout_ms!=self->active->timeout_ms) {
-      return rejected("command identity reused with changed content");
-    }
-    return std::nullopt;
+    if (!same_command(c,self->active->identity)) {return rejected("command identity reused with changed content");}
+    return self->active->result; // nullopt while pending; immutable result after FAULT.
   }
   if (self->locked) {MotionResult r; r.error_code=E::MOTION_STATUS_UNKNOWN; r.exec_state=ExecState::FAULT;
     r.status_unknown=true; r.message="fault locked; no automatic reset or resend"; return r;}
@@ -403,7 +431,7 @@ std::optional<MotionResult> FjtMotionPort::execute_trajectory(const mtc::core::M
       const auto delay=(rclcpp::Time(t.header.stamp).nanoseconds()-self->node->now().nanoseconds())/1e9;
       if (delay<0 || delay>self->cfg.max_start_delay) {return rejected("scheduled stamp stale or beyond capability");}
     }
-    auto session=std::make_shared<Impl::Session>(); session->id=c.command_id;
+    auto session=std::make_shared<Impl::Session>(c);
     session->trajectory=t; session->timeout_ms=c.timeout_ms; session->sent=Steady::now();
     self->active=session; self->send(session); return std::nullopt;
   } catch (const std::exception & e) {
