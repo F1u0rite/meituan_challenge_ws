@@ -9,8 +9,8 @@ using namespace std::chrono_literals;
 int main(int argc,char ** argv)
 {
   if (argc!=3 || std::string(argv[1])!="--verify-generic-system" ||
-    (std::string(argv[2])!="success" && std::string(argv[2])!="cancel" && std::string(argv[2])!="mismatch"))
-  {std::cerr<<"仅显式 Fake 验证：--verify-generic-system success|cancel|mismatch\n"; return 2;}
+    (std::string(argv[2])!="success" && std::string(argv[2])!="cancel" && std::string(argv[2])!="mismatch" && std::string(argv[2])!="identity" && std::string(argv[2])!="topology"))
+  {std::cerr<<"仅显式 Fake 验证：--verify-generic-system success|cancel|mismatch|identity|topology\n"; return 2;}
   std::string mode=argv[2]; rclcpp::init(argc,argv);
   int code=1;
   try {
@@ -26,6 +26,22 @@ int main(int argc,char ** argv)
     auto start=std::chrono::steady_clock::now();
     while (rclcpp::ok() && std::chrono::steady_clock::now()-start<10s) {
       executor.spin_some(); if (port.snapshot().ready && current) {break;} std::this_thread::sleep_for(5ms);
+    }
+    size_t servers=0,clients=0;
+    for(const auto & n:node->get_node_graph_interface()->get_node_names_and_namespaces()) {
+      const auto endpoint=cfg.action_name()+"/_action/send_goal";
+      servers+=node->get_service_names_and_types_by_node(n.first,n.second).count(endpoint);
+      if(node->get_node_graph_interface()->get_client_names_and_types_by_node(n.first,n.second).count(endpoint)) {
+        ++clients; std::cout<<"FJT client node="<<n.second<<"/"<<n.first<<"\n";
+      }
+    }
+    auto proof=port.snapshot();
+    std::cout<<"FJT servers="<<servers<<" clients="<<clients<<" direct_trajectory_publishers="
+      <<node->count_publishers("/"+cfg.controller+"/joint_trajectory")
+      <<" foreign_active_goals="<<proof.foreign_active_goals<<" ready="<<proof.ready<<"\n";
+    if(mode=="topology") {
+      std::cout<<(proof.ready ? "PASS" : "BLOCKED")<<": Fake execution ownership gate; no Goal sent\n";
+      executor.remove_node(node); rclcpp::shutdown(); return proof.ready ? 0 : 2;
     }
     if (!port.snapshot().ready || !current) {throw std::runtime_error("BLOCKED: GenericSystem/active controller/fresh state/exclusive graph proof unavailable");}
     mtc::core::MotionCommand c; c.command_id="generic_"+mode+"_"+std::to_string(node->now().nanoseconds());
@@ -60,7 +76,23 @@ int main(int argc,char ** argv)
     bool pass=mode=="mismatch" ? (r->exec_state==mtc::core::ExecState::REJECTED && s.goals_sent==0 &&
       r->message.find("trajectory start differs")!=std::string::npos) :
       (r->stop_confirmed && !r->status_unknown && !s.fault_locked && s.goals_sent==1 &&
-      (mode=="success" ? r->ok() : (!r->success && r->exec_state==mtc::core::ExecState::STOPPED && s.cancel_requests==1)));
+      ((mode=="success" || mode=="identity") ? r->ok() : (!r->success && r->exec_state==mtc::core::ExecState::STOPPED && s.cancel_requests==1)));
+    if(mode=="identity" && pass) {
+      const auto cached=port.execute_trajectory(c);
+      pass=cached && cached->ok();
+      for(int field=0;field<3;++field) {
+        auto changed=c;
+        if(field==0) {changed.trajectory->points.back().positions_rad[0]+=0.001;}
+        if(field==1) {++changed.timeout_ms;}
+        if(field==2) {changed.simulation_only=false;}
+        auto refusal=port.execute_trajectory(changed);
+        pass=pass && refusal && refusal->exec_state==mtc::core::ExecState::REJECTED;
+      }
+      auto after=port.snapshot();
+      pass=pass && after.goals_sent==1 && after.cancel_requests==0 && !after.fault_locked;
+      std::cout<<"identity reread + 3 changed-content refusals; goals_sent="<<after.goals_sent
+        <<" cancels_sent="<<after.cancel_requests<<"\n";
+    }
     std::cout<<(pass ? "PASS" : "FAIL")<<": GenericSystem "<<mode<<"\n"; code=pass ? 0 : 1;
     executor.remove_node(node);
   } catch(const std::exception & e) {std::cerr<<e.what()<<"\n";}

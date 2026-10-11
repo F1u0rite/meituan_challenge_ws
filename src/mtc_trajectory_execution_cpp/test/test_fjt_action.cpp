@@ -471,3 +471,18 @@ TEST_F(FjtAction, FaultedIdentityMismatchPreservesLockAndResult) {
   EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_EQ(port->snapshot().goal_uuid,before.goal_uuid);
   EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
 }
+
+TEST_F(FjtAction, MonotonicPlannerStampCannotBecomeRosScheduledStart) {
+  auto c=command(); c.trajectory->stamp_s=std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
+  ASSERT_TRUE(convert(c,cfg).trajectory); // Structurally valid, incompatible clock contract.
+  auto r=port->execute_trajectory(c); ASSERT_TRUE(r);
+  EXPECT_NE(r->message.find("scheduled stamp stale"),std::string::npos);
+  EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u); EXPECT_FALSE(port->snapshot().fault_locked);
+}
+TEST_F(FjtAction, PastPlannerGenerationStampDoesNotDispatch) {
+  auto c=command(); c.trajectory->stamp_s=node->now().seconds()-1;
+  ASSERT_TRUE(convert(c,cfg).trajectory);
+  auto r=port->execute_trajectory(c); ASSERT_TRUE(r);
+  EXPECT_NE(r->message.find("scheduled stamp stale"),std::string::npos);
+  EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u); EXPECT_FALSE(port->snapshot().fault_locked);
+}

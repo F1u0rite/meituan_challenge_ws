@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""核对 Phase 2B 前358项身份与所有已注册 GTest 的实际执行结果。"""
+"""核对 Phase 2B 原424项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
 import argparse
 from collections import Counter
 from pathlib import Path
@@ -22,12 +22,19 @@ def main():
         if re.fullmatch(r'src/mtc_\w+_cpp/test/test_\w+\.cpp', name):
             baseline.update(f'{s}.{c}' for s, c in pattern.findall(git('show', f'{base}:{name}')))
     assert len(baseline) == 358, len(baseline)
+    for name in git('ls-tree', '-r', '--name-only', 'b47b5fe', 'src/mtc_trajectory_execution_cpp/test').splitlines():
+        if name.endswith('.cpp'):
+            source = git('show', f'b47b5fe:{name}')
+            baseline.update(f'{s}.{c}' for s, c in pattern.findall(source) if c != 'Name')
+            baseline.update('TrajectoryValidator.' + c for c in re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
+    assert len(baseline) == 424, len(baseline)
     actual = Counter()
     inventory = set()
     by_package = Counter()
-    xmls = list(build.glob('mtc_*_cpp/test_results/**/*.gtest.xml'))
+    packages = list((root / 'src').glob('mtc_*_cpp')) + [root / 'src/mtc_moveit_planner']
+    xmls = [p for pkg in packages for p in (build / pkg.name / 'test_results').rglob('*.gtest.xml')]
     expected_executables = 0
-    for pkg in (root / 'src').glob('mtc_*_cpp'):
+    for pkg in packages:
         cmake = pkg / 'CMakeLists.txt'
         if not cmake.exists():
             continue
@@ -57,7 +64,7 @@ def main():
     assert baseline <= actual.keys(), sorted(baseline - actual.keys())
     assert inventory == actual.keys(), (sorted(inventory - actual.keys()), sorted(actual.keys() - inventory))
     assert all(v == 1 for v in actual.values()), actual
-    print(f'PASS: 原358项身份全部保留并执行；新增{len(inventory - baseline)}项')
+    print(f'PASS: 原358项 Core/Action + 原66项 Phase 2B 身份全部保留并执行；新增及合入{len(inventory - baseline)}项')
     print(f'PASS: {len(actual)}项独立GTest / {len(xmls)}个可执行文件；FAIL 0 / SKIP 0')
     for package, count in sorted(by_package.items()):
         print(f'  {package}: {count} PASS')
