@@ -1,0 +1,157 @@
+
+MODE plan actual evidence: /tmp/phase2c_release_plan
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=18 duration=4.32282 generation_steady=65691.9 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] PASS plan Goals=0 Cancel=0
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE execute actual evidence: /tmp/phase2c_checked_execute
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=0 duration=70.8493 reason=retimed deadline exceeds capability Goals=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.34566 generation_steady=66005.4 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=66005.4 dispatch_stamp=0 retime_factor=3 duration=13.037 timeout_ms=20556 command_id=phase2c-1791752529729430317/dispatch/1
+[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=d099a20cb39c1ea4a50f8fade7d198fe feedback=260 stationary_samples=45 stationary_seconds=0.219873 message=FJT successful; fresh post-terminal stationary interval and final joints verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=0.0207004/0.0207004 upperArm_joint=-0.0497514/-0.0497514 foreArm_joint=0.0714041/0.0714041 wrist1_joint=-0.024836/-0.024836 wrist2_joint=-0.000303081/-0.000303081 wrist3_joint=0.0160704/0.0160704 
+[single_owner-1] PASS execute
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE mismatch actual evidence: /tmp/phase2c_release_mismatch
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=14 duration=4.35079 generation_steady=65732 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] PASS mismatch Goals=0 Cancel=0 reason=planned start differs from current named state
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE expired actual evidence: /tmp/phase2c_release_expired
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.2948 generation_steady=65746.4 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] PASS expired Goals=0 Cancel=0 reason=plan generation time is future or expired
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE foreign actual evidence: /tmp/phase2c_release_foreign
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=14 duration=4.35409 generation_steady=65759.8 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=65759.8 dispatch_stamp=0 retime_factor=3 duration=13.0623 timeout_ms=20594 command_id=phase2c-1791752283840464317/dispatch/1
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] FJT_CLIENT=//unauthorized_fake_client
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=2 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=0 controlled=1
+[single_owner-1] PASS foreign Goals=0 Cancel=0
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE cancel actual evidence: /tmp/phase2c_checked_cancel
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=0 duration=70.8585 reason=retimed deadline exceeds capability Goals=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.36152 generation_steady=66031.8 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=66031.8 dispatch_stamp=0 retime_factor=3 duration=13.0846 timeout_ms=20627 command_id=phase2c-1791752557921376151/dispatch/1
+[single_owner-1] CANCEL_REQUEST initial_stop_confirmed=0 uuid=db8ab2b0303aa24211bcdb59d9091ef9
+[single_owner-1] RESULT success=0 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=1 UUID=db8ab2b0303aa24211bcdb59d9091ef9 feedback=1 stationary_samples=45 stationary_seconds=0.220159 message=owned Goal terminal CANCELED; independent stationary interval verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=9.5133e-07/0.0199332 upperArm_joint=-2.42394e-06/-0.0507888 foreArm_joint=3.34839e-06/0.0701589 wrist1_joint=-1.16098e-06/-0.024326 wrist2_joint=1.0511e-08/0.000220236 wrist3_joint=7.33537e-07/0.0153698 
+[single_owner-1] PASS cancel
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE silence actual evidence: /tmp/phase2c_release_silence
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.33165 generation_steady=65786.3 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=65786.3 dispatch_stamp=0 retime_factor=3 duration=12.9949 timeout_ms=20493 command_id=phase2c-1791752311224534632/dispatch/1
+[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=7a5be8828d36cf8aaadd54c053fe33ab feedback=259 stationary_samples=43 stationary_seconds=0.209965 message=FJT successful; fresh post-terminal stationary interval and final joints verified
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=0 ready=1 controlled=1
+[single_owner-1] STATUS_SILENCE ready=1 status_messages=2 previous=2
+[single_owner-1] PASS silence
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+MODE fault actual evidence: /tmp/phase2c_checked_fault
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.33346 generation_steady=66046.7 ROS_now=1.79175e+09 goals=0
+[single_owner-1] FJT_CLIENT=//mtc_phase2c_single_owner
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=66046.7 dispatch_stamp=0 retime_factor=3 duration=13.0004 timeout_ms=20501 command_id=phase2c-1791752571134145617/dispatch/1
+[single_owner-1] RESULT success=0 stop_confirmed=0 status_unknown=1 fault_locked=1 Goals=1 Cancel=1 UUID=a2fd42050a4588da7b91f682d11d249c feedback=1 stationary_samples=0 stationary_seconds=0 message=controlled execution authority lost; restart is not an automatic reset
+[single_owner-1] PASS fault
+owned_process planning_only exit=0
+owned_process control exit=0
+owned_process owner exit=0
+
+Note: launch exit=0 does not prove move_group child exit=0; see shutdown checks in report.
+
+FINAL DELIVERY EXECUTE (after enum/dependency finalization): /tmp/phase2c_delivery_execute
+[single_owner-1] COLD_START_CREDENTIAL_CONSUMED
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.32143 generation_steady=66455.4 ROS_now=1.79175e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] DISPATCH policy=IMMEDIATE original_stamp=66455.4 dispatch_stamp=0 retime_factor=3 duration=12.9643 timeout_ms=20447 command_id=phase2c-1791752979508361792/dispatch/1
+[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=838566c3ba26f6d5e792e88bca026f75 feedback=259 stationary_samples=45 stationary_seconds=0.21997 message=FJT successful; fresh post-terminal stationary interval and final joints verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=0.019756/0.019756 upperArm_joint=-0.0490335/-0.0490335 foreArm_joint=0.0726283/0.0726283 wrist1_joint=-0.0251738/-0.0251738 wrist2_joint=0.000719584/0.000719584 wrist3_joint=0.0170761/0.0170761 
+[single_owner-1] PASS execute
