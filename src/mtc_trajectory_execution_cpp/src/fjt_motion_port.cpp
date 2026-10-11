@@ -9,6 +9,9 @@
 #include <mutex>
 #include <set>
 #include <sstream>
+#include <thread>
+#include <functional>
+#include <filesystem>
 #include <action_msgs/msg/goal_status_array.hpp>
 #include <control_msgs/action/follow_joint_trajectory.hpp>
 #include <controller_manager_msgs/srv/list_controllers.hpp>
@@ -69,7 +72,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     std::string id, uuid;
     trajectory_msgs::msg::JointTrajectory trajectory;
     uint32_t timeout_ms;
-    Time sent, terminal_at{}, stationary_since{}, last_stationary{};
+    Time sent, feedback_at{}, terminal_at{}, stationary_since{}, last_stationary{};
     size_t stationary_samples=0, feedback_samples=0;
     int64_t stationary_stamp_ns=0;
     bool terminal=false, cancel=false, cancel_sent=false, cancel_ack=false;
@@ -96,6 +99,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   size_t idle_samples=0;
   rclcpp::TimerBase::SharedPtr timer;
   mutable std::mutex mutex;
+  std::vector<std::function<void()>> outgoing; // At most one send + one scoped cancel per Session.
   std::shared_ptr<Session> active;
   struct Completed
   {
@@ -107,9 +111,11 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   Time sample_at{}, hw_at{}, controller_at{}, last_proof{};
   std::optional<std::pair<int64_t,Time>> hw_pending, controllers_pending;
   bool hw_ok=false, controller_ok=false, locked=false, closed=false;
+  bool controlled_start=false, authority_established=false;
+  std::set<rclcpp_action::GoalUUID> terminal_owned_ids;
   std::string detail="waiting for runtime Fake Hardware and state proofs";
   size_t goals_sent=0, cancels_sent=0;
-  std::string lease_key;
+  std::string lease_key, hardware_plugin;
   Impl(rclcpp::Node::SharedPtr n, Config c) : node(std::move(n)),cfg(std::move(c))
   {cfg.validate(); if (!node) {throw std::invalid_argument("node is required");}}
 
@@ -136,6 +142,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       if (status.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
         status.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
         status.status==action_msgs::msg::GoalStatus::STATUS_CANCELING) {
+        if (controlled_start && terminal_owned_ids.count(status.goal_info.goal_id.uuid)) {continue;}
         if (!active || (active->handle && status.goal_info.goal_id.uuid!=active->handle->get_goal_id())) {++count;}
         else if (!active->handle) {++count;}
       }
@@ -148,14 +155,21 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     // it is never a cross-process execution lock or proof against replay.
     return status_received && status_valid && seconds(now,status_at)<=cfg.proof_max_age;
   }
+  bool status_authorized(Time now) const
+  {
+    // The controlled launch owns the startup baseline; native Status is event-driven.
+    // Never infer idle from missing Status. Preserve every observed conflict instead.
+    return controlled_start ? (!status_received || status_valid) : status_usable(now);
+  }
   GoalOwnership ownership(Time now) const
   {
-    if (!status_usable(now)) {return GoalOwnership::UNKNOWN;}
+    if (!status_authorized(now)) {return GoalOwnership::UNKNOWN;}
     if (active && !active->handle && !active->terminal) {return GoalOwnership::UNKNOWN;}
     if (foreign_goals()) {return GoalOwnership::FOREIGN_GOAL;}
     if (active && active->handle) {
       if (!active->terminal) {return GoalOwnership::OWN_GOAL;}
       for (const auto & s:goal_statuses) {
+        if (controlled_start && terminal_owned_ids.count(s.goal_info.goal_id.uuid)) {continue;}
         if (s.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
           s.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
           s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING) {return GoalOwnership::UNKNOWN;}
@@ -181,6 +195,10 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING)) {active->pending_status_ids.insert(id);}
     }
     goal_statuses=msg.status_list;
+    if (controlled_start && (!status_valid ||
+      ((!active || active->handle || active->terminal) && foreign_goals()))) {
+      fault("controlled owner observed invalid Status or foreign active UUID"); issue_cancel();
+    }
   }
   bool idle_verified() const
   {
@@ -197,13 +215,14 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   }
   bool healthy(Time now) const
   {
-    if (!environment_healthy(now) || !status_usable(now) || foreign_goals() ||
+    if (!environment_healthy(now) || !status_authorized(now) || foreign_goals() ||
       (active && !active->handle && !active->terminal)) {return false;}
     if ((!active || active->result) && !idle_verified()) {return false;}
     // A result may arrive before its terminal Status; do not dispatch a successor
     // while the live Status still calls that owned UUID active.
     if (active && active->result) {
       for (const auto & s:goal_statuses) {
+        if (controlled_start && terminal_owned_ids.count(s.goal_info.goal_id.uuid)) {continue;}
         if (s.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
           s.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
           s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING) {return false;}
@@ -225,21 +244,39 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   void issue_cancel()
   {
     if (!active || !active->cancel || !active->handle || active->terminal || active->cancel_sent) {return;}
-    auto s=active; s->cancel_sent=true; ++cancels_sent;
-    std::weak_ptr<Impl> weak=shared_from_this();
-    try {
-      client->async_cancel_goal(s->handle,[weak,s](auto f) {
-        auto self=weak.lock(); if (!self) {return;}
-        std::lock_guard<std::mutex> lock(self->mutex);
-        if (self->active!=s || self->closed) {return;}
-        try {
-          auto response=f.get();
-          for (const auto & info:response->goals_canceling) {
-            if (info.goal_id.uuid==s->handle->get_goal_id()) {s->cancel_ack=true;}
-          }
-        } catch (const std::exception & e) {self->fault(std::string("cancel response exception: ")+e.what());}
-      });
-    } catch (const std::exception & e) {fault(std::string("cancel exception: ")+e.what());}
+    auto s=active; s->cancel_sent=true;
+    std::weak_ptr<Impl> weak=shared_from_this(); auto action_client=client;
+    // rclcpp_action invokes callbacks while holding internal Goal locks. Never
+    // acquire those locks while holding mutex: pin the Session, then drain outside.
+    outgoing.push_back([weak,s,action_client]() {
+      try {
+        action_client->async_cancel_goal(s->handle,[weak,s](auto f) {
+          auto self=weak.lock(); if (!self) {return;}
+          std::lock_guard<std::mutex> lock(self->mutex);
+          if (self->active!=s || self->closed) {return;}
+          try {
+            auto response=f.get();
+            for (const auto & info:response->goals_canceling) {
+              if (info.goal_id.uuid==s->handle->get_goal_id()) {s->cancel_ack=true;}
+            }
+          } catch (const std::exception & e) {self->fault(std::string("cancel response exception: ")+e.what());}
+        });
+        if (auto self=weak.lock()) {std::lock_guard<std::mutex> lock(self->mutex); ++self->cancels_sent;}
+      } catch (const std::exception & e) {
+        if (auto self=weak.lock()) {
+          std::lock_guard<std::mutex> lock(self->mutex);
+          // An owned terminal Result can win before the queued Cancel is sent.
+          // UnknownGoalHandle then supplies no ACK; Result + fresh samples remain required.
+          if (!self->closed && self->active==s && !s->terminal) {self->fault(std::string("cancel exception: ")+e.what());}
+        }
+      }
+    });
+  }
+  void drain_outgoing()
+  {
+    std::vector<std::function<void()>> work;
+    {std::lock_guard<std::mutex> lock(mutex); work.swap(outgoing);}
+    for (auto & action:work) {action();}
   }
   void refresh_proofs(Time now)
   {
@@ -257,7 +294,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         std::lock_guard<std::mutex> lock(self->mutex); self->hw_pending.reset();
         auto r=response.get(); self->hw_at=Steady::now(); self->hw_ok=false;
         if (r->component.size()!=1) {return;}
-        const auto & h=r->component[0];
+        const auto & h=r->component[0]; self->hardware_plugin=h.plugin_name;
         if (h.name!=self->cfg.hardware_component || h.plugin_name!="mock_components/GenericSystem" ||
           h.state.id!=lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {return;}
         std::set<std::string> available;
@@ -342,16 +379,22 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     if (!s.stationary_samples) {s.stationary_since=now; s.stationary_stamp_ns=mapped->stamp_ns;}
     ++s.stationary_samples; s.last_stationary=now;
   }
-  void tick()
+  void tick_state()
   {
     std::lock_guard<std::mutex> lock(mutex); if (closed || !cfg.enable_fake_execution) {return;}
     auto now=Steady::now();
     try {
       refresh_proofs(now);
+      if (controlled_start && authority_established &&
+        (!environment_healthy(now) || !status_authorized(now) ||
+        ((!active || active->handle || active->terminal) && foreign_goals()))) {
+        fault("controlled execution authority lost; restart is not an automatic reset"); issue_cancel(); return;
+      }
+      if (controlled_start && healthy(now)) {authority_established=true;}
       if (!active || active->result) {issue_cancel(); return;}
       auto & s=*active;
       if (seconds(now,s.sent)>=s.timeout_ms/1000.0) {fault("execution or stationary confirmation deadline exceeded",true); issue_cancel(); return;}
-      if (!environment_healthy(now) || !status_usable(now)) {
+      if (!environment_healthy(now) || !status_authorized(now)) {
         fault("runtime Fake/controller/state/graph or live Status evidence lost"); issue_cancel(); return;
       }
       // Sending is irrevocable. Unknown UUIDs cannot be guessed Own, but retain
@@ -359,6 +402,9 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       // cancel without a matching handle. Remember every UUID across updates.
       if (!s.handle && !s.terminal) {return;}
       if (foreign_goals()) {fault("unassociated active Goal UUID; execution ownership lost"); issue_cancel(); return;}
+      if (s.handle && !s.terminal && seconds(now,s.feedback_at)>cfg.feedback_max_age) {
+        fault("associated FJT feedback stopped updating"); issue_cancel(); return;
+      }
       issue_cancel();
       if (!s.terminal || s.stationary_samples<2 || seconds(s.last_stationary,s.stationary_since)<cfg.settle_duration ||
         (sample->stamp_ns-s.stationary_stamp_ns)/1e9<cfg.settle_duration ||
@@ -373,6 +419,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       s.result=r; completed.emplace(s.id,Completed{s.identity,r}); detail=r.message;
     } catch (const std::exception & e) {fault(std::string("runtime exception: ")+e.what()); issue_cancel();}
   }
+  void tick() {tick_state(); drain_outgoing();}
   void init()
   {
     group=node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -394,13 +441,32 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   }
   void send(const std::shared_ptr<Session> & s)
   {
+    try {send_unchecked(s);} catch (const std::exception & e) {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (!closed && active==s) {fault(std::string("dispatch proof exception: ")+e.what()); issue_cancel();}
+    }
+  }
+  void send_unchecked(const std::shared_ptr<Session> & s)
+  {
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (closed || active!=s || locked) {return;}
+      if (!environment_healthy(Steady::now()) || !status_authorized(Steady::now()) || foreign_goals()) {
+        fault("execution authority lost before wire dispatch"); return;
+      }
+      if (s->trajectory.header.stamp.sec || s->trajectory.header.stamp.nanosec) {
+        const double delay=(rclcpp::Time(s->trajectory.header.stamp).nanoseconds()-node->now().nanoseconds())/1e9;
+        if (delay<0 || delay>cfg.max_start_delay) {fault("scheduled execution expired before wire dispatch"); return;}
+      }
+    }
     auto weak=weak_from_this(); auto cancel_client=client;
     rclcpp_action::Client<Fjt>::SendGoalOptions options;
     options.goal_response_callback=[weak,s,cancel_client](Handle::SharedPtr handle) {
       auto self=weak.lock();
       if (!self) {if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;}
-      std::lock_guard<std::mutex> lock(self->mutex);
+      std::unique_lock<std::mutex> lock(self->mutex);
       if (self->closed || self->active!=s) {
+        lock.unlock();
         if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;
       }
       if (!handle) {
@@ -408,7 +474,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         if (!s->result) {s->result=rejected("FJT Goal rejected before execution"); self->completed.emplace(s->id,Completed{s->identity,*s->result});}
         s->terminal=true; return;
       }
-      s->handle=handle; s->uuid=uuid_text(handle->get_goal_id());
+      s->handle=handle; s->feedback_at=Steady::now(); s->uuid=uuid_text(handle->get_goal_id());
       for (const auto & id:s->pending_status_ids) {
         if (id!=handle->get_goal_id()) {self->fault("foreign UUID observed during pending Goal response"); break;}
       }
@@ -425,25 +491,89 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       if (!sample || age< -0.01 || age>self->cfg.feedback_max_age) {
         self->fault("invalid or stale associated FJT feedback"); self->issue_cancel(); return;
       }
-      ++s->feedback_samples;
+      ++s->feedback_samples; s->feedback_at=Steady::now();
     };
     options.result_callback=[weak,s](const Handle::WrappedResult & result) {
       auto self=weak.lock(); if (!self) {return;}
       std::lock_guard<std::mutex> lock(self->mutex);
       if (self->closed || self->active!=s || !s->handle || result.goal_id!=s->handle->get_goal_id() || s->terminal) {return;}
       s->terminal=true; s->terminal_at=Steady::now(); s->code=result.code;
+      self->terminal_owned_ids.insert(result.goal_id);
       if (result.result) {s->controller_code=result.result->error_code; s->controller_message=result.result->error_string;}
       s->stationary_samples=0; s->stationary_since={};
     };
     Fjt::Goal goal; goal.trajectory=s->trajectory;
-    client->async_send_goal(goal,options); ++goals_sent;
+    try {
+      client->async_send_goal(goal,options);
+      std::lock_guard<std::mutex> lock(mutex); ++goals_sent;
+    } catch (const std::exception & e) {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (!closed && active==s) {fault(std::string("wire send exception: ")+e.what()); issue_cancel();}
+    }
   }
 };
 static std::mutex leases_mutex;
 static std::set<std::string> leases;
+std::shared_ptr<ControlledFakeStart> ControlledFakeStart::verify_empty_domain(
+  const rclcpp::Node::SharedPtr & node, const Config & config)
+{
+  config.validate();
+  const char * range=std::getenv("ROS_AUTOMATIC_DISCOVERY_RANGE");
+  const char * peers=std::getenv("ROS_STATIC_PEERS");
+  if (!node || !config.enable_fake_execution || !range || std::string(range)!="LOCALHOST" ||
+    (peers && *peers) || node->get_node_base_interface()->get_context()->get_domain_id()==0) {
+    throw std::invalid_argument("controlled start requires explicit non-default isolated LOCALHOST domain");
+  }
+  for (const auto * key:{"ROS_LOCALHOST_ONLY","FASTDDS_DEFAULT_PROFILES_FILE",
+    "FASTRTPS_DEFAULT_PROFILES_FILE","CYCLONEDDS_URI"}) {
+    const char * value=std::getenv(key);
+    if (value && *value) {throw std::invalid_argument("uncontrolled DDS/discovery profile prevents cold authority");}
+  }
+  if (std::filesystem::exists("DEFAULT_FASTDDS_PROFILES.xml") ||
+    std::filesystem::exists("DEFAULT_FASTRTPS_PROFILES.xml")) {
+    throw std::invalid_argument("implicit local DDS profile prevents cold authority");
+  }
+  // Bounded startup-only observation; never call from a FSM/event callback.
+  // Graph silence is not authentication. The trusted supervisor starts fresh children
+  // only after this credential has been consumed, and never adopts an existing JTC.
+  auto start=Steady::now();
+  while (seconds(Steady::now(),start)<3.0) {
+    const auto nodes=node->get_node_graph_interface()->get_node_names_and_namespaces();
+    for (const auto & n:nodes) {
+      const auto services=node->get_service_names_and_types_by_node(n.first,n.second);
+      if (services.count(config.action_name()+"/_action/send_goal") ||
+        services.count(config.controller_manager+"/list_hardware_components") ||
+        services.count(config.controller_manager+"/list_controllers")) {
+        throw std::invalid_argument("pre-existing controller/Action prevents cold authority");
+      }
+      if (n.first!=node->get_name() || n.second!=node->get_namespace()) {
+        throw std::invalid_argument("cold-start domain is not empty; existing node prevents authority");
+      }
+    }
+    if (nodes.size()>1 || node->count_publishers(config.joint_state_topic) ||
+      node->count_publishers("/"+config.controller+"/joint_trajectory")) {
+      throw std::invalid_argument("cold-start graph has existing state or motion participant");
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+  auto ticket=std::shared_ptr<ControlledFakeStart>(new ControlledFakeStart());
+  ticket->node_=node; ticket->domain_=node->get_node_base_interface()->get_context()->get_domain_id();
+  ticket->endpoint_=config.action_name(); ticket->issued_=Steady::now(); return ticket;
+}
 FjtMotionPort::FjtMotionPort(rclcpp::Node::SharedPtr node, Config config)
+: FjtMotionPort(std::move(node),std::move(config),nullptr) {}
+FjtMotionPort::FjtMotionPort(rclcpp::Node::SharedPtr node, Config config,
+  const std::shared_ptr<ControlledFakeStart> & authority)
 : impl_(std::make_shared<Impl>(std::move(node),std::move(config)))
 {
+  if (authority) {
+    if (authority->node_.lock()!=impl_->node || authority->endpoint_!=impl_->cfg.action_name() ||
+      authority->domain_!=impl_->node->get_node_base_interface()->get_context()->get_domain_id() ||
+      seconds(Steady::now(),authority->issued_)>1.0 || authority->consumed_.exchange(true)) {
+      throw std::invalid_argument("invalid, expired or reused cold-start credential");
+    }
+    impl_->controlled_start=true;
+  }
   if (impl_->cfg.enable_fake_execution) {
     const char * range=std::getenv("ROS_AUTOMATIC_DISCOVERY_RANGE");
     const char * peers=std::getenv("ROS_STATIC_PEERS");
@@ -470,6 +600,7 @@ FjtMotionPort::~FjtMotionPort()
       (self->active->result->stop_confirmed || self->active->result->exec_state==ExecState::REJECTED)));
     self->closed=true; self->timer->cancel();
   }
+  self->drain_outgoing();
   if (safe) {std::lock_guard<std::mutex> lock(leases_mutex); leases.erase(self->lease_key);}
 }
 std::optional<MotionResult> FjtMotionPort::execute_joint_move(const mtc::core::MotionCommand &)
@@ -492,7 +623,7 @@ std::optional<MotionResult> FjtMotionPort::execute_trajectory(const mtc::core::M
   if (self->completed.size()>=10000) {return rejected("command ledger capacity reached");}
   auto validation=convert(c,self->cfg); if (!validation.trajectory) {return rejected(validation.error);}
   try {
-    if (!self->healthy(Steady::now())) {return rejected("Fake Hardware/controller/Action/fresh state/exclusive graph proof missing");}
+    if ((self->controlled_start && !self->authority_established) || !self->healthy(Steady::now())) {return rejected("Fake Hardware/controller/Action/fresh state/exclusive graph proof missing");}
     auto & t=*validation.trajectory;
     if (!near(self->sample->positions,t.points.front().positions,self->cfg.start_tolerance)) {
       return rejected("trajectory start differs from current named JointState; no jump permitted");
@@ -504,7 +635,10 @@ std::optional<MotionResult> FjtMotionPort::execute_trajectory(const mtc::core::M
     }
     auto session=std::make_shared<Impl::Session>(c);
     session->trajectory=t; session->timeout_ms=c.timeout_ms; session->sent=Steady::now();
-    self->active=session; self->send(session); return std::nullopt;
+    self->active=session;
+    const auto weak=self->weak_from_this();
+    self->outgoing.push_back([weak,session]() {if (auto self=weak.lock()) {self->send(session);}});
+    return std::nullopt;
   } catch (const std::exception & e) {
     self->fault(std::string("send/graph exception: ")+e.what());
     if (self->active) {return self->active->result;}
@@ -543,7 +677,13 @@ StopResult FjtMotionPort::request_stop(const std::string & reason)
 ExecutionSnapshot FjtMotionPort::snapshot() const
 {
   auto self=impl_; std::lock_guard<std::mutex> lock(self->mutex); ExecutionSnapshot s;
-  try {s.ready=!self->locked && self->healthy(Steady::now());} catch (...) {s.ready=false;}
+  try {s.ready=!self->locked && (!self->controlled_start || self->authority_established) && self->healthy(Steady::now());} catch (...) {s.ready=false;}
+  s.hardware_plugin=self->hardware_plugin; s.hardware_verified=self->hw_ok; s.controller_verified=self->controller_ok;
+  s.controlled_start=self->controlled_start;
+  s.authority=self->locked ? ExecutionAuthority::FAULT_LOCKED :
+    (self->active && !self->active->result ? (self->active->cancel ? ExecutionAuthority::STOP_PENDING :
+    (self->active->handle ? ExecutionAuthority::GOAL_OWNED : ExecutionAuthority::GOAL_PENDING)) :
+    (s.ready ? ExecutionAuthority::EXCLUSIVE_READY : ExecutionAuthority::VERIFYING_ENVIRONMENT));
   s.status_received=self->status_received; s.status_fresh=self->status_usable(Steady::now());
   s.status_messages=self->status_messages; s.ownership=self->ownership(Steady::now());
   if (self->active && !self->active->handle && !self->active->terminal) {s.unknown_active_goals=self->foreign_goals();}

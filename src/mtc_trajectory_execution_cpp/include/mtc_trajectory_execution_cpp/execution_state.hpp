@@ -4,10 +4,15 @@
 #include <mtc_core_cpp/results.hpp>
 namespace mtc::trajectory
 {
+enum class ExecutionAuthority {UNINITIALIZED, VERIFYING_ENVIRONMENT, EXCLUSIVE_READY,
+  GOAL_PENDING, GOAL_OWNED, STOP_PENDING, FAULT_LOCKED};
 enum class GoalOwnership {NO_ACTIVE_GOAL, OWN_GOAL, FOREIGN_GOAL, UNKNOWN};
 struct ExecutionSnapshot
 {
-  std::string command_id, goal_uuid, detail;
+  std::string command_id, goal_uuid, detail, hardware_plugin;
+  bool hardware_verified = false, controller_verified = false;
+  bool controlled_start = false;
+  ExecutionAuthority authority = ExecutionAuthority::UNINITIALIZED;
   GoalOwnership ownership = GoalOwnership::UNKNOWN;
   // Fresh means locally received within proof_max_age, not publisher-time proof.
   bool status_received = false, status_fresh = false;

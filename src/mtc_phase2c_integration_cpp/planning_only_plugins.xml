@@ -1,0 +1,5 @@
+<library path="mtc_planning_only_manager">
+  <class name="mtc_phase2c/PlanningOnlyManager" type="mtc::integration::PlanningOnlyManager" base_class_type="moveit_controller_manager::MoveItControllerManager">
+    <description>仅规划：无控制器、无执行 Handle、无 FJT Client。</description>
+  </class>
+</library>
