@@ -24,6 +24,7 @@ add_library(mtc_moveit_planner_core SHARED
   src/trajectory_conversion.cpp
   src/planner_config.cpp
   src/moveit_planner_port.cpp
+  src/start_consistency.cpp
 )
 target_include_directories(mtc_moveit_planner_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -49,6 +50,8 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(geometric_shapes REQUIRED)
+find_package(shape_msgs REQUIRED)
 
 add_library(mtc_moveit_planner_moveit SHARED
   src/move_group_backend.cpp
@@ -62,7 +65,7 @@ target_include_directories(mtc_moveit_planner_moveit PUBLIC
 target_link_libraries(mtc_moveit_planner_moveit PUBLIC mtc_moveit_planner_core)
 ament_target_dependencies(mtc_moveit_planner_moveit PUBLIC
   rclcpp geometry_msgs trajectory_msgs moveit_msgs moveit_core moveit_ros_planning
-  moveit_ros_planning_interface tf2 tf2_ros tf2_geometry_msgs)
+  moveit_ros_planning_interface tf2 tf2_ros tf2_geometry_msgs geometric_shapes shape_msgs)
 
 add_executable(plan_fixed_pose src/plan_fixed_pose_main.cpp)
 target_link_libraries(plan_fixed_pose mtc_moveit_planner_moveit)
@@ -95,6 +98,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_trajectory_conversion test/test_trajectory_conversion.cpp)
   target_link_libraries(test_trajectory_conversion mtc_moveit_planner_core)
 
+  ament_add_gtest(test_start_consistency test/test_start_consistency.cpp)
+  target_link_libraries(test_start_consistency mtc_moveit_planner_core)
+
   ament_add_gtest(test_moveit_planner_port test/test_moveit_planner_port.cpp)
   target_link_libraries(test_moveit_planner_port mtc_moveit_planner_core)
 
@@ -111,5 +117,5 @@ ament_export_include_directories(include)
 ament_export_libraries(mtc_moveit_planner_core mtc_moveit_planner_moveit)
 ament_export_dependencies(mtc_core_cpp mtc_manipulation_cpp mtc_motion_execution_cpp
   rclcpp geometry_msgs trajectory_msgs moveit_msgs moveit_core moveit_ros_planning
-  moveit_ros_planning_interface tf2 tf2_ros tf2_geometry_msgs)
+  moveit_ros_planning_interface tf2 tf2_ros tf2_geometry_msgs geometric_shapes shape_msgs)
 ament_package()

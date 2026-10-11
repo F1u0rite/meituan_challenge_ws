@@ -6,8 +6,9 @@
 set +u
 source /opt/ros/jazzy/setup.bash
 source "$AUBO_WS/install_no_symlink/setup.bash"
-if [ -f "$MTC_WS/install/planner/setup.bash" ]; then
-  source "$MTC_WS/install/planner/setup.bash"
+: "${MTC_INSTALL:=$MTC_WS/install/planner}"
+if [ -f "$MTC_INSTALL/setup.bash" ]; then
+  source "$MTC_INSTALL/setup.bash"
 fi
 # SOP 默认 Fast DDS。本机 WSL2 networkingMode=mirrored 下 Fast DDS 本机发现不稳定，
 # 可用 MTC_RMW=rmw_cyclonedds_cpp 覆盖（需 ros-jazzy-rmw-cyclonedds-cpp）。

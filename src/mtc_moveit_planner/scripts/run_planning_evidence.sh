@@ -132,6 +132,15 @@ run_tool() {
   fi
 }
 run_tool plan_fixed_pose program:=plan_fixed_pose
+# 碰撞反证：目标在桌面内部，必须失败（失败 = PASS）。
+ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/collision_probe" program:=plan_fixed_pose \
+  extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/collision_probe_override.yaml" \
+  > "$OUT/collision_probe.log" 2>&1
+if grep -q "PLAN FAILED" "$OUT/collision_probe.log"; then
+  note "PASS collision_probe: goal inside table rejected ($(grep -oE 'PLAN FAILED \[[A-Z_]*\][^>]*' "$OUT/collision_probe.log" | head -1 | cut -c1-160))"
+else
+  note "FAIL collision_probe: goal inside table was NOT rejected"
+fi
 run_tool plan_battery_sequence_v1 program:=plan_battery_sequence
 run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v2_override.yaml"

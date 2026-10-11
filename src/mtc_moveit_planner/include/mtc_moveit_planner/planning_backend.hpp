@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "mtc_core_cpp/pose.hpp"
+#include "mtc_moveit_planner/pose_math.hpp"
 #include "mtc_moveit_planner/trajectory_conversion.hpp"
 
 namespace mtc
@@ -30,6 +31,24 @@ struct JointStateSnapshot
   std::vector<double> positions;
 
   bool shape_is_valid() const {return !names.empty() && names.size() == positions.size();}
+};
+
+/// 随末端一起运动的载荷（电池）碰撞体：长方体，位姿相对规划末端 link（ee_link）固定。
+/// 只附着在**规划起点状态**上参与碰撞检查，不修改 move_group 的全局规划场景。
+struct AttachedPayload
+{
+  std::string id = "battery_payload";
+  mtc::core::Vector3 size_m{0.06, 0.06, 0.10};
+  Transform ee_to_payload;                 ///< ee_link -> 载荷中心
+  std::vector<std::string> touch_links{"ee_link", "wrist3_Link"};
+};
+
+/// 静态场景障碍物（长方体），写入 move_group 规划场景。
+struct SceneBox
+{
+  std::string id;
+  mtc::core::Pose6D pose;                  ///< 中心位姿（frame_id 必须可 TF 到 planning frame）
+  mtc::core::Vector3 size_m;
 };
 
 enum class MotionMode
@@ -54,6 +73,8 @@ struct BackendRequest
   double cartesian_step_m = 0.005;
   double min_cartesian_fraction = 1.0;
   bool avoid_collisions = true;
+  /// 规划时随末端一起运动的载荷；空表示末端无载荷。
+  std::optional<AttachedPayload> payload;
   /// FREE_SPACE 时先尝试末端直线（完整、无碰撞、满足关节约束才采用），失败再用 OMPL。
   bool prefer_straight_line = false;
   /// 额外关节位置约束（rad）：作为 MoveIt 路径约束下发，使解落在控制器限位内。
@@ -68,7 +89,7 @@ struct BackendResult
   double planning_time_s = 0.0;
   double cartesian_fraction = 0.0;  ///< 仅 CARTESIAN 有意义
   double time_scale_applied = 1.0;  ///< 为满足末端线速度/角速度上限而做的均匀拉伸倍数
-  std::string method;               ///< "ompl" / "cartesian" / "cartesian_preferred"
+  std::string method;               ///< cartesian_preferred / ompl_seeded_ik / ompl / cartesian
   double max_linear_speed_m_s = 0.0;   ///< 拉伸后实测末端最大线速度
   double max_angular_speed_rad_s = 0.0;
   RawTrajectory trajectory;         ///< 已时间参数化（含速度/加速度）
@@ -97,6 +118,12 @@ public:
     const mtc::core::Pose6D & pose) = 0;
 
   virtual BackendResult plan(const BackendRequest & request) = 0;
+
+  /// 用静态障碍物替换本后端此前写入的场景对象；返回是否成功（默认实现：不支持）。
+  virtual bool apply_scene(const std::vector<SceneBox> & boxes)
+  {
+    return boxes.empty();
+  }
 };
 
 using PlanningBackendPtr = std::shared_ptr<PlanningBackend>;

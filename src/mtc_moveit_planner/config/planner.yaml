@@ -13,6 +13,7 @@
       planner_id: "RRTConnectkConfigDefault"
       tf_timeout_s: 0.5
       state_timeout_s: 5.0
+      ik_timeout_s: 0.2                    # 以起点为种子的 IK 时限
 
     planner:
       velocity_scaling: 0.1                # config/manipulation.yaml；上限 0.2
@@ -29,11 +30,24 @@
       status: "PLACEHOLDER"
 
     slots:                                 # 工位中心（落座时 TCP 高度 = z）
+      # z=0.13：载荷底面 = 0.13-0.07-0.05 = 0.01 m，比桌面高 1 cm；最后的接触闭合不由规划完成。
       names: ["T0", "P1", "P2", "P3"]
-      T0: {frame_id: "base_link", xyz: [0.35, -0.20, 0.10], status: "PLACEHOLDER"}
-      P1: {frame_id: "base_link", xyz: [0.35, -0.05, 0.10], status: "PLACEHOLDER"}
-      P2: {frame_id: "base_link", xyz: [0.35, 0.10, 0.10], status: "PLACEHOLDER"}
-      P3: {frame_id: "base_link", xyz: [0.35, 0.25, 0.10], status: "PLACEHOLDER"}
+      T0: {frame_id: "base_link", xyz: [0.35, -0.20, 0.13], status: "PLACEHOLDER"}
+      P1: {frame_id: "base_link", xyz: [0.35, -0.05, 0.13], status: "PLACEHOLDER"}
+      P2: {frame_id: "base_link", xyz: [0.35, 0.10, 0.13], status: "PLACEHOLDER"}
+      P3: {frame_id: "base_link", xyz: [0.35, 0.25, 0.13], status: "PLACEHOLDER"}
+
+    payload:                               # 试提后挂在钩尖下方的电池碰撞体（PLACEHOLDER 尺寸）
+      enabled: true
+      size_m: [0.06, 0.06, 0.10]
+      hang_below_tcp_m: 0.07               # 载荷中心在 TCP 正下方的距离
+      status: "PLACEHOLDER"
+
+    scene:                                 # 写入 move_group 的静态障碍物（PLACEHOLDER）
+      boxes:
+        names: ["table"]
+        # 桌面：机械臂底座立在桌面上（base_link z=0），桌面顶面取 z=-0.005。
+        table: {frame_id: "base_link", xyz: [0.30, 0.0, -0.030], size_m: [0.90, 1.20, 0.05]}
 
     target:                                # plan_fixed_pose
       mode: "named_state_fk"               # 或 "pose"（配合 target.frame_id/xyz/quat_xyzw）
@@ -49,5 +63,5 @@
       color: 1
       ring:
         frame_id: "base_link"
-        xyz: [0.40, -0.05, 0.20]           # PLACEHOLDER（靠近 home，避免超出 MOVE_PRE_ALIGN 看门狗）
+        xyz: [0.40, -0.05, 0.13]           # PLACEHOLDER：电池立在桌面上，提环高 0.13 m
         quat_xyzw: [0.0, 0.70710678, 0.0, 0.70710678]  # 绕 y 90°：插入方向(+Z) 指向 +X

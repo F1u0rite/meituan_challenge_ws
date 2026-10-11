@@ -219,16 +219,30 @@ V1、V2 单块电池到 T0 均达 `SUCCESS`，规划输出全部通过 `accept_p
 `MotionPort::execute_trajectory()` 派发，`execute_joint_move()` 调用次数为 0；规划失败时不发生任何运动。
 另含异步规划（`nullopt` → 结果，不重复规划）在 PLAN_ACQUIRE 2 s 看门狗内完成的用例。
 
+## 7A. 第二轮（feature/planning-scene-start-v1）：规划场景、起点一致性、V1
+
+| 项 | 做法 | 结果 |
+|---|---|---|
+| 静态规划场景 | `config/planner.yaml` 的 `scene.boxes`（PLACEHOLDER 桌面：顶面 z=-0.005）经 `/apply_planning_scene` 写入；只增删本工具创建的对象 | 碰撞反证（目标在桌面内部）**被拒绝** ✅ |
+| 电池载荷 | 从 `test_lift` 起到 `seat_contact`，在**规划起点 RobotState** 上附着长方体（PLACEHOLDER 0.06×0.06×0.10 m，挂在 TCP 正下方 0.07 m），不修改全局场景；`retreat` 起不再附着 | V2 全流程在桌面 + 载荷下 7 段 PASS ✅ |
+| 落座几何 | 工位/提环占位高度改为 0.13 m：载荷底面距桌面 1 cm；**最后的接触闭合不由规划完成**（需力控/柔顺，属执行与工具） | — |
+| 起点一致性 | 新增公共函数 `check_trajectory_start()`（按名称比较首点，容差默认 0.01 rad，与 MoveIt allowed_start_tolerance 一致）与 `MoveItPlannerPort::replan_primitive()`（以实测状态为起点、不再假设 ToolPort 行程，只重规划一段） | 供 FollowJointTrajectory 适配在发送前调用 ✅ |
+| V1 规划 | FREE_SPACE 依次：末端直线 → **以起点为种子的 IK 关节目标 + OMPL** → 位姿目标 OMPL；IK 候选解须满足控制器限位 | `side_insert` 从 116–196 s 降到 **39.6 s**，仍 > 24 s（30 s×80%）❌ |
+
+**V1 仍阻断的量化原因**：从 `home`（工具朝下）到侧插预对准（工具水平）需转 90°，原语角速度上限 0.1 rad/s
+⇒ 理论下限 15.7 s；实际关节空间路径的转动不均匀，加上直线只可行 50%（fraction=0.506），得 39.6 s。
+**未放宽任何安全参数**。可行方向（需孙嘉明决定）：V1 增加"工具已水平"的就绪位，或把"快速接近"与"慢速预对准"拆成两个原语。
+
 ## 8. 风险与阻断清单
 
 | # | 问题 | 影响 | 责任人 / 需谁确认 |
 |---|---|---|---|
-| R1 | **预规划起点过期**：`test_lift` 在 ToolPort 接合前规划，`retreat` 在卸载/退钩前规划；本包只能假设 ToolPort 行程（0.03 m）推算起点 | 起点偏差 > 0.01 rad 时 MoveIt 执行 ABORTED；直接发给 JTC 会跳变 | 孙嘉明：MotionAdapter 发送前核对起点并拒绝/触发重规划 |
+| R1 | **预规划起点过期**：`test_lift` 在 ToolPort 接合前规划，`retreat` 在卸载/退钩前规划；本包只能假设 ToolPort 行程（0.03 m）推算起点 | 起点偏差 > 0.01 rad 时 MoveIt 执行 ABORTED；直接发给 JTC 会跳变 | 孙嘉明：MotionAdapter 发送前核对起点并拒绝/触发重规划；**已提供** `check_trajectory_start()` 与 `replan_primitive()` 供执行侧调用 |
 | R2 | PLAN_ACQUIRE 看门狗 2.0 s；ACQUIRE 需 3 次求解（OMPL + 2 次直线） | 真实规划耗时接近上限时 FSM 超时 | 孙嘉明：评估是否放宽；本包 planning_time=1.0 s |
 | R3 | `transport` 原语 `target_pose` 为提环位姿而非工位 | 若有人按字段名使用会把电池搬回原处 | 孙嘉明确认设计意图 |
 | R4 | TCP、工位、提环轴向、相机外参均未标定 | 输出只能 `simulation_only` | 韩明赫（MEASURED/ESTIMATED/UNKNOWN 表） |
-| R5 | 碰撞场景缺桌面/电池/工具模型 | 无法证明真实场景无碰撞 | 常建烁（明天现场按实测尺寸补） |
-| R6 | **V1 预对准不可行（实测）**：`side_insert` 原语限速 0.02 m/s / 0.1 rad/s（`ToolStrategy::DEFAULT_*`），从 home 出发 OMPL 轨迹拉伸后 91–196 s，远超 MOVE_PRE_ALIGN 看门狗 30 s；V2 直线可行（13.2 s） | 明天基础任务若用 V1，FSM 在 PLAN_ACQUIRE 即失败 | **孙嘉明**：把"自由空间接近"与"慢速预对准"拆成两个原语，或提高 side/top_insert 限速、或放宽看门狗；常建烁：后续加关节空间/IK 种子策略 |
+| R5 | 碰撞场景：已有占位桌面 + 电池载荷；仍缺工具外形、相机、工位支架，取货电池本体未作为障碍物（需 ACM 允许钩子进入提环） | 不能证明真实场景无碰撞 | 常建烁（现场按实测补） |
+| R6 | **V1 预对准超看门狗（实测）**：种子 IK 后 39.6 s（原 116–196 s），瓶颈为 90° 转向 × 0.1 rad/s 角速度上限；V2 直线可行 | 明天基础任务若用 V1，PLAN_ACQUIRE 即失败 | **孙嘉明**：增加 V1 就绪位或拆分接近/预对准原语；规划侧不放宽安全参数 |
 | R8 | URDF 与 ros2_control 指令限位不一致（foreArm/wrist1/wrist3） | MoveIt 可能给出超出控制器限位的解；本包已拒绝此类输出，但实机软限位仍未知 | 孙嘉明 / 现场确认实机软限位 |
 | R7 | `Pose6D.stamp_s` 为 FSM 时基，tf2 查询取最新变换 | 动态 TF（相机）时间同步需统一时基 | 韩明赫 / 孙嘉明 |
 

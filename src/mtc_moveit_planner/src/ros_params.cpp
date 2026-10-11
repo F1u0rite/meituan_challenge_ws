@@ -79,6 +79,30 @@ PlannerConfig load_planner_config(rclcpp::Node & node)
     slot.status = status_param(node, "slots." + name + ".status", slot.status);
     config.slots[name] = slot;
   }
+  config.payload.enabled = node.get_parameter_or("payload.enabled", config.payload.enabled);
+  const auto payload_size = vector_param(node, "payload.size_m",
+      {config.payload.size_m.x, config.payload.size_m.y, config.payload.size_m.z}, 3);
+  config.payload.size_m = mtc::core::Vector3{payload_size[0], payload_size[1], payload_size[2]};
+  config.payload.hang_below_tcp_m =
+    node.get_parameter_or("payload.hang_below_tcp_m", config.payload.hang_below_tcp_m);
+  config.payload.status = status_param(node, "payload.status", config.payload.status);
+
+  const auto box_names = node.get_parameter_or<std::vector<std::string>>(
+    "scene.boxes.names", std::vector<std::string>{});
+  for (const auto & name : box_names) {
+    SceneBox box;
+    box.id = name;
+    const auto xyz = vector_param(node, "scene.boxes." + name + ".xyz", {}, 3);
+    const auto size = vector_param(node, "scene.boxes." + name + ".size_m", {}, 3);
+    const auto q = vector_param(node, "scene.boxes." + name + ".quat_xyzw", {0.0, 0.0, 0.0, 1.0}, 4);
+    box.pose.frame_id = node.get_parameter_or<std::string>(
+      "scene.boxes." + name + ".frame_id", "base_link");
+    box.pose.position = mtc::core::Vector3{xyz[0], xyz[1], xyz[2]};
+    box.pose.orientation = mtc::core::Quaternion{q[0], q[1], q[2], q[3]};
+    box.pose.valid = true;
+    box.size_m = mtc::core::Vector3{size[0], size[1], size[2]};
+    config.scene_boxes.push_back(box);
+  }
   return config;
 }
 
@@ -93,6 +117,7 @@ MoveGroupBackendOptions load_backend_options(rclcpp::Node & node)
   options.planner_id = node.get_parameter_or("backend.planner_id", options.planner_id);
   options.tf_timeout_s = node.get_parameter_or("backend.tf_timeout_s", options.tf_timeout_s);
   options.state_timeout_s = node.get_parameter_or("backend.state_timeout_s", options.state_timeout_s);
+  options.ik_timeout_s = node.get_parameter_or("backend.ik_timeout_s", options.ik_timeout_s);
   return options;
 }
 

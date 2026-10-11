@@ -9,6 +9,9 @@
 #include <vector>
 
 #include <Eigen/Geometry>
+#include <geometric_shapes/shapes.h>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_msgs/msg/constraints.hpp>
 #include <moveit_msgs/msg/joint_constraint.hpp>
@@ -39,6 +42,11 @@
 #include <moveit/utils/moveit_error_code.hpp>
 #else
 #include <moveit/utils/moveit_error_code.h>
+#endif
+#if __has_include(<moveit/planning_scene_interface/planning_scene_interface.hpp>)
+#include <moveit/planning_scene_interface/planning_scene_interface.hpp>
+#else
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #endif
 #if __has_include(<tf2_ros/buffer.hpp>)
 #include <tf2_ros/buffer.hpp>
@@ -73,6 +81,15 @@ mtc::core::Pose6D to_pose6d(const Eigen::Isometry3d & transform, const std::stri
   return pose;
 }
 
+Eigen::Isometry3d to_eigen(const Transform & t)
+{
+  const auto q = normalized(t.rotation);
+  Eigen::Isometry3d out = Eigen::Isometry3d::Identity();
+  out.linear() = Eigen::Quaterniond(q.w, q.x, q.y, q.z).toRotationMatrix();
+  out.translation() = Eigen::Vector3d(t.translation.x, t.translation.y, t.translation.z);
+  return out;
+}
+
 geometry_msgs::msg::Pose to_msg(const mtc::core::Pose6D & pose)
 {
   geometry_msgs::msg::Pose msg;
@@ -100,6 +117,8 @@ struct MoveGroupBackend::Impl
   const moveit::core::JointModelGroup * group = nullptr;
   std::string planning_frame;
   std::vector<std::string> joint_names;
+  std::unique_ptr<moveit::planning_interface::PlanningSceneInterface> scene;
+  std::vector<std::string> scene_ids;   ///< 本后端写入的静态障碍物
 
   moveit::core::RobotStatePtr state_from(const JointStateSnapshot & snapshot) const
   {
@@ -229,6 +248,17 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     result.message = "start state has unknown joints or non-finite values";
     return result;
   }
+  if (request.payload) {
+    // 只附着在本次请求的起点状态上：MoveIt 以起点的 attached bodies 做碰撞检查，全局场景不变。
+    const auto & p = *request.payload;
+    std::vector<shapes::ShapeConstPtr> shapes{
+      std::make_shared<shapes::Box>(p.size_m.x, p.size_m.y, p.size_m.z)};
+    EigenSTL::vector_Isometry3d shape_poses{Eigen::Isometry3d::Identity()};
+    start->attachBody(p.id, to_eigen(p.ee_to_payload), shapes, shape_poses,
+      std::set<std::string>(p.touch_links.begin(), p.touch_links.end()),
+      impl_->options.end_effector_link);
+    start->update();
+  }
   auto goal = transform_to_planning_frame(request.ee_goal);
   if (!goal) {
     result.reason = "TF_UNAVAILABLE";
@@ -307,11 +337,50 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     result.planning_time_s =
       std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
   } else if (request.mode == MotionMode::FREE_SPACE) {
-    result.method = "ompl";
-    mg.clearPoseTargets();
-    mg.setPoseTarget(goal_msg, impl_->options.end_effector_link);
     moveit::planning_interface::MoveGroupInterface::Plan plan;
-    const auto code = mg.plan(plan);
+    auto code = moveit::core::MoveItErrorCode(moveit_msgs::msg::MoveItErrorCodes::FAILURE);
+    // 以起点为种子求 IK：得到离起点最近的关节解，再规划到该关节目标（路径短、可重复）。
+    // 求解时即要求满足控制器限位（路径约束中的关节约束）。
+    auto seeded = std::make_shared<moveit::core::RobotState>(*start);
+    // 回调收到的是候选 IK 解（按 group 变量顺序），此时 state 尚未写入该解。
+    const auto within_bounds = [&path_constraints](moveit::core::RobotState *,
+        const moveit::core::JointModelGroup * group, const double * values) {
+        const auto & names = group->getVariableNames();
+        for (const auto & jc : path_constraints.joint_constraints) {
+          const auto it = std::find(names.begin(), names.end(), jc.joint_name);
+          if (it == names.end()) {
+            continue;
+          }
+          const double v = values[it - names.begin()];
+          if (v > jc.position + jc.tolerance_above || v < jc.position - jc.tolerance_below) {
+            return false;
+          }
+        }
+        return true;
+      };
+    if (seeded->setFromIK(impl_->group, goal_msg.pose, impl_->options.end_effector_link,
+        impl_->options.ik_timeout_s, within_bounds))
+    {
+      std::vector<double> joint_goal;
+      seeded->copyJointGroupPositions(impl_->group, joint_goal);
+      mg.setStartState(*start);
+      mg.setJointValueTarget(impl_->joint_names, joint_goal);
+      code = mg.plan(plan);
+      result.method = "ompl_seeded_ik";
+      if (code != moveit::core::MoveItErrorCode::SUCCESS) {
+        result.message += "OMPL to seeded-IK joint goal returned " +
+          moveit::core::errorCodeToString(code) + "; ";
+      }
+    } else {
+      result.message += "seeded IK found no solution within controller limits; ";
+    }
+    if (code != moveit::core::MoveItErrorCode::SUCCESS) {
+      result.method = "ompl";
+      mg.setStartState(*start);
+      mg.clearPoseTargets();
+      mg.setPoseTarget(goal_msg, impl_->options.end_effector_link);
+      code = mg.plan(plan);
+    }
     mg.clearPoseTargets();
     mg.clearPathConstraints();
     result.planning_time_s =
@@ -412,6 +481,52 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
   result.ok = true;
   result.message += "ok";
   return result;
+}
+
+bool MoveGroupBackend::apply_scene(const std::vector<SceneBox> & boxes)
+{
+  if (!impl_->scene) {
+    impl_->scene = std::make_unique<moveit::planning_interface::PlanningSceneInterface>();
+  }
+  std::vector<moveit_msgs::msg::CollisionObject> objects;
+  for (const auto & id : impl_->scene_ids) {
+    moveit_msgs::msg::CollisionObject remove;
+    remove.id = id;
+    remove.header.frame_id = impl_->planning_frame;
+    remove.operation = moveit_msgs::msg::CollisionObject::REMOVE;
+    objects.push_back(remove);
+  }
+  std::vector<std::string> ids;
+  for (const auto & box : boxes) {
+    if (box.id.empty() || !box.pose.is_usable() || !(box.size_m.x > 0.0) ||
+      !(box.size_m.y > 0.0) || !(box.size_m.z > 0.0))
+    {
+      return false;
+    }
+    const auto pose = transform_to_planning_frame(box.pose);
+    if (!pose) {
+      return false;
+    }
+    moveit_msgs::msg::CollisionObject object;
+    object.id = box.id;
+    object.header.frame_id = impl_->planning_frame;
+    shape_msgs::msg::SolidPrimitive primitive;
+    primitive.type = shape_msgs::msg::SolidPrimitive::BOX;
+    primitive.dimensions = {box.size_m.x, box.size_m.y, box.size_m.z};
+    object.primitives.push_back(primitive);
+    object.primitive_poses.push_back(to_msg(*pose));
+    object.operation = moveit_msgs::msg::CollisionObject::ADD;
+    objects.push_back(object);
+    ids.push_back(box.id);
+  }
+  if (objects.empty()) {
+    return true;
+  }
+  if (!impl_->scene->applyCollisionObjects(objects)) {
+    return false;
+  }
+  impl_->scene_ids = ids;
+  return true;
 }
 
 }  // namespace moveit_planner

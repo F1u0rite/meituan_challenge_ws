@@ -48,6 +48,12 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
   const std::string named = node->get_parameter_or<std::string>("target.named_state", "home");
 
   auto backend = std::make_shared<MoveGroupBackend>(node, options);
+  if (!backend->apply_scene(planner_config.scene_boxes)) {
+    RCLCPP_ERROR(logger, "failed to apply planning scene obstacles");
+    return 2;
+  }
+  RCLCPP_INFO(logger, "planning scene: %zu static obstacle(s) applied",
+    planner_config.scene_boxes.size());
   RCLCPP_INFO(logger, "planning frame='%s' ee_link='%s' group='%s' pipeline='%s' planner='%s'",
     backend->planning_frame().c_str(), backend->end_effector_link().c_str(),
     options.planning_group.c_str(), options.planning_pipeline.c_str(), options.planner_id.c_str());

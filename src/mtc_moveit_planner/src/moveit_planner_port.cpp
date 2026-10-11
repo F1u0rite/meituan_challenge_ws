@@ -11,6 +11,7 @@
 
 #include "mtc_core_cpp/error_codes.hpp"
 #include "mtc_moveit_planner/pose_math.hpp"
+#include "mtc_moveit_planner/start_consistency.hpp"
 #include "mtc_moveit_planner/trajectory_conversion.hpp"
 
 namespace mtc
@@ -42,21 +43,8 @@ bool scaling_ok(double value, double cap)
 /// 轨迹首点与期望起点（按名称）是否一致。
 bool starts_at(const mtc::core::TimedTrajectory & trajectory, const JointStateSnapshot & start)
 {
-  if (trajectory.points.empty()) {
-    return false;
-  }
-  const auto & first = trajectory.points.front().positions_rad;
-  for (size_t i = 0; i < trajectory.joint_names.size(); ++i) {
-    const auto it = std::find(start.names.begin(), start.names.end(), trajectory.joint_names[i]);
-    if (it == start.names.end()) {
-      return false;
-    }
-    const double expected = start.positions[static_cast<size_t>(it - start.names.begin())];
-    if (std::fabs(first[i] - expected) > kStartToleranceRad) {
-      return false;
-    }
-  }
-  return true;
+  return check_trajectory_start(
+    trajectory, start.names, start.positions, kStartToleranceRad).ok;
 }
 
 }  // namespace
@@ -137,6 +125,37 @@ PlanResult MoveItPlannerPort::plan_blocking(
   const mtc::manipulation::PlanTarget & target,
   const std::optional<JointStateSnapshot> & start_override)
 {
+  PlanOptions options;
+  options.start = start_override;
+  return plan_blocking(target, options);
+}
+
+PlanResult MoveItPlannerPort::replan_primitive(
+  const mtc::manipulation::PlanTarget & original,
+  const std::string & primitive_name,
+  const JointStateSnapshot & current)
+{
+  mtc::manipulation::PlanTarget target = original;
+  target.phase = original.phase + "/REPLAN";
+  target.primitives.clear();
+  target.primitive_names.clear();
+  for (const auto & primitive : original.primitives) {
+    if (primitive.name == primitive_name) {
+      target.primitives.push_back(primitive);
+      target.primitive_names.push_back(primitive.name);
+      break;
+    }
+  }
+  PlanOptions options;
+  options.start = current;
+  options.skip_tool_gaps = true;
+  return plan_blocking(target, options);
+}
+
+PlanResult MoveItPlannerPort::plan_blocking(
+  const mtc::manipulation::PlanTarget & target, const PlanOptions & options)
+{
+  const auto & start_override = options.start;
   std::lock_guard<std::mutex> backend_lock(backend_mutex_);
 
   PlanReport report;
@@ -209,6 +228,9 @@ PlanResult MoveItPlannerPort::plan_blocking(
     stamp = 0.0;
   }
 
+  std::optional<AttachedPayload> payload;   // 试提时附着，释放后不再附着
+  bool payload_released = false;
+
   std::vector<mtc::core::MotionCommand> commands;
   for (const auto & primitive : target.primitives) {
     PrimitivePlanReport entry;
@@ -259,7 +281,7 @@ PlanResult MoveItPlannerPort::plan_blocking(
       };
 
     // ---- 原语前的 ToolPort 动作：只假设其终点，不输出轨迹 ----
-    if (spec.gap_before != ToolGapBefore::NONE) {
+    if (spec.gap_before != ToolGapBefore::NONE && !options.skip_tool_gaps) {
       if (!accept_calibration("TCP", config_.tcp_status)) {
         return fail_primitive("TCP_UNKNOWN", "ee_link -> hook_tcp is not available");
       }
@@ -357,15 +379,44 @@ PlanResult MoveItPlannerPort::plan_blocking(
     ee_goal.valid = true;
     entry.ee_goal = ee_goal;
 
+    // ---- 载荷：试提起附着在 ee_link 上，释放后（非 carries_payload 原语）移除 ----
+    if (spec.carries_payload && config_.payload.enabled && !payload_released) {
+      if (!payload) {
+        if (!accept_calibration("payload", config_.payload.status)) {
+          return fail_primitive("PAYLOAD_UNKNOWN", "battery payload geometry is not available");
+        }
+        const auto ee_now = backend_->end_effector_pose(chain);
+        if (!ee_now) {
+          return fail_primitive("FK_FAILED", "cannot compute end-effector pose to attach payload");
+        }
+        // 电池靠重力挂在钩尖（TCP）正下方，姿态与 planning frame 对齐。
+        const auto tcp_now = apply(*ee_now, config_.ee_to_tcp);
+        Transform world_payload;
+        world_payload.translation = tcp_now.position;
+        world_payload.translation.z -= config_.payload.hang_below_tcp_m;
+        AttachedPayload attached;
+        attached.size_m = config_.payload.size_m;
+        attached.touch_links = config_.payload.touch_links;
+        attached.ee_to_payload = compose(inverse(to_transform(*ee_now)), world_payload);
+        payload = attached;
+      }
+    } else if (payload) {
+      payload.reset();
+      payload_released = true;
+    }
+    entry.payload_attached = payload.has_value();
+
     // ---- 规划 ----
-    const auto planned = backend_->plan(make_request(primitive.name, spec.mode, ee_goal));
+    auto request = make_request(primitive.name, spec.mode, ee_goal);
+    request.payload = payload;
+    const auto planned = backend_->plan(request);
     entry.planning_time_s = planned.planning_time_s;
     entry.cartesian_fraction = planned.cartesian_fraction;
     entry.time_scale_applied = planned.time_scale_applied;
     entry.max_linear_speed_m_s = planned.max_linear_speed_m_s;
     entry.max_angular_speed_rad_s = planned.max_angular_speed_rad_s;
     entry.method = planned.method;
-    entry.message = planned.message;
+    entry.backend_message = planned.message;
     if (!planned.ok) {
       return fail_primitive(planned.reason.empty() ? "NO_PLAN" : planned.reason, planned.message);
     }

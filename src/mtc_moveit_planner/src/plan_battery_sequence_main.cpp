@@ -58,16 +58,17 @@ void log_report(const rclcpp::Logger & logger, const mtc::core::PlanResult & res
     result.error_code, result.message.c_str());
   for (const auto & p : report.primitives) {
     RCLCPP_INFO(logger,
-      "  %-13s %-10s %-19s ok=%-5s plan=%.3fs dur=%.2fs pts=%zu scale=%.2f v=%.3fm/s w=%.3frad/s "
+      "  %-13s %-10s %-19s %s ok=%-5s plan=%.3fs dur=%.2fs pts=%zu scale=%.2f v=%.3fm/s w=%.3frad/s "
       "watchdog=%.0fs %s%s",
-      p.primitive_name.c_str(), p.mode.c_str(), p.method.c_str(), p.ok ? "true" : "false",
+      p.primitive_name.c_str(), p.mode.c_str(), p.method.c_str(),
+      p.payload_attached ? "[payload]" : "         ", p.ok ? "true" : "false",
       p.planning_time_s,
       p.duration_s, p.point_count, p.time_scale_applied, p.max_linear_speed_m_s,
       p.max_angular_speed_rad_s, p.state_watchdog_s,
       p.contact_intent_only ? "[contact intent only] " : "",
       p.ok ? p.start_assumption.c_str() : (p.reason + ": " + p.message).c_str());
-    if (!p.message.empty() && p.message != "ok") {
-      RCLCPP_INFO(logger, "      backend: %s", p.message.c_str());
+    if (!p.backend_message.empty() && p.backend_message != "ok") {
+      RCLCPP_INFO(logger, "      backend: %s", p.backend_message.c_str());
     }
   }
 }
@@ -89,7 +90,7 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
   ring.object_id = node->get_parameter_or<std::string>("sequence.object_id", "battery_1");
   ring.color = static_cast<int>(node->get_parameter_or<int64_t>("sequence.color", 1));
   const auto xyz = node->get_parameter_or<std::vector<double>>(
-    "sequence.ring.xyz", {0.40, -0.05, 0.20});
+    "sequence.ring.xyz", {0.40, -0.05, 0.13});
   const auto q = node->get_parameter_or<std::vector<double>>(
     "sequence.ring.quat_xyzw", {0.0, 0.70710678, 0.0, 0.70710678});
   if (xyz.size() != 3 || q.size() != 4) {
@@ -106,6 +107,12 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
 
   const auto strategy = mtc::manipulation::make_strategy(tool);
   auto backend = std::make_shared<MoveGroupBackend>(node, options);
+  if (!backend->apply_scene(config.scene_boxes)) {
+    RCLCPP_ERROR(logger, "failed to apply planning scene obstacles");
+    return 2;
+  }
+  RCLCPP_INFO(logger, "planning scene: %zu static obstacle(s) applied",
+    config.scene_boxes.size());
   MoveItPlannerPort port(backend, config, std::make_shared<mtc::core::SteadyClock>(), false);
 
   auto acquire_primitives = strategy->make_acquire_plan(ring);

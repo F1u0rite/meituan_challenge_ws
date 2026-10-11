@@ -47,6 +47,17 @@ OMPL 行的原语（FREE_SPACE）**先尝试末端直线**（完整、无碰撞�
 末端线/角速度上限取原语自身的 `max_linear_speed` / `max_angular_speed`，
 在 TOTG 时间参数化后按需**均匀拉伸**时间（路径不变）。
 
+## 2A. 规划场景与起点一致性
+
+- **静态障碍物**：`scene.boxes`（默认占位桌面），工具启动时经 `/apply_planning_scene` 写入。
+- **电池载荷**：`carries_payload` 原语（test_lift → seat_contact）在起点 RobotState 上附着长方体，不改全局场景。
+- **起点检查**：执行侧发送前调用
+  ```cpp
+  #include "mtc_moveit_planner/start_consistency.hpp"
+  auto check = mtc::moveit_planner::check_trajectory_start(*cmd.trajectory, names, positions);  // 0.01 rad
+  if (!check.ok) { /* 拒绝；用 MoveItPlannerPort::replan_primitive(target, cmd.primitive_name, measured) 重规划 */ }
+  ```
+
 ## 3. 构建与测试
 
 ```bash
