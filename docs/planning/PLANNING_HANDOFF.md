@@ -1,6 +1,6 @@
 # PLANNING_HANDOFF —— MoveIt 2 运动规划交接（10/11 晚 P0）
 
-负责人：常建烁｜分支：`feature/moveit-planner`｜包：`src/mtc_moveit_planner`
+负责人：常建烁｜分支：`feature/moveit-planner`｜包：`src/mtc_moveit_planner`｜通俗说明：[README.md](README.md)
 
 > **适用范围：Mock / Fake Hardware，只规划、不执行。** 本文所有"PASS"都只针对
 > `mock_components/GenericSystem` 模拟环境中的规划结果，**不代表实机可执行**。
