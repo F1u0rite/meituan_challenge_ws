@@ -1,10 +1,11 @@
 """Current-frame RGB-D/CAD diagnostics; reuse detector, segmentation and tracker."""
 from pathlib import Path
-from time import perf_counter
+from time import perf_counter, time
 from datetime import datetime
 import sys,json,hashlib
 from scipy.spatial import cKDTree
 from dataclasses import replace
+from .vision_interface import finalize_interface
 from .color_classifier import ColorClassifier
 import numpy as np
 import cv2,yaml
@@ -245,7 +246,7 @@ class RGBDVisionPipeline:
                 multistart_ms+=fit.get('timing_ms',{}).get('multistart_optimization',0.)
                 ring_ms+=fit.get('timing_ms',{}).get('ring_candidate',0.)
                 self.last_cad[key]=self.clock();self.last_cad_timestamp[key]=timestamp
-                item.update(fit_status=fit['fit_status'],cad_result_timestamp=timestamp,
+                item.update(fit_status=fit['fit_status'],cad_result_timestamp=timestamp,CAD_result_timestamp=time(),
                             cad_last_attempt_timestamp=timestamp,cad_fresh=True)
                 pose=fit.get('pose',{});T=pose.get('body_pose');ring=pose.get('ring_pose')
                 item['pose_quality'].update({k:v for k,v in fit.items() if k not in ('pose','visible_surface_center_m')})
@@ -294,7 +295,14 @@ class RGBDVisionPipeline:
                 cad_fit=cad_ms,multistart_optimization=multistart_ms,ring_candidate=ring_ms,tracking=tracking_ms,total=total),
             body_pose_valid=False,ring_pose_valid=False,
             position_accuracy='NOT_MEASURED',yaw_accuracy='NOT_MEASURED')
-        return result,views
+        from .dual_rate_rgbd import frame_id
+        result['source_frame_id']=frame_id(frame,0)
+        result['result_timestamp']=time()
+        for item in objects:
+            if item['cad_fresh']:
+                item.update(CAD_result_source_frame=result['source_frame_id'],CAD_capture_timestamp=timestamp,
+                    CAD_capture_timestamp_source=timestamp_source,CAD_result_age_ms=max(0,(result['result_timestamp']-timestamp)*1000))
+        return finalize_interface(result),views
 
 def render_vision(frame,result,views,geometry,*,sdk_project=None,display_fps=None):
     from .vision_ui import VisionUI

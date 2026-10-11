@@ -27,7 +27,8 @@ def merge_cad_history(history, messages):
             if old and old['capture_timestamp'] >= message['capture_timestamp']:
                 rejected+=1;continue
             history[object_id]=dict(source_frame_id=message['source_frame_id'],
-                capture_timestamp=message['capture_timestamp'],result_timestamp=message['result_timestamp'],object=obj)
+                capture_timestamp=message['capture_timestamp'],result_timestamp=message['result_timestamp'],capture_timestamp_source=message.get('capture_timestamp_source','UNAVAILABLE'),
+                timestamps=message.get('timestamps',{}),object=obj)
             accepted.append(dict(object_id=object_id,source_frame_id=message['source_frame_id'],
                 capture_timestamp=message['capture_timestamp'],result_timestamp=message['result_timestamp'],
                 processing_ms=message['processing_ms'],fit_status=obj.get('fit_status'),

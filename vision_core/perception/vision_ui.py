@@ -7,7 +7,7 @@ COLORS={'red':(55,55,245),'blue':(255,130,60),'yellow':(30,220,250),'green':(70,
 def mm(value):return 'N/A' if value is None else f'{value*1000:.1f} mm'
 def vec(values):return 'N/A' if values is None else ', '.join(f'{v*1000:.1f}' for v in values)+' mm'
 def object_label(item):
-    return f"{item['color_label'].upper()} | {item['object_id']} | Z {mm(item['surface_depth_z'])}"
+    return f"{item.get('candidate_state','DIAGNOSTIC')} {item['color_label'].upper()} | {item['object_id']} | Z {mm(item['surface_depth_z'])}"
 def text(image,label,x,y,color=(220,230,235),scale=.46):
     cv2.putText(image,str(label),(x,y),cv2.FONT_HERSHEY_SIMPLEX,scale,color,1,cv2.LINE_AA)
 
@@ -47,7 +47,7 @@ class VisionUI:
             else:cv2.line(rgb,a,b,color,1)
         if self.show_candidates:
             for candidate in result.get('candidate_diagnostics',[]):
-                if candidate['state']=='ACCEPTED_OBJECT':continue
+                if candidate['state'] in ('ACCEPTED_OBJECT','CONFIRMED_OBJECT'):continue
                 x,y,w,h=candidate['bbox']
                 for xx in range(x,x+w,14):
                     cv2.line(rgb,(xx,y),(min(xx+5,x+w),y),(100,100,100),1)
@@ -69,7 +69,8 @@ class VisionUI:
             # Compact per-instance tags avoid overlapping adjacent batteries.
             # Full object_id is retained in the per-object table and selected panel.
             yy=max(36,y-8);short_id=item['object_id'].rsplit('-',1)[-1]
-            top_label=f"{'?' if ambiguous else ''}{item['color_label'].upper()} {item['surface_depth_z']*1000:.1f}mm"
+            tag='CONFIRMED ' if item.get('candidate_state')=='CONFIRMED_OBJECT' else ('? ' if ambiguous else 'DIAG ')
+            top_label=f"{tag}{item['color_label'].upper()} {item['surface_depth_z']*1000:.1f}mm"
             id_label=f"ID ..{short_id} C{item['color_confidence']:.2f}"
             label_width=max(cv2.getTextSize(t,0,.42,1)[0][0] for t in (top_label,id_label))+8
             cv2.rectangle(rgb,(max(0,x),yy-34),(min(rgb.shape[1]-1,x+label_width),yy+4),(20,25,30),-1)

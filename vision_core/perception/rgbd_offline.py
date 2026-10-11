@@ -100,14 +100,14 @@ def height_from_plane(depth_m, intr, plane, rays_xyz=None):
     o = np.asarray(plane['point_camera_m'])
     if rays_xyz is not None:
         if rays_xyz.shape != (*depth_m.shape, 3): raise ValueError("Ray grid shape mismatch")
-        xyz = rays_xyz*depth_m[..., None]
-        return (o-xyz) @ n
+        # Signed plane distance without allocating a full XYZ temporary.
+        return float(o @ n)-depth_m*(rays_xyz @ n)
     if any(abs(c)>1e-10 for c in intr.coeffs):
         raise ValueError("Distorted intrinsics require ray grid")
-    v, u = np.indices(depth_m.shape)
-    x = (u-intr.ppx)*depth_m/intr.fx
-    y = (v-intr.ppy)*depth_m/intr.fy
-    return (o[0]-x)*n[0] + (o[1]-y)*n[1] + (o[2]-depth_m)*n[2]
+    # Separable pinhole rays: only 1-D coordinate arrays plus one depth-sized result.
+    u=(np.arange(depth_m.shape[1],dtype=np.float64)-intr.ppx)/intr.fx
+    v=(np.arange(depth_m.shape[0],dtype=np.float64)-intr.ppy)/intr.fy
+    return float(o @ n)-depth_m*(n[0]*u[None,:]+n[1]*v[:,None]+n[2])
 
 
 def largest_component(mask, min_area):

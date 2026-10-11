@@ -4,6 +4,10 @@ from datetime import datetime
 from threading import Condition, Event, Lock, Thread
 from time import perf_counter, monotonic, time
 import cv2
+import json,yaml
+from pathlib import Path
+from .vision_interface import finalize_interface
+from .rgbd_offline import body_geometry
 import numpy as np
 from .rgbd_geometry import validate_frame, deproject_pixels, frame_capture_time
 from .unified_detector import UnifiedBatteryDetector
@@ -82,6 +86,10 @@ class FastPerception:
     """Color/outline/robust visible depth with the existing pixel tracker."""
     def __init__(self):
         self.detector=UnifiedBatteryDetector();self.classifier=ColorClassifier()
+        root=Path(__file__).resolve().parents[1]
+        self.confirmation=yaml.safe_load((root/'config/fast_confirmation.yaml').read_text(encoding='utf-8'))
+        geometry_file=root/'outputs/cad_analysis/geometry.json'
+        self.body_dimensions=json.loads(geometry_file.read_text(encoding='utf-8'))['battery']['body_dimensions_mm'] if geometry_file.exists() else None
         self.tracker=Tracker(max_gap_s=1.,max_distance=80.,confirmation_hits=2,ambiguity_px=8.,allow_unknown=True)
         self.last_timestamp=None;self.rate=RateMeter();self.previous_background=None;self.table_hint=None;self.motion_history=deque(maxlen=64)
     def set_table_hint(self,plane,capture_timestamp,source_frame_id):
@@ -93,7 +101,7 @@ class FastPerception:
         hint=self.table_hint
         if hint is None or motion.get('stable') is not True:return False
         age=stamp-hint['capture_timestamp']
-        return 0<=age<=max_age_s and all(stable for t,stable in self.motion_history if t>=hint['capture_timestamp'])
+        return 0<=age<=max_age_s and all(stable for t,stable in self.motion_history if t>hint['capture_timestamp'])
 
     def _motion_proxy(self,frame,masks):
         gray=cv2.resize(cv2.cvtColor(frame.color_bgr,cv2.COLOR_BGR2GRAY),(320,180))
@@ -118,6 +126,24 @@ class FastPerception:
                     median_flow_px=shift,rotation_deg=rotation,inlier_ratio=ratio,
                     reference='VISUAL_BACKGROUND_PROXY_WITHOUT_TF; OBJECT_MOTION_NOT_COMPENSATED')
 
+    def confirmation_evidence(self,payload,hint_used):
+        reasons=[];evidence=dict(color=payload['color'],contour_fill=payload['contour_fill'],
+                                fresh_stable_table=hint_used,depth_valid_ratio=payload['depth_valid_ratio'])
+        if payload['color']['color_label']=='unknown':reasons.append('COLOR_UNCERTAIN')
+        if payload['contour_fill']<self.confirmation['min_contour_fill']:reasons.append('INCOMPLETE_CONTOUR_SUPPORT')
+        if not hint_used:reasons.append('NO_FRESH_STABLE_TABLE_EVIDENCE')
+        if self.body_dimensions is None:reasons.append('SHARED_CAD_DIMENSIONS_UNAVAILABLE')
+        if hint_used and self.body_dimensions is not None:
+            plane=self.table_hint['plane'];geometry=body_geometry(payload['points'],plane)
+            span=np.asarray(geometry.get('obb_footprint_m',[]));nominal=np.sort([self.body_dimensions[k]/1000 for k in ('long','width')])[::-1]
+            if len(span)!=2 or (span<nominal*self.confirmation['min_footprint_scale']).any() or (span>nominal*self.confirmation['max_footprint_scale']).any():reasons.append('INSUFFICIENT_NOMINAL_BODY_FOOTPRINT')
+            height=(np.asarray(plane['point_camera_m'])-payload['points'])@np.asarray(plane['normal_camera_xyz'])
+            band=(height>=.012)&(height<=self.body_dimensions['height']/1000+.005)
+            evidence.update(footprint_m=span.tolist(),nominal_footprint_m=nominal.tolist(),body_band_points=int(band.sum()))
+            if band.sum()<self.confirmation['min_body_band_points']:reasons.append('INSUFFICIENT_BODY_BAND')
+        return dict(eligible=not reasons,reasons=reasons,evidence=evidence,
+                    scope='VISUAL_OBJECT_HYPOTHESIS_ONLY; NOT_POSE_OR_IDENTITY_GROUND_TRUTH')
+
     def process(self,frame,source_frame_id):
         start=perf_counter();validate_sync(frame)
         stamp=capture_time(frame)
@@ -126,6 +152,8 @@ class FastPerception:
         hsv=cv2.cvtColor(frame.color_bgr,cv2.COLOR_BGR2HSV)
         raw=self.detector.detect_batteries(frame.color_bgr,hsv=hsv)
         candidates=[];payloads=[];rejections=[]
+        diagnostics=[dict(color=d.color,bbox=list(cv2.boundingRect(d.contour)),state='RAW_CANDIDATE',
+                          reason='HSV_OUTLINE_PROPOSAL_ONLY',confidence=d.confidence) for d in raw]
         for d in raw:
             x,y,w,h=cv2.boundingRect(d.contour)
             if not w or not h:continue
@@ -164,7 +192,7 @@ class FastPerception:
             payloads.append(dict(mask=d.mask,foreground=d.mask,points=points,
                                  rgb=frame.color_bgr[uv[:,1],uv[:,0],::-1].copy(),
                                  bbox=[x,y,w,h],contour=d.contour.reshape(-1,2).tolist(),
-                                 depth_valid_ratio=ratio,color=color,xyz=xyz.tolist()))
+                                 depth_valid_ratio=ratio,color=color,xyz=xyz.tolist(),contour_fill=float(d.confidence)))
         motion=self._motion_proxy(frame,[p['mask'] for p in payloads])
         self.motion_history.append((stamp,motion.get('stable') is True))
         hint_used=self._hint_usable(stamp,motion)
@@ -181,6 +209,7 @@ class FastPerception:
                 payload['xyz']=np.median(payload['points'],axis=0).tolist()
                 filtered.append(candidate);kept.append(payload)
             candidates,payloads=filtered,kept
+        for payload in payloads:payload['confirmation']=self.confirmation_evidence(payload,hint_used)
         tracking=self.tracker.update(candidates,stamp)
         objects=[];views=[];used=set()
         for t in tracking['observed']:
@@ -188,12 +217,15 @@ class FastPerception:
                            for i,c in enumerate(candidates) if i not in used)
             if not ordered:continue
             i=ordered[0][1];used.add(i);p=payloads[i];xyz=p['xyz']
+            confirmed=p['confirmation']['eligible'] and t['tracking_status']=='confirmed'
+            state='CONFIRMED_OBJECT' if confirmed else 'AMBIGUOUS'
+            if t['tracking_status']!='confirmed':p['confirmation']['reasons'].append('ASSOCIATION_NOT_ESTABLISHED')
             objects.append(dict(object_id=t['object_id'],color=t['color'],observed_color=candidates[i]['color'],
                 color_label=candidates[i]['color'],color_confidence=p['color']['color_confidence'],
-                confidence=t['confidence'],tracking_status=t['tracking_status'],tracking_reliability=t['tracking_status'].upper(),
+                confidence=t['confidence'],tracking_status=t['tracking_status'],tracking_reliability='CONFIRMED_VISUAL_OBJECT' if confirmed else 'ASSOCIATED_CANDIDATE',
                 pixel_center=t['pixel_center'],bbox=p['bbox'],contour=p['contour'],surface_depth_z=xyz[2],
                 visible_surface_center_xyz=xyz,camera_to_surface_distance=float(np.linalg.norm(xyz)),
-                depth_valid_ratio=p['depth_valid_ratio'],point_count=len(p['points']),candidate_state='AMBIGUOUS',
+                depth_valid_ratio=p['depth_valid_ratio'],point_count=len(p['points']),candidate_state=state,confirmation=p['confirmation'],association_status=t['tracking_status'],
                 model_estimated_body_center_xyz=None,body_center_camera_z=None,camera_to_body_center_distance=None,
                 body_yaw_candidate=None,ring_center_candidate=None,ring_orientation_candidate=None,
                 hook_insertion_yaw_candidates=None,insertion_direction_candidates=None,
@@ -202,14 +234,20 @@ class FastPerception:
                 body_pose_valid=False,ring_pose_valid=False,ring_observed=False,
                 pose_quality={},fit_status='CAD_WORKER_PENDING',cad_fresh=False,cad_result_timestamp=None,
                 ambiguity=['FAST_COLOR_DEPTH_CANDIDATE','NO_INDEPENDENT_3D_VALIDATION'],
-                rejection_reason='FAST_ONLY; TABLE/CAD_NOT_CURRENTLY_VERIFIED',
+                rejection_reason=None if confirmed else ';'.join(p['confirmation']['reasons']),
                 capture_timestamp=stamp,source_frame_id=source_frame_id))
             views.append(p)
+        for d in diagnostics:
+            rejected=next((r for r in rejections if r['bbox']==d['bbox']),None)
+            observed=next((o for o in objects if o['bbox']==d['bbox']),None)
+            if rejected:d.update(state='REJECTED',reason=rejected['reason'])
+            elif observed:d.update(state=observed['candidate_state'],reason=observed['rejection_reason'],confirmation=observed['confirmation'])
+        for r in rejections:r['state']='REJECTED'
         elapsed=(perf_counter()-start)*1000;end=time();self.rate.add()
         result=dict(timestamp=stamp,capture_timestamp=stamp,capture_timestamp_source=frame_capture_time(frame)[1],result_timestamp=end,source_frame_id=source_frame_id,
             result_age_ms=max(0,(end-stamp)*1000),processing_latency_ms=elapsed,timestamps=frame.timestamps,
             coordinate_frame='camera_color_optical',camera_motion_proxy=motion,objects=objects,candidate_count=len(raw),
-            accepted_object_count=0,diagnostic_object_count=len(objects),candidate_diagnostics=[],rejections=rejections,
+            accepted_object_count=sum(o['candidate_state']=='CONFIRMED_OBJECT' for o in objects),diagnostic_object_count=len(objects),candidate_diagnostics=diagnostics,rejections=rejections,
             background_filter_report={'table_failure':'CACHED_DIAGNOSTIC_PLANE' if hint_used else 'NOT_RUN_FAST_PATH',
                 'table_hint_used':hint_used,'table_hint_age_ms':(stamp-self.table_hint['capture_timestamp'])*1000 if hint_used else None,
                 'table_hint_source_frame_id':self.table_hint['source_frame_id'] if hint_used else None},
@@ -217,7 +255,7 @@ class FastPerception:
             timing_ms=dict(detection=elapsed,total=elapsed,cad_fit=0.,tracking=0.),
             detection_fps=self.rate.hz(),body_pose_valid=False,ring_pose_valid=False,
             position_accuracy='NOT_MEASURED',yaw_accuracy='NOT_MEASURED')
-        return result,views
+        return finalize_interface(result),views
 
 def associate_cad(fast,cad,max_distance=80.,ambiguity=8.):
     edges=[]
@@ -251,7 +289,7 @@ class CADWorker:
             frame,identity,fast=job
             try:
                 result,_=self.pipeline.process(frame,force_cad=True)
-                message=dict(source_frame_id=identity,capture_timestamp=capture_time(frame),result_timestamp=time(),
+                message=dict(source_frame_id=identity,capture_timestamp=capture_time(frame),result_timestamp=time(),capture_timestamp_source=frame_capture_time(frame)[1],timestamps=frame.timestamps,
                              matches=associate_cad(fast,result['objects']),processing_ms=result['timing_ms']['total'],
                              table_plane=result.get('background_filter_report',{}).get('table_plane'))
                 with self.lock:
@@ -275,7 +313,14 @@ def cad_for_display(result,current_frame_id,history,now=None):
     for item in result['objects']:
         prior=history.get(item['object_id'])
         if prior is None:continue
-        old=prior['object'];same=prior['source_frame_id']==current_frame_id
+        old=prior['object'];same=(prior['source_frame_id']==current_frame_id and 0 <= now-prior['capture_timestamp'] <= 2.5)
+        if result.get('capture_timestamp') is not None:
+            same = same and result['capture_timestamp']==prior['capture_timestamp']
+        item.update(CAD_result_source_frame=prior['source_frame_id'],
+            CAD_capture_timestamp=prior['capture_timestamp'],CAD_result_timestamp=prior['result_timestamp'],
+            CAD_capture_timestamp_source=prior.get('capture_timestamp_source','UNAVAILABLE'),
+            CAD_result_age_ms=max(0,(now-prior['capture_timestamp'])*1000),
+            stale_status='CURRENT_FRAME' if same else 'STALE')
         item['historical_cad']=dict(source_frame_id=prior['source_frame_id'],
             capture_timestamp=prior['capture_timestamp'],result_timestamp=prior['result_timestamp'],
             result_age_ms=max(0,(now-prior['capture_timestamp'])*1000),
@@ -289,10 +334,17 @@ def cad_for_display(result,current_frame_id,history,now=None):
                         'insertion_direction_candidates','hook_insertion_yaw_candidates','ring_axis_yaw_candidate',
                         'body_center_camera_z','camera_to_body_center_distance','pose_quality','pose_hypotheses',
                         'ring_feature_status','ring_feature_observability','ring_surface_support','ring_axis_direction',
-                        'ambiguity','rejection_reason','candidate_state'):
+                        'ambiguity'):
                 item[key]=old.get(key)
             item['body_pose_valid']=False;item['ring_pose_valid']=False
             item['fit_status']=old['fit_status'];item['cad_fresh']=True
             item['cad_result_timestamp']=prior['capture_timestamp']
-        else:item['fit_status']='CAD_STALE_DIAGNOSTIC_ONLY'
-    return result
+        else:
+            item['fit_status']='CAD_STALE_DIAGNOSTIC_ONLY';item['cad_fresh']=False
+            for key in ('body_pose_candidate','ring_pose_candidate','model_estimated_body_center_xyz',
+                        'body_yaw_candidate','ring_center_candidate','ring_orientation_candidate',
+                        'insertion_direction_candidates','hook_insertion_yaw_candidates','ring_axis_yaw_candidate',
+                        'ring_axis_direction','body_center_camera_z','camera_to_body_center_distance'):
+                item[key]=None
+            item['body_pose_valid']=False;item['ring_pose_valid']=False
+    return finalize_interface(result)
