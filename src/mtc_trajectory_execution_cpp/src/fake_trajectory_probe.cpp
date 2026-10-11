@@ -38,7 +38,8 @@ int main(int argc,char ** argv)
     auto proof=port.snapshot();
     std::cout<<"FJT servers="<<servers<<" clients="<<clients<<" direct_trajectory_publishers="
       <<node->count_publishers("/"+cfg.controller+"/joint_trajectory")
-      <<" foreign_active_goals="<<proof.foreign_active_goals<<" ready="<<proof.ready<<"\n";
+      <<" foreign_active_goals="<<proof.foreign_active_goals<<" status_received="<<proof.status_received
+      <<" status_fresh="<<proof.status_fresh<<" unknown_active_goals="<<proof.unknown_active_goals<<" ready="<<proof.ready<<"\n";
     if(mode=="topology") {
       std::cout<<(proof.ready ? "PASS" : "BLOCKED")<<": Fake execution ownership gate; no Goal sent\n";
       executor.remove_node(node); rclcpp::shutdown(); return proof.ready ? 0 : 2;

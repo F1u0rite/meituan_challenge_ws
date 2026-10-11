@@ -65,6 +65,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   {
     const mtc::core::MotionCommand identity;
     explicit Session(const mtc::core::MotionCommand & c) : identity(c),id(c.command_id) {}
+    std::set<rclcpp_action::GoalUUID> pending_status_ids;
     std::string id, uuid;
     trajectory_msgs::msg::JointTrajectory trajectory;
     uint32_t timeout_ms;
@@ -87,6 +88,9 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscription;
   rclcpp::Subscription<action_msgs::msg::GoalStatusArray>::SharedPtr status_subscription;
   std::vector<action_msgs::msg::GoalStatus> goal_statuses;
+  bool status_received=false, status_valid=false;
+  size_t status_messages=0;
+  Time status_at{};
   Time idle_since{}, idle_last{};
   int64_t idle_stamp_ns=0;
   size_t idle_samples=0;
@@ -136,23 +140,76 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         else if (!active->handle) {++count;}
       }
     }
-    // Before acceptance, allow one candidate only; response UUID later checks ownership.
-    if (active && !active->handle && !active->result && count==1) {return 0;}
     return count;
+  }
+  bool status_usable(Time now) const
+  {
+    // Status has no publication timestamp. This bounds local reception age only;
+    // it is never a cross-process execution lock or proof against replay.
+    return status_received && status_valid && seconds(now,status_at)<=cfg.proof_max_age;
+  }
+  GoalOwnership ownership(Time now) const
+  {
+    if (!status_usable(now)) {return GoalOwnership::UNKNOWN;}
+    if (active && !active->handle && !active->terminal) {return GoalOwnership::UNKNOWN;}
+    if (foreign_goals()) {return GoalOwnership::FOREIGN_GOAL;}
+    if (active && active->handle) {
+      if (!active->terminal) {return GoalOwnership::OWN_GOAL;}
+      for (const auto & s:goal_statuses) {
+        if (s.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+          s.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+          s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING) {return GoalOwnership::UNKNOWN;}
+      }
+    }
+    return GoalOwnership::NO_ACTIVE_GOAL;
+  }
+  void on_status(const action_msgs::msg::GoalStatusArray & msg)
+  {
+    std::lock_guard<std::mutex> lock(mutex); if (closed) {return;}
+    status_received=true; ++status_messages; status_at=Steady::now(); status_valid=true;
+    std::set<rclcpp_action::GoalUUID> seen;
+    for (const auto & s:msg.status_list) {
+      const auto & id=s.goal_info.goal_id.uuid;
+      if (!seen.insert(id).second || std::all_of(id.begin(),id.end(),[](auto b) {return b==0;}) ||
+        s.status<action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+        s.status>action_msgs::msg::GoalStatus::STATUS_ABORTED ||
+        s.goal_info.stamp.sec<0 || s.goal_info.stamp.nanosec>=1000000000u ||
+        (s.goal_info.stamp.sec==0 && s.goal_info.stamp.nanosec==0)) {status_valid=false;}
+      if (active && !active->handle && !active->terminal &&
+        (s.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+        s.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+        s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING)) {active->pending_status_ids.insert(id);}
+    }
+    goal_statuses=msg.status_list;
   }
   bool idle_verified() const
   {
     return sample && idle_samples>=2 && seconds(idle_last,idle_since)>=cfg.settle_duration &&
       (sample->stamp_ns-idle_stamp_ns)/1e9>=cfg.settle_duration;
   }
-  bool healthy(Time now) const
+  bool environment_healthy(Time now) const
   {
     if (!cfg.enable_fake_execution || !hw_ok || !controller_ok || !sample ||
       seconds(now,hw_at)>cfg.proof_max_age || seconds(now,controller_at)>cfg.proof_max_age ||
       seconds(now,sample_at)>cfg.feedback_max_age || !client->action_server_is_ready()) {return false;}
-    if (foreign_goals() || ((!active || active->result) && !idle_verified())) {return false;}
     const double age=(node->now().nanoseconds()-sample->stamp_ns)/1e9;
     return age>=-0.01 && age<=cfg.feedback_max_age && exclusive_graph();
+  }
+  bool healthy(Time now) const
+  {
+    if (!environment_healthy(now) || !status_usable(now) || foreign_goals() ||
+      (active && !active->handle && !active->terminal)) {return false;}
+    if ((!active || active->result) && !idle_verified()) {return false;}
+    // A result may arrive before its terminal Status; do not dispatch a successor
+    // while the live Status still calls that owned UUID active.
+    if (active && active->result) {
+      for (const auto & s:goal_statuses) {
+        if (s.status==action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+          s.status==action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+          s.status==action_msgs::msg::GoalStatus::STATUS_CANCELING) {return false;}
+      }
+    }
+    return true;
   }
   void fault(const std::string & why, bool timeout=false)
   {
@@ -292,9 +349,16 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     try {
       refresh_proofs(now);
       if (!active || active->result) {issue_cancel(); return;}
-      if (!healthy(now)) {fault("runtime Fake/controller/state/graph proof lost"); issue_cancel(); return;}
       auto & s=*active;
       if (seconds(now,s.sent)>=s.timeout_ms/1000.0) {fault("execution or stationary confirmation deadline exceeded",true); issue_cancel(); return;}
+      if (!environment_healthy(now) || !status_usable(now)) {
+        fault("runtime Fake/controller/state/graph or live Status evidence lost"); issue_cancel(); return;
+      }
+      // Sending is irrevocable. Unknown UUIDs cannot be guessed Own, but retain
+      // the pending Session until its bounded response/timeout. No next Goal or
+      // cancel without a matching handle. Remember every UUID across updates.
+      if (!s.handle && !s.terminal) {return;}
+      if (foreign_goals()) {fault("unassociated active Goal UUID; execution ownership lost"); issue_cancel(); return;}
       issue_cancel();
       if (!s.terminal || s.stationary_samples<2 || seconds(s.last_stationary,s.stationary_since)<cfg.settle_duration ||
         (sample->stamp_ns-s.stationary_stamp_ns)/1e9<cfg.settle_duration ||
@@ -318,11 +382,13 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     auto weak=weak_from_this(); rclcpp::SubscriptionOptions options; options.callback_group=group;
     subscription=node->create_subscription<sensor_msgs::msg::JointState>(cfg.joint_state_topic,rclcpp::SensorDataQoS(),
       [weak](sensor_msgs::msg::JointState::ConstSharedPtr msg) {if (auto self=weak.lock()) {self->on_sample(*msg);}},options);
+    // Event-driven transient-local history is not current no-goal evidence.
+    // Require live publications. An idle native server may remain BLOCKED;
+    // this Port never synthesizes an initial empty Status or a heartbeat.
     status_subscription=node->create_subscription<action_msgs::msg::GoalStatusArray>(
-      cfg.action_name()+"/_action/status",rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local(),
+      cfg.action_name()+"/_action/status",rclcpp::QoS(rclcpp::KeepLast(1)).reliable().durability_volatile(),
       [weak](action_msgs::msg::GoalStatusArray::ConstSharedPtr msg) {
-        if (auto self=weak.lock()) {std::lock_guard<std::mutex> lock(self->mutex);
-          self->goal_statuses=msg->status_list;}
+        if (auto self=weak.lock()) {self->on_status(*msg);}
       },options);
     timer=node->create_wall_timer(std::chrono::milliseconds(10),[weak]() {if (auto self=weak.lock()) {self->tick();}},group);
   }
@@ -338,10 +404,15 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
         if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;
       }
       if (!handle) {
+        if (!s->pending_status_ids.empty()) {self->fault("Goal rejected after unknown active UUID observed");}
         if (!s->result) {s->result=rejected("FJT Goal rejected before execution"); self->completed.emplace(s->id,Completed{s->identity,*s->result});}
         s->terminal=true; return;
       }
-      s->handle=handle; s->uuid=uuid_text(handle->get_goal_id()); self->issue_cancel();
+      s->handle=handle; s->uuid=uuid_text(handle->get_goal_id());
+      for (const auto & id:s->pending_status_ids) {
+        if (id!=handle->get_goal_id()) {self->fault("foreign UUID observed during pending Goal response"); break;}
+      }
+      self->issue_cancel();
     };
     options.feedback_callback=[weak,s](Handle::SharedPtr handle, const std::shared_ptr<const Fjt::Feedback> f) {
       auto self=weak.lock(); if (!self) {return;}
@@ -473,6 +544,9 @@ ExecutionSnapshot FjtMotionPort::snapshot() const
 {
   auto self=impl_; std::lock_guard<std::mutex> lock(self->mutex); ExecutionSnapshot s;
   try {s.ready=!self->locked && self->healthy(Steady::now());} catch (...) {s.ready=false;}
+  s.status_received=self->status_received; s.status_fresh=self->status_usable(Steady::now());
+  s.status_messages=self->status_messages; s.ownership=self->ownership(Steady::now());
+  if (self->active && !self->active->handle && !self->active->terminal) {s.unknown_active_goals=self->foreign_goals();}
   s.foreign_active_goals=self->foreign_goals(); s.fault_locked=self->locked; s.goals_sent=self->goals_sent; s.cancel_requests=self->cancels_sent; s.detail=self->detail;
   if (self->active) {auto & a=*self->active; s.command_id=a.id; s.goal_uuid=a.uuid;
     s.in_flight=!a.terminal; s.cancel_acknowledged=a.cancel_ack; s.terminal_received=a.terminal;

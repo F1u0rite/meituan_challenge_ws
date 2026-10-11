@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <action_msgs/msg/goal_status_array.hpp>
 #include <cstdlib>
 #include <functional>
 #include <mutex>
@@ -24,11 +26,20 @@ class FakeController : public rclcpp::Node
 {
 public:
   Config cfg;
-  std::atomic<size_t> goals{0}, cancels{0};
+  std::atomic<size_t> goals{0}, cancels{0}, last_state_count{0};
   std::atomic<bool> reject{false}, aborted{false}, ack_only{false}, no_result{false};
   std::atomic<bool> publish_state{true}, stale_state{false}, missing_velocity{false};
   std::atomic<bool> moving{false}, wrong_final{false}, feedback_enabled{true}, active_controller{true};
   std::atomic<bool> generic{true}, repeated_stamp{false};
+  std::atomic<bool> publish_status{true}, hold_response{false}, pending_status{false};
+  std::atomic<bool> hide_active_status{false}, invalid_status{false}, reject_cancel{false}, hold_terminal_status{false};
+  std::atomic<size_t> status_publications{0}, pending_requests{0};
+  void release_response() {pending_status=false; {std::lock_guard<std::mutex> lock(gate_mutex); released=true;} gate.notify_all();}
+  void release_terminal_status() {std::lock_guard<std::mutex> lock(mutex); hold_terminal_status=false; status_cache=latest_status;}
+  size_t active_statuses() {std::lock_guard<std::mutex> lock(mutex); return std::count_if(status_cache.status_list.begin(),status_cache.status_list.end(),[](const auto & s) {return s.status>=1 && s.status<=3;});}
+  void publish_latched_empty() {status_pub->publish(action_msgs::msg::GoalStatusArray{});}
+  size_t terminal_statuses() {std::lock_guard<std::mutex> lock(mutex); return std::count_if(status_cache.status_list.begin(),status_cache.status_list.end(),[](const auto & s) {return s.status>=4;});}
+  rclcpp_action::GoalUUID request_id() {std::lock_guard<std::mutex> lock(mutex); return pending_uuid;}
   FakeController(Config c):Node("fake_controller"),cfg(std::move(c))
   {
     hw=create_service<Hw>(cfg.controller_manager+"/list_hardware_components",
@@ -48,16 +59,42 @@ public:
         c=controller_manager_msgs::msg::ControllerState(); c.name="joint_state_broadcaster"; c.state="active"; c.type="joint_state_broadcaster/JointStateBroadcaster"; r->controller.push_back(c);
       });
     pub=create_publisher<sensor_msgs::msg::JointState>(cfg.joint_state_topic,rclcpp::SensorDataQoS());
+    status_pub=create_publisher<action_msgs::msg::GoalStatusArray>(cfg.action_name()+"/test_status_evidence",
+      rclcpp::QoS(1).reliable().transient_local());
+    native_status=create_subscription<action_msgs::msg::GoalStatusArray>(cfg.action_name()+"/_action/status",
+      rclcpp::QoS(1).reliable().transient_local(),[this](action_msgs::msg::GoalStatusArray::ConstSharedPtr msg) {
+        std::lock_guard<std::mutex> lock(mutex); latest_status=*msg;
+        if(!hold_terminal_status || std::none_of(msg->status_list.begin(),msg->status_list.end(),
+          [](const auto & s) {return s.status>=4;})) {status_cache=*msg;}
+      });
+    action_group=create_callback_group(rclcpp::CallbackGroupType::Reentrant);
     server=rclcpp_action::create_server<Fjt>(this,cfg.action_name(),
-      [this](const auto &,auto) {++goals; return reject ? rclcpp_action::GoalResponse::REJECT : rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;},
-      [this](auto h) {++cancels; std::lock_guard<std::mutex> lock(mutex); canceled_uuid=h->get_goal_id(); return rclcpp_action::CancelResponse::ACCEPT;},
-      [this](auto h) {std::lock_guard<std::mutex> lock(mutex); handle=h; received=h->get_goal()->trajectory; began=std::chrono::steady_clock::now();});
+      [this](const auto & uuid,auto goal) {
+        ++goals;
+        if(hold_response && goal->trajectory.header.frame_id!="foreign") {
+          {std::lock_guard<std::mutex> lock(mutex); pending_uuid=uuid;}
+          ++pending_requests;
+          std::unique_lock<std::mutex> lock(gate_mutex);
+          gate.wait_for(lock,2s,[this]() {return released;});
+        }
+        return reject ? rclcpp_action::GoalResponse::REJECT : rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+      },
+      [this](auto h) {++cancels; std::lock_guard<std::mutex> lock(mutex); canceled_uuid=h->get_goal_id(); return reject_cancel ? rclcpp_action::CancelResponse::REJECT : rclcpp_action::CancelResponse::ACCEPT;},
+      [this](auto h) {std::lock_guard<std::mutex> lock(mutex); handle=h; received=h->get_goal()->trajectory; began=std::chrono::steady_clock::now();},rcl_action_server_get_default_options(),action_group);
     timer=create_wall_timer(10ms,[this]() {tick();});
   }
   trajectory_msgs::msg::JointTrajectory trajectory() {std::lock_guard<std::mutex> lock(mutex); return received;}
   rclcpp_action::GoalUUID goal_id() {std::lock_guard<std::mutex> lock(mutex); return handle ? handle->get_goal_id() : rclcpp_action::GoalUUID{};}
   rclcpp_action::GoalUUID cancel_id() {std::lock_guard<std::mutex> lock(mutex); return canceled_uuid;}
 private:
+  std::mutex gate_mutex;
+  std::condition_variable gate;
+  bool released=false;
+  rclcpp_action::GoalUUID pending_uuid{};
+  rclcpp::CallbackGroup::SharedPtr action_group;
+  rclcpp::Publisher<action_msgs::msg::GoalStatusArray>::SharedPtr status_pub;
+  rclcpp::Subscription<action_msgs::msg::GoalStatusArray>::SharedPtr native_status;
+  action_msgs::msg::GoalStatusArray status_cache,latest_status;
   std::mutex mutex;
   std::shared_ptr<ServerHandle> handle;
   trajectory_msgs::msg::JointTrajectory received;
@@ -89,9 +126,28 @@ private:
         } handle.reset();
       }
     }
+    if(publish_status) {
+      auto evidence=status_cache;
+      if(pending_status && pending_requests) {
+        action_msgs::msg::GoalStatus status; status.goal_info.goal_id.uuid=pending_uuid;
+        status.goal_info.stamp=now(); status.status=action_msgs::msg::GoalStatus::STATUS_ACCEPTED;
+        if(std::none_of(evidence.status_list.begin(),evidence.status_list.end(),[&](const auto & x) {
+          return x.goal_info.goal_id.uuid==pending_uuid;
+        })) {evidence.status_list.push_back(status);}
+      }
+      if(hide_active_status) {
+        evidence.status_list.erase(std::remove_if(evidence.status_list.begin(),evidence.status_list.end(),
+          [](const auto & s) {return s.status>=1 && s.status<=3;}),evidence.status_list.end());
+      }
+      if(invalid_status) {
+        action_msgs::msg::GoalStatus bad; bad.status=action_msgs::msg::GoalStatus::STATUS_EXECUTING;
+        bad.goal_info.stamp=now(); evidence.status_list.push_back(bad); // Invalid zero UUID.
+      }
+      status_pub->publish(evidence); ++status_publications;
+    }
     if (publish_state) {
       sensor_msgs::msg::JointState s; s.header.stamp=stamp; s.name=cfg.joints; s.position=position;
-      if (!missing_velocity) {s.velocity.assign(6,moving ? 0.1 : 0.0);} pub->publish(s);
+      if (!missing_velocity) {s.velocity.assign(6,moving ? 0.1 : 0.0);} pub->publish(s); ++last_state_count;
     }
   }
 };
@@ -120,14 +176,25 @@ protected:
     cfg.controller="jtc_"+name; cfg.controller_manager="/cm_"+name; cfg.joint_state_topic="/js_"+name;
     cfg.enable_fake_execution=true; cfg.settle_duration=name=="StationaryWindowCannotGrowWithoutNewSamples" ? 0.15 : 0.05; cfg.max_start_delay=0.05;
     for (const auto & n:cfg.joints) {cfg.limits[n]={-2,2,1,100};}
-    node=std::make_shared<rclcpp::Node>("fjt_client"); server=std::make_shared<FakeController>(cfg);
+    // Test-only server relay provides explicit live Status evidence. Native Action
+    // Goal/Feedback/Result/Cancel are unchanged; no Port private state is accessed.
+    rclcpp::NodeOptions options;
+    options.arguments({"--ros-args","-r",cfg.action_name()+"/_action/status:="+cfg.action_name()+"/test_status_evidence"});
+    node=std::make_shared<rclcpp::Node>("fjt_client",options); server=std::make_shared<FakeController>(cfg);
+    if(name=="NoStatusBeforeDispatchFailsClosed" || name=="LatchedEmptyStatusCannotAuthorizeDispatch") {
+      server->publish_status=false;
+      if(name=="LatchedEmptyStatusCannotAuthorizeDispatch") {server->publish_latched_empty();}
+    }
     port=std::make_unique<FjtMotionPort>(node,cfg); executor.add_node(node); executor.add_node(server);
     spin=std::thread([this]() {executor.spin();});
+    if(name=="NoStatusBeforeDispatchFailsClosed" || name=="LatchedEmptyStatusCannotAuthorizeDispatch") {
+      ASSERT_TRUE(wait([this]() {return server->last_state_count>=25;})); return;
+    }
     ASSERT_TRUE(wait([this]() {return port->snapshot().ready;})) << port->snapshot().detail;
   }
   void TearDown() override
   {
-    port.reset(); executor.cancel(); if (spin.joinable()) {spin.join();}
+    server->release_response(); port.reset(); executor.cancel(); if (spin.joinable()) {spin.join();}
     executor.remove_node(node); executor.remove_node(server); server.reset(); node.reset();
   }
   static bool wait(const std::function<bool()> & f,std::chrono::milliseconds limit=3s)
@@ -485,4 +552,154 @@ TEST_F(FjtAction, PastPlannerGenerationStampDoesNotDispatch) {
   auto r=port->execute_trajectory(c); ASSERT_TRUE(r);
   EXPECT_NE(r->message.find("scheduled stamp stale"),std::string::npos);
   EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u); EXPECT_FALSE(port->snapshot().fault_locked);
+}
+
+TEST_F(FjtAction, NoStatusBeforeDispatchFailsClosed) {
+  EXPECT_FALSE(port->snapshot().ready);
+  auto r=port->execute_trajectory(command()); EXPECT_TRUE(r);
+  EXPECT_EQ(port->snapshot().goals_sent,0u); EXPECT_EQ(server->goals,0u);
+}
+TEST_F(FjtAction, StatusBeforeGoalResponsePreservesOwnership) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1 && server->status_publications>=30;}));
+  EXPECT_TRUE(port->snapshot().goal_uuid.empty());
+  EXPECT_EQ(port->snapshot().ownership,GoalOwnership::UNKNOWN);
+  EXPECT_EQ(port->snapshot().unknown_active_goals,1u);
+  EXPECT_EQ(port->snapshot().foreign_active_goals,1u); // Unassociated, never guessed Own.
+  EXPECT_FALSE(port->snapshot().ready); EXPECT_EQ(server->cancels,0u);
+  server->release_response(); ASSERT_TRUE(wait([&]() {return !port->snapshot().goal_uuid.empty();}));
+  EXPECT_EQ(server->goal_id(),server->request_id());
+  port->cancel_command(c.command_id,"cleanup"); EXPECT_TRUE(result(c).stop_confirmed);
+}
+
+TEST_F(FjtAction, ForeignGoalBeforeOwnGoalRejected) {
+  server->no_result=true;
+  auto outsider=rclcpp_action::create_client<Fjt>(server,cfg.action_name());
+  ASSERT_TRUE(wait([&]() {return outsider->action_server_is_ready();}));
+  Fjt::Goal goal; goal.trajectory=*convert(command("foreign"),cfg).trajectory; goal.trajectory.header.frame_id="foreign";
+  auto response=outsider->async_send_goal(goal);
+  ASSERT_TRUE(wait([&]() {return response.wait_for(0s)==std::future_status::ready;})); ASSERT_TRUE(response.get());
+  outsider.reset(); ASSERT_TRUE(wait([&]() {return port->snapshot().ownership==GoalOwnership::FOREIGN_GOAL;}));
+  auto r=port->execute_trajectory(command()); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(port->snapshot().goals_sent,0u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, GoalResponseBeforeStatusMatchesUuid) {
+  server->hide_active_status=true; server->no_result=true;
+  auto c=command(); send(c); auto uuid=server->goal_id();
+  EXPECT_FALSE(port->snapshot().goal_uuid.empty()); EXPECT_EQ(port->snapshot().ownership,GoalOwnership::OWN_GOAL);
+  server->hide_active_status=false;
+  ASSERT_TRUE(wait([&]() {return port->snapshot().status_messages>=20;}));
+  EXPECT_EQ(port->snapshot().foreign_active_goals,0u); EXPECT_EQ(port->snapshot().unknown_active_goals,0u);
+  EXPECT_FALSE(port->snapshot().fault_locked);
+  port->cancel_command(c.command_id,"cleanup"); EXPECT_TRUE(result(c).stop_confirmed);
+  EXPECT_EQ(server->cancel_id(),uuid); EXPECT_EQ(server->goals,1u);
+}
+TEST_F(FjtAction, ForeignGoalDuringPendingResponseFailsClosed) {
+  server->hold_response=true; server->no_result=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1;})); auto own=server->request_id();
+  // DDS client names are per node/endpoint, not a count of objects. This genuine
+  // second client shares the public Node, demonstrating the topology limitation
+  // without weakening any Port gate or touching private state.
+  auto outsider=rclcpp_action::create_client<Fjt>(node,cfg.action_name());
+  Fjt::Goal goal; goal.trajectory=*convert(command("foreign"),cfg).trajectory; goal.trajectory.header.frame_id="foreign";
+  auto response=outsider->async_send_goal(goal);
+  ASSERT_TRUE(wait([&]() {return response.wait_for(0s)==std::future_status::ready;})); ASSERT_TRUE(response.get());
+  ASSERT_TRUE(wait([&]() {return port->snapshot().unknown_active_goals==1;}));
+  EXPECT_EQ(port->snapshot().ownership,GoalOwnership::UNKNOWN); EXPECT_FALSE(port->snapshot().ready);
+  EXPECT_TRUE(port->snapshot().goal_uuid.empty()); EXPECT_EQ(server->cancels,0u);
+  auto blocked=port->execute_trajectory(command("next")); ASSERT_TRUE(blocked);
+  EXPECT_EQ(port->snapshot().goals_sent,1u);
+  // Drop that client and hide active Status before acceptance: the observed
+  // foreign UUID must remain remembered even if it disappears from later arrays.
+  outsider.reset(); server->hide_active_status=true;
+  ASSERT_TRUE(wait([&]() {return port->snapshot().foreign_active_goals==0;}));
+  server->release_response();
+  ASSERT_TRUE(wait([&]() {return port->snapshot().fault_locked && server->cancels==1;}));
+  EXPECT_EQ(server->cancel_id(),own); EXPECT_EQ(server->goals,2u); EXPECT_EQ(port->snapshot().goals_sent,1u);
+  ASSERT_TRUE(wait([&]() {return port->snapshot().terminal_received;}));
+  EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_FALSE(port->snapshot().result->stop_confirmed);
+}
+TEST_F(FjtAction, CancelBeforeGoalResponseUsesOwnedUuidOnly) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1 && port->snapshot().unknown_active_goals==1;}));
+  auto own=server->request_id(); auto stop=port->cancel_command(c.command_id,"pending cancel");
+  EXPECT_FALSE(stop.request_delivered); EXPECT_FALSE(stop.stop_confirmed); EXPECT_EQ(server->cancels,0u);
+  EXPECT_FALSE(port->cancel_command("stale-id","wrong owner").request_delivered);
+  server->release_response(); auto r=result(c); EXPECT_TRUE(r.stop_confirmed); EXPECT_FALSE(r.success);
+  EXPECT_EQ(server->cancel_id(),own); EXPECT_EQ(server->cancels,1u); EXPECT_EQ(server->goals,1u);
+}
+TEST_F(FjtAction, HistoricalTerminalStatusDoesNotBecomeActive) {
+  auto c=command(); send(c); ASSERT_TRUE(result(c).success);
+  ASSERT_TRUE(wait([&]() {return server->terminal_statuses()>0 && port->snapshot().ownership==GoalOwnership::NO_ACTIVE_GOAL;}));
+  EXPECT_TRUE(port->snapshot().status_received); EXPECT_TRUE(port->snapshot().status_fresh);
+  EXPECT_EQ(port->snapshot().foreign_active_goals,0u); EXPECT_EQ(server->cancels,0u);
+  auto next=command("next"); for(auto & p:next.trajectory->points) {for(auto & x:p.positions_rad) {x+=0.02;}}
+  send(next); EXPECT_TRUE(result(next).success); EXPECT_EQ(server->goals,2u);
+}
+TEST_F(FjtAction, StatusEvidenceLossDoesNotAuthorizeDispatch) {
+  ASSERT_TRUE(port->snapshot().status_received); server->publish_status=false;
+  ASSERT_TRUE(wait([&]() {return !port->snapshot().status_fresh;}));
+  EXPECT_EQ(port->snapshot().ownership,GoalOwnership::UNKNOWN); EXPECT_FALSE(port->snapshot().ready);
+  auto r=port->execute_trajectory(command()); ASSERT_TRUE(r); EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, LateResultDoesNotReleaseFaultLock) {
+  server->no_result=true; server->reject_cancel=true; auto c=command(); send(c); auto own=server->goal_id();
+  server->publish_status=false; ASSERT_TRUE(wait([&]() {return port->snapshot().fault_locked;}));
+  auto original=port->snapshot().result; ASSERT_TRUE(original); EXPECT_TRUE(original->status_unknown);
+  ASSERT_TRUE(wait([&]() {return server->cancels==1;})); EXPECT_EQ(server->cancel_id(),own);
+  server->no_result=false; ASSERT_TRUE(wait([&]() {return port->snapshot().terminal_received;}));
+  EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_EQ(port->snapshot().result->message,original->message);
+  EXPECT_FALSE(port->snapshot().result->success); EXPECT_FALSE(port->snapshot().result->stop_confirmed);
+  auto r=port->execute_trajectory(command("next")); ASSERT_TRUE(r); EXPECT_TRUE(r->status_unknown); EXPECT_EQ(server->goals,1u);
+}
+TEST_F(FjtAction, NormalFakeTrajectoryStillExecutesOnce) {
+  auto c=command(); send(c); auto r=result(c); EXPECT_TRUE(r.success); EXPECT_TRUE(r.stop_confirmed);
+  EXPECT_EQ(server->trajectory().points.size(),3u); EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+  EXPECT_GT(port->snapshot().status_messages,0u); EXPECT_FALSE(port->snapshot().fault_locked);
+}
+TEST_F(FjtAction, LatchedEmptyStatusCannotAuthorizeDispatch) {
+  EXPECT_FALSE(port->snapshot().status_received); EXPECT_FALSE(port->snapshot().ready);
+  auto r=port->execute_trajectory(command()); ASSERT_TRUE(r); EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, InvalidStatusDoesNotAuthorizeDispatch) {
+  server->invalid_status=true; ASSERT_TRUE(wait([&]() {return !port->snapshot().status_fresh;}));
+  EXPECT_TRUE(port->snapshot().status_received); EXPECT_EQ(port->snapshot().ownership,GoalOwnership::UNKNOWN);
+  auto r=port->execute_trajectory(command()); ASSERT_TRUE(r); EXPECT_EQ(server->goals,0u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, PendingResponseTimeoutRetainsSessionAndLateHandle) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); c.timeout_ms=400; ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return port->snapshot().fault_locked;})); auto own=server->request_id(); auto before=port->snapshot();
+  ASSERT_TRUE(before.result); EXPECT_TRUE(before.result->timed_out); EXPECT_EQ(before.command_id,c.command_id);
+  EXPECT_TRUE(before.goal_uuid.empty()); EXPECT_EQ(server->cancels,0u);
+  auto r=port->execute_trajectory(command("next")); ASSERT_TRUE(r); EXPECT_TRUE(r->status_unknown);
+  server->release_response(); ASSERT_TRUE(wait([&]() {return server->cancels==1 && port->snapshot().terminal_received;}));
+  EXPECT_EQ(server->cancel_id(),own); EXPECT_TRUE(port->snapshot().fault_locked);
+  EXPECT_TRUE(port->snapshot().result->timed_out); EXPECT_FALSE(port->snapshot().result->stop_confirmed);
+  EXPECT_EQ(port->snapshot().goals_sent,1u); EXPECT_EQ(server->goals,1u);
+}
+TEST_F(FjtAction, RejectedResponseAfterUnknownStatusKeepsFaultLock) {
+  server->hold_response=true; server->pending_status=true; server->reject=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return port->snapshot().unknown_active_goals==1;}));
+  server->release_response(); ASSERT_TRUE(wait([&]() {return port->snapshot().terminal_received;}));
+  EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_TRUE(port->snapshot().goal_uuid.empty());
+  EXPECT_TRUE(port->snapshot().result->status_unknown); EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+
+TEST_F(FjtAction, TerminalResultBeforeStatusDoesNotAuthorizeSuccessor) {
+  server->no_result=true; auto c=command(); send(c);
+  ASSERT_TRUE(wait([&]() {return server->active_statuses()==1;}));
+  server->hold_terminal_status=true; server->no_result=false;
+  ASSERT_TRUE(result(c).success); // Real terminal Result and separate JointState settle.
+  EXPECT_EQ(port->snapshot().ownership,GoalOwnership::UNKNOWN); EXPECT_FALSE(port->snapshot().ready);
+  auto next=command("next"); for(auto & p:next.trajectory->points) {for(auto & x:p.positions_rad) {x+=0.02;}}
+  auto r=port->execute_trajectory(next); ASSERT_TRUE(r); EXPECT_EQ(r->exec_state,mtc::core::ExecState::REJECTED);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+  server->release_terminal_status(); ASSERT_TRUE(wait([&]() {return port->snapshot().ready;}));
+  EXPECT_EQ(port->snapshot().ownership,GoalOwnership::NO_ACTIVE_GOAL);
+  send(next); EXPECT_TRUE(result(next).success); EXPECT_EQ(server->goals,2u);
 }

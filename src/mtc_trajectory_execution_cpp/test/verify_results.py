@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""核对 Phase 2B 原424项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
+"""核对 Ownership Audit 基线463项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
 import argparse
 from collections import Counter
 from pathlib import Path
@@ -17,27 +17,32 @@ def main():
     git = lambda *a: subprocess.check_output(['git', *a], cwd=root, text=True)
     baseline = set()
     pattern = re.compile(r'\bTEST(?:_F)?\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
-    base = 'a04ac68'
+    base = '45f497c'
     for name in git('ls-tree', '-r', '--name-only', base, 'src').splitlines():
-        if re.fullmatch(r'src/mtc_\w+_cpp/test/test_\w+\.cpp', name):
-            baseline.update(f'{s}.{c}' for s, c in pattern.findall(git('show', f'{base}:{name}')))
-    assert len(baseline) == 358, len(baseline)
-    for name in git('ls-tree', '-r', '--name-only', 'b47b5fe', 'src/mtc_trajectory_execution_cpp/test').splitlines():
-        if name.endswith('.cpp'):
-            source = git('show', f'b47b5fe:{name}')
-            baseline.update(f'{s}.{c}' for s, c in pattern.findall(source) if c != 'Name')
-            baseline.update('TrajectoryValidator.' + c for c in re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
-    assert len(baseline) == 424, len(baseline)
+        if re.fullmatch(r'src/(?:mtc_\w+_cpp|mtc_moveit_planner)/test/test_\w+\.cpp', name):
+            source = git('show', f'{base}:{name}')
+            baseline.update(f'{s}.{c}' for s, c in pattern.findall(source)
+                            if (s, c) != ('TrajectoryValidator', 'Name'))
+            baseline.update('TrajectoryValidator.' + c for c in
+                            re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
+    assert len(baseline) == 463, len(baseline)
     actual = Counter()
     inventory = set()
     by_package = Counter()
     packages = list((root / 'src').glob('mtc_*_cpp')) + [root / 'src/mtc_moveit_planner']
     xmls = [p for pkg in packages for p in (build / pkg.name / 'test_results').rglob('*.gtest.xml')]
     expected_executables = 0
+    declared = set()
     for pkg in packages:
         cmake = pkg / 'CMakeLists.txt'
         if not cmake.exists():
             continue
+        for source_file in (pkg / 'test').glob('test_*.cpp'):
+            source = source_file.read_text()
+            declared.update(f'{s}.{c}' for s, c in pattern.findall(source)
+                            if (s, c) != ('TrajectoryValidator', 'Name'))
+            declared.update('TrajectoryValidator.' + c for c in
+                            re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
         names = re.findall(r'ament_add_gtest\(\s*(test_\w+)', cmake.read_text())
         expected_executables += len(names)
         for name in names:
@@ -60,11 +65,12 @@ def main():
             assert case.get('result') == 'completed', key
             actual[key] += 1
             by_package[filename.relative_to(build).parts[0]] += 1
+    assert inventory == declared, (sorted(declared - inventory), sorted(inventory - declared))
     assert len(xmls) == expected_executables, (len(xmls), expected_executables)
     assert baseline <= actual.keys(), sorted(baseline - actual.keys())
     assert inventory == actual.keys(), (sorted(inventory - actual.keys()), sorted(actual.keys() - inventory))
     assert all(v == 1 for v in actual.values()), actual
-    print(f'PASS: 原358项 Core/Action + 原66项 Phase 2B 身份全部保留并执行；新增及合入{len(inventory - baseline)}项')
+    print(f'PASS: 原463项身份全部保留并执行；本轮新增{len(inventory - baseline)}项')
     print(f'PASS: {len(actual)}项独立GTest / {len(xmls)}个可执行文件；FAIL 0 / SKIP 0')
     for package, count in sorted(by_package.items()):
         print(f'  {package}: {count} PASS')
