@@ -20,6 +20,8 @@ mkdir -p runtime_logs/calibration/{device,handeye,tcp,table,validation}
 
 确认实际图像尺寸、rectified/raw、深度编码/比例、深度是否对齐彩色、采集 stamp 与 ROS 时基。记录后再决定要不要重新标定内参；已有设备参数不意味着安装外参完成。
 
+另记录：机身标签型号（D435i 与 D435if 深度零平面分别为玻璃后 4.2 / 4.7 mm）；`robot_description` 哈希及 `tf2_echo wrist3_Link ee_link` 读数；法兰上标记的 F +X 物理特征（如定位销孔）及其在 RViz 中对应的 `wrist3_Link` 轴向。对齐到彩色的深度图属于彩色光学系，视觉输出的 frame_id 应与之一致。
+
 ## 2. 采集 eye-in-hand 外参
 
 固定一块尺寸/角点定义已知的标定板在台面，板在整个采集中保持不动。由孙浩然提供板在选定光学系 C 中的完整 `T_C_board`，确认角点顺序、单位和图像对应流。
@@ -49,6 +51,8 @@ mkdir -p runtime_logs/calibration/{device,handeye,tcp,table,validation}
 ## 5. 独立验证与移交
 
 使用未参加求解的点/姿态复核相机变换、TCP 与 T0。记录预测与参考位置、位置误差 m、姿态误差 rad、阈值、是否通过及照片/数据。模板：[validation_points.csv](validation_points.csv)。四元数 q/-q 等价，姿态比较不要直接比较元素符号。
+
+用卷尺/量块从**前玻璃**量目标距离来核对深度时，按数据手册 Table 4-16 加 4.2 mm（D435i）才等于相机深度值；这个修正只做一次。外参已把深度原点放在玻璃后 4.2 mm，不要再对相机深度值或外参重复补偿。
 
 逐项检查：相机随机器人运动时末端安装外参稳定；相机观测按采集时刻转到规划系；ring_pose 轴向和 V1 进入方向一致；T0 姿态和高度有依据；TF/标定失效会被适配器拒绝。
 

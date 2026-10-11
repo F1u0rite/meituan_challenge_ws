@@ -4,7 +4,7 @@
   "length_unit": "m",
   "quaternion_order": "xyzw",
   "time_domain": "synthetic",
-  "description": "Pure math fixture; all geometry is synthetic, not D435i mounting or TCP calibration.",
+  "description": "Pure math fixture; all geometry is synthetic, not D435i mounting or TCP calibration. The zero camera_link->optical translation is synthetic too: a real color optical frame sits about 15 mm from camera_link and must come from the device TF.",
   "transforms": [
     {"parent": "base_link", "child": "wrist3_Link", "status": "ESTIMATED", "static": false,
      "stamp_ns": 10000000000, "translation": [1, 0, 0],

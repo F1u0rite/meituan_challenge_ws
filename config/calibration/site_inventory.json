@@ -8,7 +8,7 @@
   "robot": {"model": "AUBO S3", "description_commit": "47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1",
             "model_frames": ["world", "base_link", "wrist3_Link", "ee_link"],
             "planning_frame_runtime_verified": false},
-  "camera": {"model": "D435i", "mount": "eye_in_hand_near_flange", "mount_confirmed_by_user": true,
+  "camera": {"model": "D435i", "model_label_verified": false, "mount": "eye_in_hand_near_flange", "mount_confirmed_by_user": true,
              "device_serial": null, "camera_root_frame_runtime": null, "optical_frame_runtime": null,
              "intrinsics_status": "UNKNOWN", "intrinsics_file": null,
              "internal_extrinsics_status": "UNKNOWN", "internal_extrinsics_file": null},

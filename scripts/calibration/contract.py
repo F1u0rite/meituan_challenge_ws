@@ -4,6 +4,9 @@ from dataclasses import dataclass
 
 from geometry import CalibrationError, Transform
 
+# rclcpp::Time and the C++ core hold nanoseconds in int64; larger stamps cannot be exchanged.
+INT64_MAX_NS = 2**63 - 1
+
 
 def frame_name(value):
     if not isinstance(value, str) or not value or value.strip() != value or value.startswith('/') or any(c.isspace() for c in value):
@@ -14,6 +17,8 @@ def frame_name(value):
 def positive_ns(value, label):
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise CalibrationError('INVALID_TIME', f'{label} must be positive integer ns; zero is not an observation timestamp')
+    if value > INT64_MAX_NS:
+        raise CalibrationError('INVALID_TIME', f'{label} exceeds int64 nanoseconds used by ROS 2 time')
     return value
 
 
@@ -45,7 +50,8 @@ class Pose:
 class FrameGraph:
     """A TF forest with exactly one parent per child. Dynamic inputs are snapshots."""
     def __init__(self, d):
-        if not isinstance(d, dict) or d.get('schema_version') != 1:
+        # type() rather than ==: True == 1 and 1.0 == 1 in Python, neither is schema 1.
+        if not isinstance(d, dict) or type(d.get('schema_version')) is not int or d['schema_version'] != 1:
             raise CalibrationError('INVALID_CONFIG', 'expected schema_version 1')
         if d.get('length_unit') != 'm' or d.get('quaternion_order') != 'xyzw':
             raise CalibrationError('UNIT_MISMATCH', 'require m and quaternion order xyzw')

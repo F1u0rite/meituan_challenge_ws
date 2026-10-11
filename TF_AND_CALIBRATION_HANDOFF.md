@@ -60,6 +60,7 @@ flowchart TD
 - `body_pose` 与 `ring_pose` 均保留完整 `PoseStamped`，包括位置、xyzw 四元数、header.frame_id 和采集时间戳；数组 Header 不替代各 Pose Header。
 - 四元数不是 `[0,0,0,0]`；姿态未知则 `ring_pose_valid=false`，不通过任意单位四元数“补齐”观测。
 - 位置 m，角度/RPY rad。离线工具要求明确单位标签；它无法从合法数值本身证明设备没有把 mm 错写成 m。
+- 四元数顺序同样无法从数值证明：把 wxyz 的 `[1,0,0,0]` 写进 xyzw 字段会被当成绕 X 180° 的合法姿态。ROS 消息与本工具为 xyzw；Eigen `Quaterniond(w,x,y,z)` 构造参数与其 `coeffs()` 顺序不同，部分 SDK 输出 wxyz，转换处需显式核对。四元数导出至少保留 9 位有效数字；工具不静默归一化，|q| 偏离 1 超过 1e-6 即拒绝（四位小数的 0.7071 会被拒）。
 - ring 与 body 定义由视觉记录。脚本当前校验 ring Pose，body 不能因同属一条检测消息而直接认定有效。
 - TF、观测与 `now` 必须处于一致时基。ROS stamp 用于 tf2；FSM 单调 Clock 用于运行看门狗，两者需孙嘉明的适配层明确转换，不能直接相减。
 - 动态 TF 按采集时刻求值，不用“最新机械臂姿态”替代。离线快照无插值，要求动态边时间与观测精确匹配。
@@ -70,6 +71,8 @@ flowchart TD
 ## 5. 已有/待测表
 
 [测量清单 CSV](docs/calibration/measurement_inventory.csv) 和 [真实站点清单 JSON](config/calibration/site_inventory.json) 可直接交接。状态：MEASURED 有实测/设备读取证据；ESTIMATED 有模型/CAD 等估计来源；UNKNOWN 无数值，JSON 用 null。
+
+模型固定关节（如 `wrist3_Link→ee_link`）仅凭源码时是 ESTIMATED；保存运行时读数（`tf2_echo` 输出与 `robot_description` 哈希）后，才可按“运行时读取”标 MEASURED，evidence 写明读数文件。离线 REAL 诊断要求所经每条边都是 MEASURED，因此在读数之前经过该关节的 REAL 查询会被拒绝——这是有意的保守行为，不要为通过诊断而改标签。
 
 | 项目 | 状态 | 下一步 |
 | --- | --- | --- |
@@ -82,7 +85,7 @@ flowchart TD
 | 提环原点与进入方向 | UNKNOWN | 与实物、V1 接合方向、视觉输出一致 |
 | 位置/姿态误差及观测年龄阈值 | UNKNOWN | 根据实物余量和实际数据由团队确认 |
 
-相机官网提供的是内部传感器参数，不能直接提供你们的法兰安装外参。[官方参数调查与读取流程](docs/calibration/D435I_OFFICIAL_PARAMETERS.md)。用户现已确认支架可调整；已追加 [S3/D435i 安装候选与设计外参](docs/calibration/S3_D435I_MOUNT_DESIGN.md)：前玻璃中心相对物理法兰设计 F 为 `[100,0,40]` mm，光学轴与 F 对齐，推算 `T_F_depth_optical` 平移 `[0.0825,0,0.0358]` m、xyzw `[0,0,0,1]`。这是 ESTIMATED 布局提案；V1 干涉、法兰 F 与机器人 frame 对齐、内部 TF 与安装误差待核验，真实清单仍保留 UNKNOWN。
+相机官网提供的是内部传感器参数，不能直接提供你们的法兰安装外参。[官方参数调查与读取流程](docs/calibration/D435I_OFFICIAL_PARAMETERS.md)。用户现已确认支架可调整；已追加 [S3/D435i 安装候选与设计外参](docs/calibration/S3_D435I_MOUNT_DESIGN.md)：前玻璃中心相对物理法兰设计 F 为 `[100,0,40]` mm，光学轴与 F 对齐，推算 `T_F_depth_optical` 平移 `[0.0825,0,0.0358]` m、xyzw `[0,0,0,1]`（D435i）。其中 17.5 mm 是数据手册中“1/4-20 螺孔中心线→左 imager”的参考尺寸，把螺孔当作外壳中心、把光心当作半高都是假设，背面 M3 孔相对外壳也没有官方尺寸。这是 ESTIMATED 布局提案；V1 干涉、法兰 F 与机器人 frame 对齐、M3 孔位、内部 TF 与安装误差待核验，真实清单仍保留 UNKNOWN。
 
 ## 6. 今晚离线复现
 
@@ -93,7 +96,13 @@ python3 -m unittest discover -s tests/calibration -v
 python3 scripts/calibration/check_calibration.py examples/calibration/synthetic_case.json
 ```
 
-合成夹具包括动态腕部姿态、安装偏移、光学系旋转。预期位置约 `[1,1.1,0.05]`，姿态约 `[-0.70710678,0,0,0.70710678]`，`simulation_only=true`，采集 stamp 保留为 `10000000000` ns。这些数值完全是数学夹具，不能作为实机参数。
+合成夹具包括动态腕部姿态、安装偏移、光学系旋转。预期位置约 `[1,1.1,0.05]`，姿态约 `[-0.70710678,0,0,0.70710678]`，`simulation_only=true`，采集 stamp 保留为 `10000000000` ns。这些数值完全是数学夹具，不能作为实机参数（夹具中 camera_link→optical 的零平移也不代表真实彩色相机位置）。
+
+一次性重建全部离线证据（单元测试、文档示例、生成的反例、格式与链接检查），结果写入 `docs/calibration/validation/`，全部符合预期才 exit 0：
+
+```bash
+python3 -B scripts/calibration/run_offline_validation.py
+```
 
 负面证据：将夹具某安装边改为 `status=UNKNOWN` 且几何为 null，脚本返回 exit 2 / `UNKNOWN_CALIBRATION`；见 [保存的未知外参样例](examples/calibration/unknown_extrinsic_case.json)。
 
@@ -116,6 +125,8 @@ ros2 run tf2_tools view_frames
 ros2 run tf2_ros tf2_echo base_link wrist3_Link
 ros2 run tf2_ros tf2_echo wrist3_Link ee_link
 ```
+
+`tf2_echo A B` 打印 `T_A_B`（B 在 A 中的位姿）。若部署模型与 AUBO 固定提交一致，`tf2_echo wrist3_Link ee_link` 应为平移 0、xyzw≈`[0,0,0.707,0.707]`；不一致时先停下核对模型。另只读保存 `ros2 param get /robot_state_publisher robot_description` 的输出哈希：ROS 2 宏加载的是构建时生成的 `urdf/aubo_S3.urdf.xacro`，它不在 AUBO 固定提交的源码树中，需与 `aubo_S3.urdf` 对比。
 
 `view_frames` 会在当前目录生成图文件，建议在自己的证据目录运行。`tf2_echo` 持续运行，观察后 Ctrl+C；它主要检查可达性，**不能证明每个观测时刻的历史 TF 可用**。确认真实相机 frame 后，同样检查 `wrist3_Link` 至相机机体系及 optical frame。观察多个机械臂姿态时，末端至相机应固定，基座至相机应变化。
 

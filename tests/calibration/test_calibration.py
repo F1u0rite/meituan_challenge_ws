@@ -53,6 +53,18 @@ class GeometryTests(unittest.TestCase):
         self.assertVector(result.translation, [1, 4, 3])
         self.assertVector(result.rotation, [0, 0, 1, 0])
 
+    def test_compose_matches_hand_computed_matrix_for_noncoaxial_rotations(self):
+        # Expected values worked out by hand, independent of the quaternion code:
+        # A = [Rx(+90) | 1,2,3], B = [Rz(+90) | 0,1,0]
+        # Rx(90)*Rz(90) = [[0,-1,0],[0,0,-1],[1,0,0]], t_AB = Rx(90)*[0,1,0] + [1,2,3] = [1,2,4]
+        z = math.sqrt(0.5)
+        ab = Transform([1, 2, 3], [z, 0, 0, z]).compose(Transform([0, 1, 0], [0, 0, z, z]))
+        self.assertVector(ab.apply([0, 0, 0]), [1, 2, 4])
+        self.assertVector(ab.apply([1, 0, 0]), [1, 2, 5])
+        self.assertVector(ab.apply([0, 1, 0]), [0, 2, 4])
+        self.assertVector(ab.apply([0, 0, 1]), [1, 1, 4])
+        # The reversed product Rz(90)*Rx(90) would send x to (0,1,0) and fail the second check.
+
     def test_inverse_recovers_position_for_noncommuting_rotations(self):
         z = math.sqrt(0.5)
         t = Transform([1, 2, 3], [z, 0, 0, z]).compose(Transform([-2, 1, 4], [0, 0, z, z]))
@@ -233,6 +245,41 @@ class ContractTests(unittest.TestCase):
         d['pose']['valid'] = 'true'
         self.rejected(d, 'INVALID_POSE')
 
+    def test_schema_version_must_be_integer_one(self):
+        for version in [True, 1.0, '1', 2]:
+            with self.subTest(version=version):
+                d = case()
+                d['schema_version'] = version
+                self.rejected(d, 'INVALID_CONFIG')
+
+    def test_invalid_frame_names_rejected(self):
+        for name in ['/base', 'base link', '', ' base', 7]:
+            with self.subTest(name=name):
+                d = case()
+                d['target_frame'] = name
+                self.rejected(d, 'INVALID_FRAME')
+        d = case()
+        d['transforms'][1]['child'] = 'camera '
+        self.rejected(d, 'INVALID_FRAME')
+
+    def test_whitespace_only_evidence_is_missing_evidence(self):
+        d = case()
+        d['transforms'][1].update(status='MEASURED', evidence='   ')
+        self.rejected(d, 'MISSING_EVIDENCE')
+
+    def test_invalid_now_rejected(self):
+        for now in [0, -1, True, 10_100_000_000.0, None]:
+            with self.subTest(now=now):
+                self.rejected(case(), 'INVALID_TIME', now_ns=now)
+
+    def test_stamp_beyond_int64_nanoseconds_rejected(self):
+        d = case()
+        d['pose']['stamp_ns'] = 2**63
+        self.rejected(d, 'INVALID_TIME', now_ns=2**63 + 1)
+        d = case()
+        d['transforms'][0]['stamp_ns'] = 2**63
+        self.rejected(d, 'INVALID_TIME')
+
 
 @unittest.skipUnless(AVAILABLE, 'feature not implemented')
 class CliTests(unittest.TestCase):
@@ -261,6 +308,31 @@ class CliTests(unittest.TestCase):
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 2)
             self.assertEqual(json.loads(result.stdout)['status'], 'REJECTED')
+
+    def test_cli_deeply_nested_json_is_a_parse_rejection(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'nested.json'
+            path.write_text('[' * 200000 + ']' * 200000, encoding='utf-8')
+            result = subprocess.run([sys.executable, str(ROOT / 'scripts/calibration/check_calibration.py'), str(path)],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2, result.stderr[-300:])
+            payload = json.loads(result.stdout)
+            self.assertEqual((payload['status'], payload['code']), ('REJECTED', 'INVALID_INPUT'))
+            self.assertIs(payload['motion_authorized'], False)
+
+    def test_cli_output_error_keeps_motion_unauthorized(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'case.json'
+            path.write_text(json.dumps(case()), encoding='utf-8')
+            blocked = path / 'cannot_be_a_directory' / 'out.json'
+            result = subprocess.run([sys.executable, str(ROOT / 'scripts/calibration/check_calibration.py'),
+                                     str(path), '--output', str(blocked)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload['code'], 'OUTPUT_ERROR')
+            self.assertIs(payload['motion_authorized'], False)
 
 
 if __name__ == '__main__':

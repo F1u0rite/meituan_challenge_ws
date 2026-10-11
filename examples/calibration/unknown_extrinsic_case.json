@@ -4,7 +4,7 @@
   "length_unit": "m",
   "quaternion_order": "xyzw",
   "time_domain": "synthetic",
-  "description": "Negative fixture: unknown mounting extrinsics must be rejected.",
+  "description": "Negative fixture: unknown mounting extrinsics must be rejected. Other geometry is synthetic, including the zero camera_link->optical translation.",
   "transforms": [
     {
       "parent": "base_link",
