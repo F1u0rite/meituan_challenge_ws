@@ -51,7 +51,7 @@ const std::vector<TaskStateName> & all_states();
 /// 处于这些状态时视为"有进行中任务"（§7.2 单 Goal 并发拒绝判定依据）。
 const std::vector<TaskStateName> & active_task_states();
 
-/// 终态：任务已有结论，只等 reset 事件回到 WAIT_TASK。
+/// Action execution has ended. FAULT additionally remains locked; ordinary RESET is forbidden.
 const std::vector<TaskStateName> & terminal_states();
 
 /// 事件名常量。

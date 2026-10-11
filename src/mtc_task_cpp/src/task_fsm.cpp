@@ -274,6 +274,11 @@ bool TaskFsm::has_active_task() const
   return contains_state(active_task_states(), state_);
 }
 
+bool TaskFsm::action_finished() const
+{
+  return contains_state(terminal_states(), state_);
+}
+
 double TaskFsm::elapsed_in_state() const
 {
   return clock_->now() - state_entered_at_;
@@ -878,6 +883,13 @@ StepResult TaskFsm::report_self_check(bool ok)
 
 StepResult TaskFsm::submit_goal(const TaskRequest & goal)
 {
+  if (fault_locked()) {
+    StepResult result;
+    result.state = state_;
+    result.goal_rejected = true;
+    result.reason = "FAULT locked; supervised manual recovery interface required";
+    return result;
+  }
   EventPayload payload;
   payload.goal = goal;
   return step(Event::GOAL_ACCEPTED, payload);
@@ -999,6 +1011,7 @@ StepResult TaskFsm::report_item_result(
 
 StepResult TaskFsm::report_item_unsafe(int error_code, const std::string & message)
 {
+  if (fault_locked()) {return step(Event::ITEM_UNSAFE, EventPayload{});}
   last_error_code = static_cast<uint16_t>(error_code);
   last_error_message = message;
   EventPayload payload;

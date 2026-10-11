@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <limits>
 
 #include "mtc_core_cpp/error_codes.hpp"
 #include "mtc_task_cpp/task_validation.hpp"
@@ -221,4 +222,14 @@ TEST(TaskValidation, TaskRequestHelpers)
 TEST(TaskValidation, ModeNameOfUnknownMode)
 {
   EXPECT_EQ(mtc::task::TaskMode::name_of(42), "UNKNOWN_MODE_42");
+}
+
+TEST(TaskValidationAudit, NonFiniteStabilityRejected)
+{
+  for (double bad : {std::numeric_limits<double>::quiet_NaN(),
+      std::numeric_limits<double>::infinity()}) {
+    auto task = basic_request();
+    task.placement_stability_sec = bad;
+    EXPECT_FALSE(mtc::task::validate_task_request(task).ok);
+  }
 }

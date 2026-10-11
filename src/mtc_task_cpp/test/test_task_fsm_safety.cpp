@@ -751,3 +751,20 @@ TEST(TaskFsmSafety, GoalAfterTerminalRequiresReset)
   EXPECT_NE(ignored.reason.find("no transition for"), std::string::npos);
   EXPECT_EQ(harness.fsm.current_task->task_id, "task-1");
 }
+
+TEST(TaskFaultAudit, ActionFinishesButOrdinaryResetAndNewTasksStayLocked)
+{
+  Harness h;
+  h.boot(); h.reach_execute_item();
+  h.fsm.report_item_unsafe(ErrorCodes::MOTION_STATUS_UNKNOWN, "lost");
+  EXPECT_TRUE(h.fsm.action_finished());
+  EXPECT_TRUE(h.fsm.fault_locked());
+  EXPECT_FALSE(h.fsm.accepts_tasks());
+  const auto previous_log = h.fsm.transition_log.size();
+  EXPECT_EQ(h.fsm.reset().state, TaskStateName::FAULT);
+  EXPECT_TRUE(h.fsm.submit_goal(make_basic_task(2, "next")).goal_rejected);
+  h.fsm.confirm_child_stopped();
+  h.fsm.report_item_unsafe(ErrorCodes::OK, "late old result");
+  EXPECT_EQ(h.fsm.last_error_code, ErrorCodes::MOTION_STATUS_UNKNOWN);
+  EXPECT_EQ(h.fsm.transition_log.size(), previous_log);
+}

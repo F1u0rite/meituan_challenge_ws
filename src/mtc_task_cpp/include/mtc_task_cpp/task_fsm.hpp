@@ -9,7 +9,7 @@
 //   * 超时不散落 if：每个状态经 guard_state_timed_out 校验后以 timeout 事件重新查表，
 //     "状态超时去哪个状态"同样由转移表描述。
 //
-// 与 Python 的差异（仅实现手段，不改语义）：
+// 原迁移的实现差异（本次审计另明确 FAULT 执行终态与锁定契约）：
 //   1. guard 由字符串名改为成员函数指针，编译期即可发现拼写错误；
 //   2. payload 由 Dict[str, Any] 改为类型化的 EventPayload；
 //   3. `_pending_validation_event` 由动态属性改为 optional 成员。
@@ -55,6 +55,8 @@ struct GoalRejection
   std::string active_state;
 };
 
+/// 单一事件线程所有：事件、Goal 受理和查询均须串行化。
+/// FAULT 结束当前执行但保持任务锁定，普通 RESET 没有复位权限。
 class TaskFsm
 {
 public:
@@ -107,6 +109,9 @@ public:
 
   /// 是否已有进行中的 Goal（§7.2 并发拒绝判定依据）。
   bool has_active_task() const;
+  bool fault_locked() const {return state_ == TaskStateName::FAULT;}
+  bool accepts_tasks() const {return state_ == TaskStateName::WAIT_TASK;}
+  bool action_finished() const;
 
   size_t total_count() const
   {

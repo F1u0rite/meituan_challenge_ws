@@ -73,6 +73,7 @@ const std::vector<TaskStateName> & terminal_states()
   static const std::vector<TaskStateName> kStates = {
     TaskStateName::FINISHED,
     TaskStateName::TASK_FAILED,
+    TaskStateName::FAULT,
     TaskStateName::CANCELLED,
   };
   return kStates;

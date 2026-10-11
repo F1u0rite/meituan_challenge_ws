@@ -3,6 +3,7 @@
 #include "mtc_task_cpp/task_validation.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 
 namespace mtc
@@ -101,7 +102,7 @@ ValidationResult validate_task_request(const TaskRequest & task)
     return fail("timeout_not_positive", "timeout_ms must be > 0, got 0");
   }
 
-  if (task.placement_stability_sec < 0.0) {
+  if (!std::isfinite(task.placement_stability_sec) || task.placement_stability_sec < 0.0) {
     return fail("negative_stability", "placement_stability_sec must be >= 0");
   }
 
