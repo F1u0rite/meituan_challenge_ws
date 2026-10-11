@@ -5,7 +5,7 @@
 | 迁移分支 | `feature/jazzy-cpp-fsm`（基线 `main@bd914fb`） |
 | 映射时间 | 2026-10-11 |
 | 语言标准 | C++17 |
-| Python 基线 | `src/mtc_task`、`src/mtc_manipulation`、`src/mtc_motion_execution`（**未修改，保持原样**） |
+| Python 基线 | 原迁移保持原样；本次审计仅同步修改 PickPlace D-2 看门狗及其测试 |
 | 基线审计报告 | [`PYTHON_BEHAVIOR_BASELINE.md`](PYTHON_BEHAVIOR_BASELINE.md) |
 | 接口审计报告 | [`INTERFACE_COMPAT_AUDIT_CPP.md`](INTERFACE_COMPAT_AUDIT_CPP.md) |
 
@@ -63,9 +63,8 @@ C++ 侧收敛为**唯一定义**，并以 `test_error_codes_msg_parity` 直接�
 
 * **活动状态集合**（并发 Goal 拒绝依据）：`VALIDATE_TASK / SCAN_SCENE / EXECUTE_ITEM /
   RECORD_RESULT / RECOVERY / CANCEL_PENDING` —— 两侧一致。
-* `FAULT` 在 Python 中**不在** `TERMINAL_STATES` 内（`TERMINAL_STATES` 只有
-  `FINISHED / TASK_FAILED / CANCELLED`），C++ 保持一致。这也解释了
-  §9 差异 D-3。
+* Python `FAULT` 不在 `TERMINAL_STATES` 内；审计修复后 C++ 将其列为执行终态，
+  但继续保持故障锁定，普通 `RESET` 和新 Goal 均不能解锁。详见 D-3。
 
 ---
 
@@ -278,6 +277,10 @@ Python 用 `self._port_results[(state.value, key)]` 单一字典缓存所有端�
 | 同一状态内复用同一条 `MotionCommand`（绝不重发） | `_cached_command()` `:871-885` | `cached_command()` |
 | 离开状态释放在途命令引用 | `_enter_state` `:758-759` | `enter_state()` |
 
+审计修复的例外：C++ `VERIFY_PLACED` 每次取得新观测，不缓存已完成的感知结果。
+`nullopt` 仅表示请求进行中；重复时间戳不能扩展稳定窗口。Python 的缓存逻辑除
+D-2 外按本次授权范围保持原样，不能把 Python Mock 通过当作 C++ 新证据契约验证。
+
 ---
 
 ## 7. 八条安全语义映射
@@ -291,7 +294,7 @@ Python 用 `self._port_results[(state.value, key)]` 单一字典缓存所有端�
 | 5 | `DISENGAGE` 解锁失败或结果未知 → 410/420 → FAULT，禁止强行抽出/上抬 | 三道判定：前置联锁 → `unlock.ok` → `unlock.released`；`disengage` 结果未知亦 FAULT | `UnlockFailureGoesToFaultAndDoesNotRetreat`<br>`AcceptedPulseWithoutReleaseIsStillFailure`<br>`DisengageReleaseUnknownGoesToFaultAndDoesNotRetreat` |
 | 6 | 取消 → `CANCEL_PENDING`，等待 `stop_confirmed`；未确认 → 520，绝不因收到 cancel 就声称已停 | `h_cancel_pending` 只在 `stop_confirmed` 为真时返回 CANCELLED，否则 `make_fault(520, …, resend_allowed=false)` | `CancelWithoutStopConfirmationGoesToFault520`<br>`CancelNeverReachesCancelledWithoutConfirmation` |
 | 7 | 运动状态未知 → 230 → FAULT，并禁止自动重发（进入后即使人工 step 也不重发） | `motion_resend_allowed_` 置 false，且 FAULT 为终态无转移 | `MotionStatusUnknownLocksAndDoesNotResend`<br>`MotionInFlightTimeoutGoesToFault230AndLocksResend`<br>`RecoveryIsRefusedWhenMotionResendDisallowed` |
-| 8 | `VERIFY_PLACED` 必须在目标区域内连续稳定 `placement_stability_sec`（默认 3.0s）才允许 SUCCESS，否则 430 → FAILED | 逐 step 采样累计；反例样本清零；窗口耗尽 → 430 | `SuccessRequiresFullStabilityWindow`<br>`PlacementNotAtTargetFailsAfterWindow`<br>`PlacementStaleSampleResetsStabilityTimer` |
+| 8 | `VERIFY_PLACED` 必须在目标区域内连续稳定 `placement_stability_sec`（默认 3.0s）才允许 SUCCESS，否则 430 → FAILED | 新鲜有效且时间戳严格递增的观测跨度累计；无效、回退、丢失或超龄采样间隔清零；重复帧/空轮询不累计 | `PlacementAudit.NewFramesMustCoverFullThreeSeconds`<br>`PlacementAudit.FrozenTimestampCannotSucceedForFiveSeconds`<br>`PlacementAudit.InvalidOrStaleFrameInterruptsWindow`<br>`PlacementAudit.PerceptionStopsUpdatingCannotAccumulateTime` |
 
 ### 7.1 V1 / V2 差异映射
 
@@ -345,7 +348,7 @@ Python 用 `self._port_results[(state.value, key)]` 单一字典缓存所有端�
 
 ## 9. 已知差异清单（**必须逐项审计**）
 
-以下差异是 C++ 迁移中**有意为之**的，均不影响安全语义。
+以下差异包含迁移时的实现差异和本次审计明确强化的安全契约。
 未列入本节的任何差异都应被视为迁移缺陷。
 
 ### D-1 不可达的"类型错误"校验分支
@@ -369,35 +372,31 @@ Python 因弱类型而必须处理的分支，在 C++ 强类型下**编译期即
 > `timeout_ms` 映射为 `uint32_t`，则"缺省即 0"会被判非法 —— 需外壳显式提供
 > 有效默认值。此约束已记录在 [`PHASE2_ROS2_INTEGRATION_PLAN.md`](PHASE2_ROS2_INTEGRATION_PLAN.md)。
 
-### D-2 看门狗超时后 `StepResult.state` 与内部状态不一致（**基线特征，已忠实复刻**）
+### D-2 看门狗返回状态与内部状态不一致（审计已同步修复）
 
-Python `pick_place_fsm.py:678-683`：
+基线两侧非运动状态超时仅返回 `make_error/_error`，没有进入返回状态，导致
+下一次 `step()` 继续超时。原 C++ 测试甚至断言了这个缺陷。
 
-```python
-return self._error(ErrorCode.MOTION_TIMEOUT, "...", resumable=True)
-```
+修复后两侧都保存重试上下文并实际进入返回状态，更新时间和状态历史。
+仅无载荷且允许重发时进入 `RECOVERY`，下一步消耗一次恢复预算并重新观察；
+载荷存在或未知时不自动恢复。在途运动超时继续进入 `FAULT(230)` 并锁定重发。
+C++ 放置观测断流额外按新的核验契约进入 `FAILED(430)`。
 
-`_error()` **不调用** `_enter_state()`，因此返回的 `StepResult.state` 是
-`RECOVERY`，而 `self.state` 仍是原状态。下一次 `step()` 会重新处理原状态并再次超时。
+验证：原 `PickPlaceSafety.NonMotionStateTimeoutReportsMotionTimeout` 已改断言实际
+`RECOVERY`、历史、时间与下一步恢复；`WatchdogAudit.LoadedContextCannotRecoverAndFaultCannotRestart`
+以及 Python 新增的三个 `test_watchdog_*` 均实际执行通过。
 
-* **C++ 行为**：完全一致（`make_error()` 同样不改变 `state_`）。
-* **对照**：同分支的 `motion_in_flight` 路径走 `_fault()`，而 `_fault()` **确实**
-  调用 `_enter_state(FAULT)` —— 这也被 C++ 一致复刻。
-* **测试**：`NonMotionStateTimeoutReportsMotionTimeout` 显式断言
-  `result.state == RECOVERY` 且 `fsm->state() == RESOLVE_TARGET`。
-* **建议**：这是 Python 参考实现中一处**语义不一致**（返回值与内部状态不符）。
-  第一阶段按"行为基线优先"原则**不改动**；是否统一为 `enter_state()` 应作为
-  独立变更提交审计，且需同步修改 Python 侧与 C++ 侧。
+### D-3 Task FSM：执行结束与故障锁定分离（审计明确契约）
 
-### D-3 Task FSM 的 `FAULT` 不是终态
+复核确认基线 Python 与 C++ 都没有 `(FAULT, RESET)` 转移；旧文档中
+“reset 回到 WAIT_TASK”的描述错误。原 `FAULT` 不在执行终态集合，容易令 Action
+外壳持续等待。现在 C++ 将 `FAULT` 加入执行终态集合并提供 `action_finished()`、
+`fault_locked()` 和 `accepts_tasks()` 查询。结束/失败结果不解除锁定；普通 RESET、
+迟到结果、停止受理与新 Goal 均不能恢复任务。
 
-Python `TERMINAL_STATES` 只含 `FINISHED / TASK_FAILED / CANCELLED`，
-`FAULT` 需经 `reset` 事件回到 `WAIT_TASK`（`task_fsm.py:156-161`）。
-
-C++ `terminal_states()` 同样只含 3 个状态。
-
-> 注意与 PickPlace FSM 的区别：后者 `FAULT` **是**终态。两层的差异来自
-> 各自 Python 原实现，C++ 未做统一（统一会改变行为）。
+现有 IDL 无法表达受监督的人工复位，因此本阶段保留故障锁定，不增加自动恢复。
+第二阶段必须定义人工授权、独立停稳证据、载荷/工具确认及重新自检后受理任务的
+协议。测试：`TaskFaultAudit.ActionFinishesButOrdinaryResetAndNewTasksStayLocked`。
 
 ### D-4 未迁移的 Python 死代码
 
@@ -418,8 +417,9 @@ C++ 合并为**单一** `mtc::core::MotionResult`，同时携带
 
 **语义保持**：
 * `ok()` = `success && arrived`（对应 Python `MotionResult.ok`）
-* `retry_allowed_without_reobservation()` = `!success && exec_state == REJECTED`
-  （对应 Python `JointMoveResult.retry_allowed_without_reobservation`）
+* 审计后 `retry_allowed_without_reobservation()` =
+  `!success && exec_state == REJECTED && !status_unknown && !timed_out`，
+  仅明确从未执行的拒绝允许按契约重试。
 * `status_unknown` 对应 Python `motion_state_unknown`（**字段改名，语义不变**）
 
 ### D-6 6D 位姿保真（**C++ 侧修正 Python 的退化**）
@@ -469,11 +469,23 @@ Python `check_task_deadline()` 直接调用 `self._enter(TaskStateName.FAULT, ..
 **差异**：Python 的 `_enter` 与 `step()` 内的 `_enter` 是同一方法 ✔；
 C++ 亦然 ✔。**语义一致**，仅记录以说明此路径不经过转移表。
 
+### D-10 审计新增的 C++ 安全契约
+
+停止送达与关联反馈停稳证据分离；执行超时/异常保守锁定；执行器和在途守卫
+使用短锁及命令世代保护，后端执行时不持执行器状态锁。FSM 本体仍由单一事件
+线程所有，ROS 回调须串行入队。规划必须返回显式关节目标或完整轨迹，Fake
+规划标识不可进入可执行后端，缺失规划不产生回零目标。位姿、时间、关节值和
+动力学参数拒绝不适用的非有限值；长请求 ID 不截断且不同调用不重复命令 ID。
+完整证据、测试名称、范围限制见 [审计修复报告](CODEX_CPP_FSM_AUDIT_FIX_REPORT.md)。
+
 ---
 
 ## 10. 测试用例映射
 
 ### 10.1 规模对照
+
+下表保留原迁移报告的历史执行规模。本次审计实际结果为 C++ **290**、Python
+**258**、显式离线端到端 **15** 项通过；原 257 个 C++ 身份均在结果 XML 中核验。
 
 | 层 | Python 基线（本次实际执行） | C++ 新增 GTest | 状态 |
 |---|---|---|---|
@@ -532,5 +544,5 @@ C++ 亦然 ✔。**语义一致**，仅记录以说明此路径不经过转移�
 | 错误码数值 | 运行 `ErrorCodesMsgParity` | PASS |
 | 超时数值 | 对照 §4.4 / §5.1 | 逐项一致 |
 | 安全语义 | 对照 §7 表格中的测试名并运行 | 8/8 PASS |
-| 未修改既有实现 | `git status --short` 应只有 `??` 新增项 | 无 `M` / `D` |
+| 既有实现改动范围 | 相对 `feature/jazzy-cpp-fsm` 检查差异 | Python 仅 D-2 及测试；接口仅 XML 依赖顺序 |
 | 实机连接 | 检查所有 C++ 源文件 | 无 SDK、无设备访问、无网络调用 |
