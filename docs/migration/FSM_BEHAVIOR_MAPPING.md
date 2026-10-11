@@ -1,0 +1,536 @@
+# Python → C++ FSM 行为映射表（第一阶段）
+
+| 项目 | 值 |
+|---|---|
+| 迁移分支 | `feature/jazzy-cpp-fsm`（基线 `main@bd914fb`） |
+| 映射时间 | 2026-10-11 |
+| 语言标准 | C++17 |
+| Python 基线 | `src/mtc_task`、`src/mtc_manipulation`、`src/mtc_motion_execution`（**未修改，保持原样**） |
+| 基线审计报告 | [`PYTHON_BEHAVIOR_BASELINE.md`](PYTHON_BEHAVIOR_BASELINE.md) |
+| 接口审计报告 | [`INTERFACE_COMPAT_AUDIT_CPP.md`](INTERFACE_COMPAT_AUDIT_CPP.md) |
+
+> **本表用途**：作为 C++ 实现与 Python 参考实现之间的**逐项对照凭据**。
+> 任何"行为不一致"都必须出现在 §9「已知差异清单」中并给出理由；
+> 未列入 §9 的差异一律视为迁移缺陷。
+
+---
+
+## 1. 模块映射
+
+| Python 模块 | C++ 包 / 文件 | 说明 |
+|---|---|---|
+| `mtc_task/task_fsm.py` | `mtc_task_cpp/include/mtc_task_cpp/task_fsm.hpp`<br>`mtc_task_cpp/src/task_fsm.cpp` | Task FSM（第一层） |
+| `mtc_task/task_validation.py` | `mtc_task_cpp/include/mtc_task_cpp/task_validation.hpp`<br>`mtc_task_cpp/src/task_validation.cpp` | 任务请求校验 |
+| `mtc_task/task_fsm.py`（类型部分） | `mtc_task_cpp/include/mtc_task_cpp/task_types.hpp`<br>`mtc_task_cpp/src/task_types.cpp` | 状态/事件/请求/结果类型 |
+| `mtc_manipulation/pick_place_fsm.py` | `mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_fsm.hpp`<br>`mtc_manipulation_cpp/src/pick_place_fsm.cpp` | PickPlace FSM（第二层） |
+| `mtc_manipulation/pick_place_fsm.py`（类型与端口） | `mtc_manipulation_cpp/include/mtc_manipulation_cpp/pick_place_types.hpp`<br>`mtc_manipulation_cpp/src/pick_place_types.cpp` | 状态/端口/配置/结果 |
+| `mtc_manipulation/tool_strategy.py` | `mtc_manipulation_cpp/include/mtc_manipulation_cpp/tool_strategy.hpp`<br>`mtc_manipulation_cpp/src/tool_strategy.cpp` | V1/V2 工具策略 |
+| `mtc_motion_execution/backends.py`（常量与类型） | `mtc_core_cpp/include/mtc_core_cpp/{error_codes,tool_state,results,exec_state}.hpp`<br>`mtc_core_cpp/src/error_codes.cpp` | 错误码、工具状态、端口结果契约 |
+| `mtc_motion_execution/backends.py`（端口与 Mock） | `mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/*.hpp`<br>`mtc_motion_execution_cpp/src/*.cpp` | MotionAdapter + Mock/Disabled |
+| `mtc_motion_execution/executor_core.py` | `mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/executor_core.hpp`<br>`src/executor_core.cpp` | 七步握手执行核心 |
+| —（新增，无 Python 对应） | `mtc_motion_execution_cpp/include/mtc_motion_execution_cpp/motion_adapter.hpp` | **Motion Adapter 抽象接口**（需求 4） |
+| —（新增，无 Python 对应） | `mtc_core_cpp/include/mtc_core_cpp/timed_trajectory.hpp` | **时间参数化轨迹类型**（缺口 G1 载体） |
+| —（新增，无 Python 对应） | `mtc_manipulation_cpp/include/mtc_manipulation_cpp/motion_adapter_port.hpp` | MotionAdapter → PickPlace MotionPort 桥接 |
+
+### 1.1 为什么新增 `mtc_core_cpp`
+
+Python 侧在 **5 个模块**中各自镜像了同一套错误码
+（`task_fsm.py:70-90`、`pick_place_fsm.py:80-100`、`interlocks.py:50-67`、
+`backends.py:36-42`、`bridge_core.py:19-23`），存在漂移风险。
+
+C++ 侧收敛为**唯一定义**，并以 `test_error_codes_msg_parity` 直接解析
+`mtc_interfaces/msg/ErrorCodes.msg` 做双向一致性校验（不匹配即 FAIL）。
+
+---
+
+## 2. Task FSM 状态映射（13 个）
+
+| # | Python `TaskStateName` | C++ `TaskStateName` | 字符串值 | 状态类型 |
+|---|---|---|---|---|
+| 1 | `INIT` | `INIT` | `"INIT"` | — |
+| 2 | `SELF_CHECK` | `SELF_CHECK` | `"SELF_CHECK"` | — |
+| 3 | `WAIT_TASK` | `WAIT_TASK` | `"WAIT_TASK"` | 等待态 |
+| 4 | `VALIDATE_TASK` | `VALIDATE_TASK` | `"VALIDATE_TASK"` | 活动 |
+| 5 | `SCAN_SCENE` | `SCAN_SCENE` | `"SCAN_SCENE"` | 活动 |
+| 6 | `EXECUTE_ITEM` | `EXECUTE_ITEM` | `"EXECUTE_ITEM"` | 活动 |
+| 7 | `RECORD_RESULT` | `RECORD_RESULT` | `"RECORD_RESULT"` | 活动 |
+| 8 | `RECOVERY` | `RECOVERY` | `"RECOVERY"` | 活动 |
+| 9 | `CANCEL_PENDING` | `CANCEL_PENDING` | `"CANCEL_PENDING"` | 活动 |
+| 10 | `FINISHED` | `FINISHED` | `"FINISHED"` | 终态 |
+| 11 | `TASK_FAILED` | `TASK_FAILED` | `"TASK_FAILED"` | 终态 |
+| 12 | `FAULT` | `FAULT` | `"FAULT"` | 终态（锁定） |
+| 13 | `CANCELLED` | `CANCELLED` | `"CANCELLED"` | 终态 |
+
+* **活动状态集合**（并发 Goal 拒绝依据）：`VALIDATE_TASK / SCAN_SCENE / EXECUTE_ITEM /
+  RECORD_RESULT / RECOVERY / CANCEL_PENDING` —— 两侧一致。
+* `FAULT` 在 Python 中**不在** `TERMINAL_STATES` 内（`TERMINAL_STATES` 只有
+  `FINISHED / TASK_FAILED / CANCELLED`），C++ 保持一致。这也解释了
+  §9 差异 D-3。
+
+---
+
+## 3. Task FSM 事件映射（20 个）
+
+字符串值逐字一致，映射为 C++ `Event` 中的 `static constexpr const char *`：
+
+| Python `Event.X` | 字符串值 | C++ | 主要来源 |
+|---|---|---|---|
+| `SELF_CHECK_OK` | `self_check_ok` | `Event::SELF_CHECK_OK` | 启动/自检 |
+| `SELF_CHECK_FAIL` | `self_check_fail` | `Event::SELF_CHECK_FAIL` | 自检 |
+| `GOAL_ACCEPTED` | `goal_accepted` | `Event::GOAL_ACCEPTED` | Action goal |
+| `GOAL_REJECTED` | `goal_rejected` | `Event::GOAL_REJECTED` | 受理后撤回 |
+| `VALIDATED` | `task_validated` | `Event::VALIDATED` | 校验通过 |
+| `VALIDATION_FAILED` | `task_validation_failed` | `Event::VALIDATION_FAILED` | 校验失败 |
+| `TARGET_FOUND` | `target_found` | `Event::TARGET_FOUND` | 感知 |
+| `TARGET_NOT_FOUND` | `target_not_found` | `Event::TARGET_NOT_FOUND` | 感知 |
+| `SCAN_FAILED` | `scan_failed` | `Event::SCAN_FAILED` | 重试预算耗尽 |
+| `ITEM_SUCCEEDED` | `item_succeeded` | `Event::ITEM_SUCCEEDED` | PickPlace Result |
+| `ITEM_FAILED` | `item_failed` | `Event::ITEM_FAILED` | PickPlace Result |
+| `ITEM_UNSAFE` | `item_unsafe` | `Event::ITEM_UNSAFE` | 不可重试错误 |
+| `RETRY_APPROVED` | `retry_approved` | `Event::RETRY_APPROVED` | 恢复 |
+| `RETRY_DENIED` | `retry_denied` | `Event::RETRY_DENIED` | 恢复 |
+| `RECORD_OK` | `record_ok` | `Event::RECORD_OK` | 记录结果 |
+| `RECORD_FAILED` | `record_failed` | `Event::RECORD_FAILED` | 记录结果 |
+| `CANCEL_REQUESTED` | `cancel_requested` | `Event::CANCEL_REQUESTED` | Action cancel |
+| `CHILD_STOPPED_CONFIRMED` | `child_stopped_confirmed` | `Event::CHILD_STOPPED_CONFIRMED` | 子任务停稳确认 |
+| `RESET` | `reset` | `Event::RESET` | 终态复位 |
+| `TIMEOUT` | `timeout` | `Event::TIMEOUT` | 看门狗 |
+
+---
+
+## 4. Task FSM 转移表映射（40 条）
+
+Python `TRANSITIONS` 为 40 条 `(state, event)` 键。C++ `TaskFsm::transitions()`
+逐条对应，并以 `(state, event)` 为键建索引。
+
+| 分组 | Python 位置 | C++ | 条数 | 校验方式 |
+|---|---|---|---|---|
+| 启动与自检 | `task_fsm.py:431-434` | `TaskFsm::transitions()` 第 1-4 条 | 4 | `TaskFsmTables.*` |
+| 任务受理 + 并发拒绝 | `:436-444` | 第 5-11 条 | 7 | `EveryActiveStateRegistersConcurrentGoalRejection` |
+| 任务校验 | `:446-448` | 第 12-14 条 | 3 | `InvalidSequenceFailsWithoutGuessing` |
+| 场景扫描 | `:450-453` | 第 15-18 条 | 4 | `ScanSceneTimeoutGoesToRecovery…` |
+| 单项执行 | `:455-465` | 第 19-22 条 | 4 | `NonRecoverableCodesAllGoToFault` |
+| 记录结果 | `:468-477` | 第 23-25 条 | 3 | `ThreeItemsCompleteInSlotOrder` |
+| 恢复 | `:480-489` | 第 26-28 条 | 3 | `RetryBudgetExhaustionGoesToTaskFailed` |
+| 取消 | `:491-493` | 第 29-31 条 | 3 | `UnconfirmedStopTimesOutToFault520` |
+| 终态复位 | `:495-497` | 第 32-34 条 | 3 | `ResetFromFinishedClearsTaskContext` |
+| 每状态超时去向 | `:499-511` | 第 35-41 条 | 7 | `TaskFsmTimeout.*`（6 例） |
+
+**结构等价性保障**：
+* Python 在导入期执行 `_self_check_tables()`（`task_fsm.py:541-564`），任何漏配立即抛异常；
+* C++ 改为可测试的 `TaskFsm::verify_tables()` 返回问题清单，
+  由 `TaskFsmTables.VerifyTablesReportsNoProblem` 断言为空 ——
+  **比 Python 更严格**（问题被显式暴露而非仅崩溃）。
+
+### 4.1 守卫函数映射
+
+| Python 守卫 | C++ 守卫 | 语义 |
+|---|---|---|
+| `_guard_goal_admissible` | `guard_goal_admissible` | WAIT_TASK 下受理 Goal + task_id 基本检查 |
+| `_guard_goal_denied` | `guard_goal_denied` | 恒 false，由 step() 登记并发拒绝 |
+| `_guard_target_usable` | `guard_target_usable` | object_id 非空 + 颜色双重校验 |
+| `_guard_error_recoverable` | `guard_error_recoverable` | 白名单判定 |
+| `_guard_all_items_done` | `guard_all_items_done` | 全部完成判定 |
+| `_guard_retry_budget_available` | `guard_retry_budget_available` | 重试预算 |
+| `_guard_cancel_timeout` | `guard_cancel_timeout` | 仅真超时放行 |
+| `_guard_state_timed_out` | `guard_state_timed_out` | 每状态超时 |
+
+**C++ 增强（不改语义）**：guard 由字符串名改为**成员函数指针**，
+拼写错误在编译期即被发现，而 Python 只在运行到该转移时才 `getattr` 失败。
+
+### 4.2 进入动作映射
+
+| Python `ENTRY_ACTIONS` | C++ `entry_actions()` | 动作产出 |
+|---|---|---|
+| `INIT: None` | `{INIT, nullptr}` | — |
+| `SELF_CHECK: "_enter_self_check"` | `&TaskFsm::enter_self_check` | — |
+| `WAIT_TASK: "_enter_wait_task"` | `&TaskFsm::enter_wait_task` | 清空任务上下文 |
+| `VALIDATE_TASK: "_enter_validate_task"` | `&TaskFsm::enter_validate_task` | 计算待发校验事件 |
+| `SCAN_SCENE: "_enter_scan_scene"` | `&TaskFsm::enter_scan_scene` | — |
+| `EXECUTE_ITEM: "_enter_execute_item"` | `&TaskFsm::enter_execute_item` | `CALL_PICK_PLACE` |
+| `RECORD_RESULT: None` | `{RECORD_RESULT, nullptr}` | — |
+| `RECOVERY: "_enter_recovery"` | `&TaskFsm::enter_recovery` | — |
+| `CANCEL_PENDING: "_enter_cancel_pending"` | `&TaskFsm::enter_cancel_pending` | `CANCEL_CHILD` |
+| `FINISHED: "_enter_terminal_ok"` | `&TaskFsm::enter_terminal_ok` | 生成 outcome |
+| `TASK_FAILED: "_enter_task_failed"` | `&TaskFsm::enter_task_failed` | 生成 outcome |
+| `FAULT: "_enter_fault"` | `&TaskFsm::enter_fault` | `REQUEST_STOP` + `LOCK_ACTIONS` |
+| `CANCELLED: "_enter_cancelled"` | `&TaskFsm::enter_cancelled` | 生成 outcome |
+
+**不变式（两侧一致）**：每次 `enter_state` 最后都追加一个 `PUBLISH_STATE` 动作
+（Python `task_fsm.py:790`，C++ `enter_state()` 末尾）。
+
+### 4.3 动作意图映射
+
+| Python `ActionKind` | C++ `ActionKind` | 载荷 |
+|---|---|---|
+| `CALL_PICK_PLACE` | `ActionKind::CALL_PICK_PLACE` | `PickPlaceGoal`（request_id/object_id/expected_color/target_slot/placement_stability_sec） |
+| `CANCEL_CHILD` | `ActionKind::CANCEL_CHILD` | `request_id` |
+| `REQUEST_STOP` | `ActionKind::REQUEST_STOP` | — |
+| `PUBLISH_STATE` | `ActionKind::PUBLISH_STATE` | `TaskStateSnapshot` |
+| `LOCK_ACTIONS` | `ActionKind::LOCK_ACTIONS` | — |
+
+**C++ 差异（类型化，非语义）**：Python 载荷是 `Dict[str, Any]`；
+C++ 用固定字段集合，`PUBLISH_STATE` 的 snapshot 为强类型结构。
+
+### 4.4 超时配置映射
+
+| 状态 | Python 秒 | C++ 秒 | 超时去向 |
+|---|---|---|---|
+| `INIT` | 5.0 | 5.0 | `FAULT`（510） |
+| `SELF_CHECK` | 10.0 | 10.0 | `FAULT`（510） |
+| `WAIT_TASK` | `None` | `nullopt` | 不设超时 |
+| `VALIDATE_TASK` | 2.0 | 2.0 | `TASK_FAILED`（100） |
+| `SCAN_SCENE` | 5.0 | 5.0 | `RECOVERY`（110） |
+| `EXECUTE_ITEM` | 60.0 | 60.0 | `FAULT`（220，不自动重发） |
+| `RECORD_RESULT` | 2.0 | 2.0 | `TASK_FAILED`（430） |
+| `RECOVERY` | 10.0 | 10.0 | `TASK_FAILED`（110） |
+| `CANCEL_PENDING` | 5.0 | 5.0 | `FAULT`（520） |
+| `FINISHED / TASK_FAILED / FAULT / CANCELLED` | `None` | `nullopt` | 不设超时 |
+
+**可恢复错误白名单**（`DEFAULT_RECOVERABLE_ERRORS`）：
+`110, 120, 200, 430, 210` —— 两侧一致，且均为**白名单**语义
+（未列入者一律不可重试，含未知码）。
+
+**不可重试错误**：`230, 220, 500, 510, 410, 420, 320, 520` —— 两侧一致。
+
+---
+
+## 5. PickPlace FSM 状态映射（22 个）
+
+| # | Python `PickPlaceState` | C++ `PickPlaceState` | 终态 | 运动在途 |
+|---|---|---|---|---|
+| 1 | `RESOLVE_TARGET` | `RESOLVE_TARGET` | | |
+| 2 | `PLAN_ACQUIRE` | `PLAN_ACQUIRE` | | |
+| 3 | `MOVE_PRE_ALIGN` | `MOVE_PRE_ALIGN` | | ✔ |
+| 4 | `ENGAGE` | `ENGAGE` | | ✔ |
+| 5 | `VERIFY_ENGAGEMENT` | `VERIFY_ENGAGEMENT` | | |
+| 6 | `TEST_LIFT` | `TEST_LIFT` | | ✔ |
+| 7 | `VERIFY_ATTACHED` | `VERIFY_ATTACHED` | | |
+| 8 | `LIFT` | `LIFT` | | ✔ |
+| 9 | `TRANSPORT` | `TRANSPORT` | | ✔ |
+| 10 | `MOVE_PRE_SEAT` | `MOVE_PRE_SEAT` | | ✔ |
+| 11 | `SEAT` | `SEAT` | | ✔ |
+| 12 | `VERIFY_SEATED` | `VERIFY_SEATED` | | |
+| 13 | `UNLOAD` | `UNLOAD` | | ✔ |
+| 14 | `DISENGAGE` | `DISENGAGE` | | ✔ |
+| 15 | `RETREAT` | `RETREAT` | | ✔ |
+| 16 | `VERIFY_PLACED` | `VERIFY_PLACED` | | |
+| 17 | `SUCCESS` | `SUCCESS` | ✔ | |
+| 18 | `RECOVERY` | `RECOVERY` | | |
+| 19 | `FAILED` | `FAILED` | ✔ | |
+| 20 | `FAULT` | `FAULT` | ✔ | |
+| 21 | `CANCEL_PENDING` | `CANCEL_PENDING` | | |
+| 22 | `CANCELLED` | `CANCELLED` | ✔ | |
+
+* 字符串值与 Python `PickPlaceState.value` 逐字一致（`feedback.substate` 直接对外）。
+* **流水线顺序**（`_PIPELINE_STATES` / `pipeline_states()`）逐项一致，
+  由 `PickPlaceTables.PipelineMatchesDesignOrder` 断言。
+* **运动在途集合**由 `motion_in_flight_states()` 承载，被 `VerifyTables` 校验
+  "每个运动在途状态都必须有看门狗超时"。
+
+### 5.1 PickPlace 每状态超时映射
+
+| 状态 | Python 秒 | C++ 秒 |
+|---|---|---|
+| `RESOLVE_TARGET` | 2.0 | 2.0 |
+| `PLAN_ACQUIRE` | 2.0 | 2.0 |
+| `MOVE_PRE_ALIGN` | 30.0 | 30.0 |
+| `ENGAGE` | 15.0 | 15.0 |
+| `VERIFY_ENGAGEMENT` | 5.0 | 5.0 |
+| `TEST_LIFT` | 15.0 | 15.0 |
+| `VERIFY_ATTACHED` | 5.0 | 5.0 |
+| `LIFT` | 30.0 | 30.0 |
+| `TRANSPORT` | 60.0 | 60.0 |
+| `MOVE_PRE_SEAT` | 30.0 | 30.0 |
+| `SEAT` | 20.0 | 20.0 |
+| `VERIFY_SEATED` | 5.0 | 5.0 |
+| `UNLOAD` | 15.0 | 15.0 |
+| `DISENGAGE` | 20.0 | 20.0 |
+| `RETREAT` | 30.0 | 30.0 |
+| `VERIFY_PLACED` | 30.0 | 30.0 |
+
+---
+
+## 6. PickPlace 端口映射
+
+| Python 端口方法 | C++ 签名 | 「在途」表达 |
+|---|---|---|
+| `PerceptionPort.get_detection(object_id, expected_color, max_age_s) -> DetectionResult` | `std::optional<DetectionResult> get_detection(const std::string&, std::optional<int>, double)` | `nullopt` |
+| `PlannerPort.plan(phase, target) -> PlanResult` | `std::optional<PlanResult> plan(const PlanTarget&)` | `nullopt` |
+| `MotionPort.execute_joint_move(command) -> Optional[MotionResult]` | `std::optional<MotionResult> execute_joint_move(const MotionCommand&)` | 已经就是 `nullopt` |
+| `MotionPort.request_stop(reason) -> StopResult` | `StopResult request_stop(const std::string&)` | 无（同步） |
+| `ToolPort.engage/test_lift/unload/unlock/disengage -> Optional[ToolEvidence]` | `std::optional<ToolEvidence>` | `nullopt` |
+| `ToolPort.seat_verify() -> ToolEvidence` | `ToolEvidence seat_verify()` | 无（Python 亦非 Optional） |
+| `ToolPort.holding_state() -> str` | `std::string holding_state()` | 无 |
+
+**`_do(key, func)` 缓存语义映射**：
+
+Python 用 `self._port_results[(state.value, key)]` 单一字典缓存所有端口结果
+（`pick_place_fsm.py:849-864`）。C++ 按结果类型拆为 5 个类型安全缓存
+（`detection_cache_` / `plan_cache_` / `motion_cache_` / `tool_cache_` /
+`primitives_cache_`）以及 1 个 `stop_cache_`（停止请求）。
+
+| 不变式 | Python | C++ |
+|---|---|---|
+| 同一状态内同一 key 的副作用只执行一次 | `_do` 命中缓存 | `resolve_cached()` 命中缓存 |
+| 端口未完成时**不缓存**结果 | `if value is None: return _RUN` | `if (!value.has_value()) return false;`（不 emplace） |
+| `_clear_port_results()` 清空并释放在途命令 | `:866-869` | `clear_port_results()` |
+| 同一状态内复用同一条 `MotionCommand`（绝不重发） | `_cached_command()` `:871-885` | `cached_command()` |
+| 离开状态释放在途命令引用 | `_enter_state` `:758-759` | `enter_state()` |
+
+---
+
+## 7. 八条安全语义映射
+
+| # | Python 语义（`pick_place_fsm.py:13-26`） | C++ 实现机制 | 覆盖测试 |
+|---|---|---|---|
+| 1 | `placement_verified` 只允许由 `VERIFY_PLACED` 成功路径写入，且仅在该处写 | 成员 **private**；唯一写入口 `set_placement_verified()`，违反状态即抛 `std::logic_error`——**从类型层面杜绝外部写入** | `PlacementVerifiedCannotBeWrittenOutsideVerifyPlaced`<br>`PlacementVerifiedOnlyTrueAfterSuccessfulVerifyPlaced` |
+| 2 | `VERIFY_ATTACHED` 必须有几何级（或更高）挂载证据，否则 310，禁止进入 LIFT/TRANSPORT | `evidence.has_geometry_evidence() \|\| vision_follow` 双重判定 | `AttachNotVerifiedBlocksLiftAndTransport`<br>`VisionFollowCanCompensateForWeakEvidence` |
+| 3 | `ENGAGE` 失败 → 300，且只有确认"无载荷"时才允许退回重试 | `make_error(300, …, is_resumable_context())`；`is_resumable_context()` 要求 `holding_state()=="none"` 且重发允许 | `EngageFailureGoesToEngageFailed300`<br>`HoldingStateBlocksAutomaticRetry`<br>`UnknownHoldingStateIsConservative` |
+| 4 | `SEAT` 后未确认桌面承托 → 400，禁止进入 UNLOAD/DISENGAGE | `make_fault(400, …)` 且 UNLOAD handler 不可达 | `SeatNotVerifiedBlocksUnload` |
+| 5 | `DISENGAGE` 解锁失败或结果未知 → 410/420 → FAULT，禁止强行抽出/上抬 | 三道判定：前置联锁 → `unlock.ok` → `unlock.released`；`disengage` 结果未知亦 FAULT | `UnlockFailureGoesToFaultAndDoesNotRetreat`<br>`AcceptedPulseWithoutReleaseIsStillFailure`<br>`DisengageReleaseUnknownGoesToFaultAndDoesNotRetreat` |
+| 6 | 取消 → `CANCEL_PENDING`，等待 `stop_confirmed`；未确认 → 520，绝不因收到 cancel 就声称已停 | `h_cancel_pending` 只在 `stop_confirmed` 为真时返回 CANCELLED，否则 `make_fault(520, …, resend_allowed=false)` | `CancelWithoutStopConfirmationGoesToFault520`<br>`CancelNeverReachesCancelledWithoutConfirmation` |
+| 7 | 运动状态未知 → 230 → FAULT，并禁止自动重发（进入后即使人工 step 也不重发） | `motion_resend_allowed_` 置 false，且 FAULT 为终态无转移 | `MotionStatusUnknownLocksAndDoesNotResend`<br>`MotionInFlightTimeoutGoesToFault230AndLocksResend`<br>`RecoveryIsRefusedWhenMotionResendDisallowed` |
+| 8 | `VERIFY_PLACED` 必须在目标区域内连续稳定 `placement_stability_sec`（默认 3.0s）才允许 SUCCESS，否则 430 → FAILED | 逐 step 采样累计；反例样本清零；窗口耗尽 → 430 | `SuccessRequiresFullStabilityWindow`<br>`PlacementNotAtTargetFailsAfterWindow`<br>`PlacementStaleSampleResetsStabilityTimer` |
+
+### 7.1 V1 / V2 差异映射
+
+| 阶段 | V1 `PassiveHookV1Strategy` | V2 `MagneticLatchV2Strategy` |
+|---|---|---|
+| `make_acquire_plan` | `side_insert` | `top_insert` |
+| `make_engage_plan` | `hook_engage`（contact, 0.005 m/s） | `auto_lock`（contact, 0.005 m/s） |
+| `make_release_plan` | `unload`（contact） | `unload`（contact） |
+| `make_disengage_plan` | `side_withdraw` | `withdraw` |
+| `requires_unlock_pulse()` | `false` | `true` |
+| `io_channels()` / `IO_CHANNELS` | 空 | `{"electromagnetic_unlock"}` |
+| `evaluate_unlock` | 恒拒绝（`UNLOCK_FAILED`） | 需 `seated && unloaded`，否则 400 / 420 |
+
+**共享阶段**（与型号无关）：`test_lift` / `lift` / `transport` / `pre_seat` /
+`seat_contact` / `retreat` 及全部速度上限常量
+（`DEFAULT_LINEAR_SPEED=0.02`、`DEFAULT_ANGULAR_SPEED=0.1`、
+`CONTACT_LINEAR_SPEED=0.005`）。
+
+**C++ 增强**：`MotionPrimitive` 增加 `std::optional<Pose6D> target_pose`，
+使原语携带完整 6D 位姿与 `frame_id`（Python 的 `target_pose` 是 `Any` 占位）。
+由 `PrimitivePreservesSixDofTargetPose` 断言。
+
+---
+
+## 8. 错误码映射（18 项）
+
+两侧数值逐项一致（并另有 `ErrorCodesMsgParity` 测试直接对照 `.msg` 原文）：
+
+| 常量 | 值 | Task FSM 用途 | PickPlace 用途 |
+|---|---|---|---|
+| `OK` | 0 | 成功 | 成功 |
+| `INVALID_TASK` | 100 | 任务非法 | 非法目标工位 |
+| `TARGET_NOT_FOUND` | 110 | 感知未找到 | 目标丢失/颜色不符 |
+| `POSE_STALE` | 120 | 感知过期 | 感知/TF 过期 |
+| `PLANNING_FAILED` | 200 | 规划失败 | 规划失败/无原语 |
+| `EXECUTION_REJECTED` | 210 | 并发拒绝 / 后端拒绝 | — |
+| `MOTION_TIMEOUT` | 220 | 执行超时 | 运动未到位 / 非运动态超时 |
+| `MOTION_STATUS_UNKNOWN` | 230 | 状态未知 → FAULT | 反馈断流 → FAULT 并锁定 |
+| `ENGAGE_FAILED` | 300 | 单项失败 | 接合失败 |
+| `ATTACH_NOT_VERIFIED` | 310 | 单项失败 | 挂载证据不足 |
+| `OBJECT_DROPPED` | 320 | 不可重试 | 物体脱落 |
+| `SEAT_NOT_VERIFIED` | 400 | 单项失败 | 未确认桌面承托 |
+| `UNLOCK_FAILED` | 410 | 不可重试 | 解锁失败/未解除 |
+| `RELEASE_NOT_VERIFIED` | 420 | 不可重试 | 卸载/分离未确认 |
+| `PLACEMENT_FAILED` | 430 | 可重试 | 放置核验失败 |
+| `SAFETY_INTERLOCK` | 500 | 不可重试 | 速度/限位联锁 |
+| `HARDWARE_FAULT` | 510 | 不可重试 | 工具状态异常 |
+| `CANCEL_NOT_CONFIRMED` | 520 | 取消超时 → FAULT | 取消未确认 → FAULT |
+
+---
+
+## 9. 已知差异清单（**必须逐项审计**）
+
+以下差异是 C++ 迁移中**有意为之**的，均不影响安全语义。
+未列入本节的任何差异都应被视为迁移缺陷。
+
+### D-1 不可达的"类型错误"校验分支
+
+Python 因弱类型而必须处理的分支，在 C++ 强类型下**编译期即不可表达**：
+
+| Python 分支（`task_validation.py`） | C++ 处理 |
+|---|---|
+| `bad_mode`（`mode` 非整数） | `mode` 为 `int`，不可表达 |
+| `bad_color_type`（颜色非整数） | `std::vector<int>`，不可表达 |
+| `bad_timeout`（`timeout_ms` 非整数） | `uint32_t`，不可表达 |
+| `bad_stability`（稳定性非数值） | `double`，不可表达 |
+| `missing_colors`（`ordered_colors` 为 `None`） | `std::vector`，空即 `empty_colors` |
+| `unparsable_goal`（goal 字段读取失败） | 由 ROS 外壳在构造 `TaskRequest` 前处理；FSM 保留 `EventPayload::goal_parse_error` 通道以维持拒绝语义 |
+| `timeout_ms` 缺省（`None`） | `uint32_t` 无 null；**0 一律判为非法**（`timeout_not_positive`） |
+
+**影响**：C++ 侧错误原因字符串集合是 Python 的子集。
+`test_task_validation.cpp` 覆盖了 C++ 侧全部可达原因（19 个用例）。
+
+> **审计提示**：若第二阶段 ROS 外壳直接把 `ExecuteTask.action` 的
+> `timeout_ms` 映射为 `uint32_t`，则"缺省即 0"会被判非法 —— 需外壳显式提供
+> 有效默认值。此约束已记录在 [`PHASE2_ROS2_INTEGRATION_PLAN.md`](PHASE2_ROS2_INTEGRATION_PLAN.md)。
+
+### D-2 看门狗超时后 `StepResult.state` 与内部状态不一致（**基线特征，已忠实复刻**）
+
+Python `pick_place_fsm.py:678-683`：
+
+```python
+return self._error(ErrorCode.MOTION_TIMEOUT, "...", resumable=True)
+```
+
+`_error()` **不调用** `_enter_state()`，因此返回的 `StepResult.state` 是
+`RECOVERY`，而 `self.state` 仍是原状态。下一次 `step()` 会重新处理原状态并再次超时。
+
+* **C++ 行为**：完全一致（`make_error()` 同样不改变 `state_`）。
+* **对照**：同分支的 `motion_in_flight` 路径走 `_fault()`，而 `_fault()` **确实**
+  调用 `_enter_state(FAULT)` —— 这也被 C++ 一致复刻。
+* **测试**：`NonMotionStateTimeoutReportsMotionTimeout` 显式断言
+  `result.state == RECOVERY` 且 `fsm->state() == RESOLVE_TARGET`。
+* **建议**：这是 Python 参考实现中一处**语义不一致**（返回值与内部状态不符）。
+  第一阶段按"行为基线优先"原则**不改动**；是否统一为 `enter_state()` 应作为
+  独立变更提交审计，且需同步修改 Python 侧与 C++ 侧。
+
+### D-3 Task FSM 的 `FAULT` 不是终态
+
+Python `TERMINAL_STATES` 只含 `FINISHED / TASK_FAILED / CANCELLED`，
+`FAULT` 需经 `reset` 事件回到 `WAIT_TASK`（`task_fsm.py:156-161`）。
+
+C++ `terminal_states()` 同样只含 3 个状态。
+
+> 注意与 PickPlace FSM 的区别：后者 `FAULT` **是**终态。两层的差异来自
+> 各自 Python 原实现，C++ 未做统一（统一会改变行为）。
+
+### D-4 未迁移的 Python 死代码
+
+| Python 位置 | 内容 | 处理 |
+|---|---|---|
+| `pick_place_fsm.py:1401-1410` | `_placement_pose_changed()` | **未迁移**：全仓库无调用点（经 grep 确认），仅用于日志/回放且未接入计时 |
+| `pick_place_fsm.py:1405` | `self._placement_last_pose` | C++ 保留字段 `placement_last_position_` 但在 `start()` 中复位，不参与判定 |
+| `task_fsm.py:1074` | `except Exception: pass`（防御式） | C++ 侧无对应（`EventPayload` 强类型，无可抛点） |
+
+### D-5 `MotionResult` 载荷统一
+
+Python 存在两个近似类型：
+* `pick_place_fsm.MotionResult`（含 `arrived` / `status_unknown` / `timed_out`）
+* `backends.JointMoveResult`（含 `exec_state` / `motion_state_unknown`）
+
+C++ 合并为**单一** `mtc::core::MotionResult`，同时携带
+`success / arrived / stop_confirmed / status_unknown / timed_out / exec_state`。
+
+**语义保持**：
+* `ok()` = `success && arrived`（对应 Python `MotionResult.ok`）
+* `retry_allowed_without_reobservation()` = `!success && exec_state == REJECTED`
+  （对应 Python `JointMoveResult.retry_allowed_without_reobservation`）
+* `status_unknown` 对应 Python `motion_state_unknown`（**字段改名，语义不变**）
+
+### D-6 6D 位姿保真（**C++ 侧修正 Python 的退化**）
+
+Python `PoseEstimate.ring_pose` / `body_pose` 是 `Tuple[float, float, float]`，
+丢弃了姿态四元数、`frame_id` 与时间戳；`pick_place_server.py:138-157` 读取
+`BatteryDetection.msg` 的 `PoseStamped` 时也只取 `position`。
+
+C++ `mtc::core::Pose6D` 强制携带 `position + orientation + frame_id + stamp_s`，
+且 `is_usable()` 要求 `frame_id` 非空、四元数归一化。
+
+* **依据**：需求 5「必须保留完整 6D Pose、frame_id 和 TF 信息，
+  不得退化成只有 XYZ 的目标位置」。
+* **影响**：C++ FSM 的规划目标比 Python 更完整；
+  `PlannerPort::plan` 的 `PlanTarget` 携带 `Pose6D`。
+* **风险**：第二阶段接入真实 `PlannerPort` 实现时，必须提供真实 `frame_id`；
+  若上游感知不填 `frame_id`，`has_ring_pose()` 为 false 将**拒绝运动**
+  （这是有意的保守行为，不是缺陷）。
+
+### D-7 新增能力：时间参数化轨迹（缺口 G1 的第一阶段载体）
+
+`mtc_core_cpp::TimedTrajectory` 与 `MotionAdapter::execute_trajectory()` 为新增，
+Python 无对应。
+
+* **默认实现显式拒绝**（`EXECUTION_REJECTED`），**绝不允许**降级为多次
+  `execute_joint_move`（需求 4 明文禁止）。
+* 由 `TrajectoryIsRejectedAndNotSplitIntoJointMoves` 断言
+  `adapter.call_log().empty()`（未产生任何单点调用）。
+* **本阶段不新增任何 ROS 接口**；`trajectory_msgs` / `control_msgs` 绑定属于
+  第二阶段（见 [`PHASE2_ROS2_INTEGRATION_PLAN.md`](PHASE2_ROS2_INTEGRATION_PLAN.md)）。
+
+### D-8 Python 的 `_error()` 消息模板差异
+
+C++ 的错误消息文本与 Python **不逐字相同**（Python 使用 `%` 格式化中文模板，
+C++ 使用字符串拼接）。**错误码与状态转移逐项一致**，仅人类可读文本不同。
+
+> 审计提示：任何依赖消息文本的断言都应改为依赖 `error_code`。
+> C++ 测试已遵循此原则（唯一的文本断言是
+> `FaultWithoutSpecificCodeDegradesToHardwareFault` 对固定英文模板的断言，
+> 该模板在两侧均存在）。
+
+### D-9 Task FSM `check_task_deadline` 的 `enter_state` 直调
+
+Python `check_task_deadline()` 直接调用 `self._enter(TaskStateName.FAULT, ...)`
+（`task_fsm.py:713`），绕过 `step()`。C++ 同样直接调用 `enter_state()`。
+
+**差异**：Python 的 `_enter` 与 `step()` 内的 `_enter` 是同一方法 ✔；
+C++ 亦然 ✔。**语义一致**，仅记录以说明此路径不经过转移表。
+
+---
+
+## 10. 测试用例映射
+
+### 10.1 规模对照
+
+| 层 | Python 基线（本次实际执行） | C++ 新增 GTest | 状态 |
+|---|---|---|---|
+| Task FSM | `mtc_task` 56 例 PASS | `mtc_task_cpp` 79 例 PASS | ✔ |
+| PickPlace FSM | `mtc_manipulation` 45 例 PASS | `mtc_manipulation_cpp` 102 例 PASS | ✔ |
+| 运动执行 | `mtc_motion_execution` 20 例 PASS | `mtc_motion_execution_cpp` 55 例 PASS | ✔ |
+| 共享核心 | —（无对应层） | `mtc_core_cpp` 21 例 PASS | ✔ |
+| 安全联锁 | `mtc_safety` 70 例 PASS | 未迁移（不在第一阶段范围） | NOT RUN |
+| 工具管理 | `mtc_tool` 39 例 PASS | 未迁移（不在第一阶段范围） | NOT RUN |
+| AUBO 桥接 | `mtc_aubo_bridge` 25 例 PASS | 未迁移（不在第一阶段范围） | NOT RUN |
+| 端到端 Mock | `tests/test_mock_end_to_end.py` 15 例 | 未迁移 | **NOT RUN**（未被任何包注册，未执行） |
+| **合计** | **255 例 PASS / 15 例 NOT RUN** | **257 例 PASS** | |
+
+### 10.2 关键场景对照表
+
+| 场景（需求 6 列出） | Python 测试 | C++ 测试 | 结果 |
+|---|---|---|---|
+| 正常抓放流程 | `test_v1_happy_path_reaches_success` | `PickPlaceV1.HappyPathReachesSuccess`<br>`PickPlaceV1.StateSequenceMatchesDesignOrder` | ✔ |
+| 正常任务流程 | `test_task_fsm.py`（正常路径组） | `TaskFsmBasic.FullHappyPathReachesFinished`<br>`TaskFsmSequence.ThreeItemsCompleteInSlotOrder` | ✔ |
+| V1/V2 策略 | `test_v2_happy_path_reaches_success_and_unlocks_once` | `PickPlaceV2.DifferencesAreConfinedToEngageAndDisengage`<br>`PickPlaceV2.MotionPrimitivesDifferFromV1OnlyInAcquireAndEngage`<br>`ToolStrategyV1.*` / `ToolStrategyV2.*` | ✔ |
+| 目标丢失 | `test_target_not_found` | `PickPlaceSafety.TargetNotFoundIsRecoverableThenFails`<br>`TargetNotUniqueIsRejected` / `StalePoseIsRejectedWithPoseStale`<br>`InvalidRingPoseBlocksMotion` / `ColorMismatchIsRejectedToPreventWrongPick` | ✔ |
+| 规划失败 | `test_planning_failure*` | `PickPlaceSafety.PlanningFailureIsRecoverable`<br>`TransportPlanningFailureGoesToFaultAfterAttachment` | ✔ |
+| 动作超时 | `test_motion_timeout*` | `PickPlaceSafety.MotionInFlightTimeoutGoesToFault230AndLocksResend`<br>`MotionTimeoutLocksAndDoesNotResend`<br>`NonMotionStateTimeoutReportsMotionTimeout`<br>`TaskFsmTimeout.ExecuteItemTimeoutGoesToFaultAndDoesNotAutoResend` | ✔ |
+| 取消 | `test_cancel*` | `PickPlaceSafety.CancelWithConfirmedStopReachesCancelled`<br>`CancelWithoutStopConfirmationGoesToFault520`<br>`TaskFsmCancel.*`（7 例） | ✔ |
+| 停止确认失败 | `test_cancel_without_stop_confirmation` | `CancelNeverReachesCancelledWithoutConfirmation`<br>`RequestStopIsCalledAtMostOnce`<br>`ExecutorCore.StopDeliveryIsNotConfirmationWhenBackendCannotConfirm`<br>`ExecutorCore.UnsupportedCancelNeverFabricatesStopConfirmed` | ✔ |
+| 重复 Goal | `test_second_goal_rejected*` | `TaskFsmConcurrency.SecondGoalRejectedInEveryActiveState`（6 个活动状态遍历）<br>`RejectionDoesNotQueueSecondGoal`<br>`ExecutorCore.ConcurrentGoalDuringMotionIsRejected`<br>`InFlightGuard.SecondAcquireIsRejectedWithInFlightId` | ✔ |
+| 状态未知锁定与恢复 | `test_motion_status_unknown*` | `PickPlaceSafety.MotionStatusUnknownLocksAndDoesNotResend`<br>`RecoveryIsRefusedWhenMotionResendDisallowed`<br>`TaskFsmUnsafeErrors.MotionStatusUnknownGoesToFaultWithRealCode`<br>`ExecutorCore.StatusUnknownLocksSubsequentRequests`<br>`ExecutorCore.ManualConfirmationClearsUnknownLock` | ✔ |
+| `placement_verified` 唯一写入口 | `test_placement_verified_*` | `PlacementVerifiedCannotBeWrittenOutsideVerifyPlaced`<br>`PlacementVerifiedOnlyTrueAfterSuccessfulVerifyPlaced`<br>`PlacementVerifiedStartsFalseAndIsReadOnly` | ✔ |
+| 稳定性窗口 | `test_placement_stability*` | `SuccessRequiresFullStabilityWindow`<br>`PlacementNotAtTargetFailsAfterWindow`<br>`PlacementStaleSampleResetsStabilityTimer`<br>`PickPlaceV1.StabilityWindowIsActuallyElapsed` | ✔ |
+| V2 解锁前置条件 | `test_v2_unlock_requires_seated*` | `ToolStrategyV2.UnlockRejectedWhenSeatNotVerified`<br>`ToolStrategyV2.UnlockRejectedWhenNotUnloaded`<br>`ToolStrategyV2.UnlockAllowedOnlyWhenBothConditionsHold`<br>`PickPlaceV2Interlock.NoUnlockWhenSeatNotVerified`<br>`NoUnlockWhenUnloadNotVerified`<br>`StrategyRefusalBlocksUnlockIoEntirely` | ✔ |
+| 在途命令不重发 | `test_no_resend_while_inflight` | `PickPlaceSafety.InFlightCommandIsReusedNeverResent`<br>`ProgressIsNotBlockedByInFlightPorts` | ✔ |
+| 轨迹不得拆分为单点调用 | —（Python 无此能力） | `MockAdapter.TrajectoryIsRejectedAndNotSplitIntoJointMoves`<br>`MockAdapter.BaseClassDefaultTrajectoryRejectsWithoutSplitting` | ✔ |
+
+### 10.3 C++ 独有的新增测试（无 Python 对应）
+
+| 测试 | 验证内容 |
+|---|---|
+| `ErrorCodesMsgParity.ConstantsMatchInterfacesMsg` | C++ 错误码与 `ErrorCodes.msg` 原文**双向**一致（直接解析文件） |
+| `CorePose.*`（6 例） | 6D 位姿保真：`frame_id`、四元数归一化、不可用即拒绝 |
+| `CoreTimedTrajectory.*`（4 例） | 轨迹结构自检：时间单调、维度一致、关节名唯一 |
+| `PickPlaceTables.VerifyTablesReportsNoProblem` | 处理器表覆盖全部 22 状态 + 运动在途状态必有超时 |
+| `TaskFsmTables.EveryActiveStateRegistersConcurrentGoalRejection` | 每个活动状态都显式登记并发拒绝转移 |
+| `ToolStrategyV1.NoUnlockPulseAndNoIoChannels` | V1 路径不触碰任何电磁 IO |
+| `PickPlaceV2Interlock.RedundantInterlocksAreUnreachableButPresent` | 记录 DISENGAGE 前置联锁在正常流转下不可达这一事实 |
+| `MockAdapter.*`（17 例） | Mock 适配器行为可控性（到位/超时/未知/取消确认/不确认） |
+
+---
+
+## 11. 逐项复核清单（供审计使用）
+
+| 复核项 | 方法 | 期望 |
+|---|---|---|
+| 状态枚举数量与名称 | `git diff main -- src/mtc_task`（应为空）+ 对照 §2/§5 | 13 / 22 |
+| 事件字符串 | 对照 §3 | 20 项逐字一致 |
+| 转移表完整性 | 运行 `TaskFsmTables.VerifyTablesReportsNoProblem` | PASS |
+| 错误码数值 | 运行 `ErrorCodesMsgParity` | PASS |
+| 超时数值 | 对照 §4.4 / §5.1 | 逐项一致 |
+| 安全语义 | 对照 §7 表格中的测试名并运行 | 8/8 PASS |
+| 未修改既有实现 | `git status --short` 应只有 `??` 新增项 | 无 `M` / `D` |
+| 实机连接 | 检查所有 C++ 源文件 | 无 SDK、无设备访问、无网络调用 |
