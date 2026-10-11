@@ -5,12 +5,13 @@
 默认执行禁用；只支持明确核实的 `mock_components/GenericSystem`。不包含真实
 AUBO SDK、RPC/RTDE、工具IO或MoveIt Planner，不改变Phase 2A的三个Mock Server。
 
-2026-10-12 Final Audit：30项转换/校验、46项真实本地ROS Action测试通过；
-保留原424项身份，加上本轮10项及合入main的29项Planner测试，共463项GTest通过。
-完整15包构建、269项Python、15项离线E2E和463项UBSan通过；TSan NOT RUN。
-GenericSystem四项验证通过，但默认move_group与FjtMotionPort共存时因第二FJT客户端
-被门禁拒绝，联合执行 **BLOCKED**。详见
-[最终集成门禁报告](../../docs/migration/PHASE2B_FINAL_INTEGRATION_GATE.md)；
+2026-10-12 Ownership Final Review：本轮新增15项真实ROS异步测试，原463项身份
+全部保留；478项GTest及478项UBSan通过，TSan NOT RUN。FJT包为30项校验 +
+61项ROS Action测试。当前原生GenericSystem控制器未提供初始实时Status证据，
+执行预检 **BLOCKED、零Goal**；不能沿用上一轮的四项执行PASS作为本轮结果。
+MoveIt共存仍因第二个FJT客户端及Status证据不足保持BLOCKED。详见
+[所有权最终复核报告](../../docs/migration/PHASE2B_OWNERSHIP_FINAL_REVIEW.md)。
+[上一轮集成门禁报告](../../docs/migration/PHASE2B_FINAL_INTEGRATION_GATE.md)和
 [首次验收报告](../../docs/migration/PHASE2B_TRAJECTORY_EXECUTION_REPORT.md)仅为历史证据。
 
 ## API 与执行所有权
@@ -47,7 +48,10 @@ FSM单线程事件所有权。Goal Response、Feedback、Result和Cancel响应�
 - 唯一硬件组件必须匹配配置名称，plugin必须为`mock_components/GenericSystem`且Active，具备六关节position/velocity状态接口。
 - 目标JointTrajectoryController和joint_state_broadcaster必须Active；控制器按名称拥有全部六个position接口，无其他控制器占用这些关节。
 - FJT Server及控制查询服务必须唯一，目标FJT Client只有本实例，没有直接`joint_trajectory` Topic命令发布者，JointState发布者唯一。
-- Action Status中的外部在途Goal阻止派发，即使原Client已经退出；不会发送新Goal来抢占它。
+- Action Status未收到、非法或本地接收时间超过proof_max_age时拒绝派发；内部Status订阅使用volatile，不把transient-local缓存当成当前证据。标准Status是事件驱动，无发布时刻字段；本地接收年龄不是绝对新鲜度或跨进程锁。
+- Status中的外部在途Goal阻止派发，即使原Client已经退出；不会发送新Goal抢占它。待Goal Response期间的UUID全部视为Unknown，保留Session及观测记录，取得原请求Handle后才比对归属；不按count==1猜测Own。
+- Status有效但归属尚未确定时，Session有界等待Response，ready=false，不再发Goal，也不取消未知UUID。证据丢失或超时则FAULT保留；迟到Handle仅取消原Goal，迟到Result不清锁。
+- Result终结但Status仍Active时不允许后继Goal。历史终态不当作在途。Snapshot新增ownership/status_received/status_fresh/unknown_active_goals/status_messages；foreign_active_goals兼容字段保守包含尚未关联的Unknown。该结构布局变化，下游C++消费者需要重新编译。
 - JointState必须包含完整且唯一的六关节名称、有限位置/速度、有效持续递增的ROS时间戳。位置符合配置限位；按名称重排，拒绝缺字段、旧帧和回退。
 - 初次执行前须观察新鲜静止窗口；当前位置与首点按名称比较，默认偏差容差0.01rad，超差拒绝，绝不自动跳到起点。
 
@@ -107,9 +111,9 @@ colcon test --packages-select mtc_core_cpp mtc_task_cpp mtc_manipulation_cpp \
 python3 src/mtc_trajectory_execution_cpp/test/verify_results.py --build-base build
 ```
 
-核验脚本比较原358项Core/Action和66项Phase 2B身份，包含合入的Planner，
-比对已编译注册的测试与实际XML，拒绝未完成、
-遗漏、重复、FAIL和SKIP。历史Phase 2A脚本固定20个可执行文件，不用于当前22个集合。
+核验脚本固定45f497c的原463项身份，包含Planner；核对当前源码声明、
+二进制注册清单和实际XML，拒绝未注册、未完成、
+遗漏、重复、FAIL和SKIP。历史Phase 2A脚本固定20个可执行文件，不用于当前26个集合。
 全目录test-result会包含保留的历史TSan失败，须与本轮各包结果分开报告。
 
 Level 1为纯转换测试；Level 2使用真正的rclcpp_action Client/Server、状态Topic和
@@ -118,6 +122,12 @@ Level 1为纯转换测试；Level 2使用真正的rclcpp_action Client/Server、
 工具夹具仅供软件测试，未接实体IO；不是安装后的公共API。
 
 ## GenericSystem 单独复验 SOP
+
+**本轮执行验收BLOCKED。** 以下启动步骤仍是只读Fake预检，不能将GenericSystem
+插件确认当成Status/执行权确认。当前原生JTC启动后不发初始空Status且非周期心跳，
+修复后的Port会拒绝执行；不得预热发Goal、注入空Status或放宽门禁。
+先以`topology`查看status_received/status_fresh/客户端数量。只有后续经审核的证据
+契约具备后才能重新验收下列运动模式，本轮没有实现该Phase 2C环境。
 
 三个终端全部使用以下环境；218是本轮示例domain，先确认空图。同一终端只加载
 这一套AUBO安装目录；不构建或修改参考工作空间：
