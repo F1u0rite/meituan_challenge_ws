@@ -126,10 +126,16 @@ def test_capture_worker_safe_shutdown_with_complete_packets():
             return f
         def stop(self):self.stopped=True
     source=Source();worker=CaptureWorker(source);worker.start();worker.thread.join(3)
-    assert worker.frames==3
-    identity,pair=worker.slot.get(.1)
-    assert identity.startswith('color_') and pair is f
-    assert worker.slot.dropped==2
+    assert worker.observed_frames==3
+    domains=[str(f.timestamps.get(s+'_timestamp_domain','')).removeprefix('timestamp_domain.') for s in ('color','depth')]
+    if domains[0]==domains[1] and domains[0] in ('global_time','system_time'):
+        assert worker.frames==1 and worker.pair_guard.rejected==2
+        identity,pair=worker.slot.get(.1)
+        assert identity.startswith('color_') and pair is f
+    else:
+        assert worker.frames==0 and worker.pair_guard.rejected==3
+        assert worker.slot.get(.1) is None
+    assert worker.slot.dropped==0
     worker.close()
     assert source.stopped
 

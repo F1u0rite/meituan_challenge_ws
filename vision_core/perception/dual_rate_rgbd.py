@@ -7,6 +7,7 @@ import cv2
 import json,yaml
 from pathlib import Path
 from .vision_interface import finalize_interface
+from input.rgbd_pair_guard import RGBDPairGuard
 from .rgbd_offline import body_geometry
 import numpy as np
 from .rgbd_geometry import validate_frame, deproject_pixels, frame_capture_time
@@ -61,6 +62,8 @@ class CaptureWorker:
     def __init__(self,source,on_frame=None):
         self.source=source;self.on_frame=on_frame;self.slot=LatestSlot();self.stop_event=Event()
         self.thread=None;self.error=None;self.frames=0;self.sdk_dropped=0;self.rate=RateMeter()
+        self.pair_guard=RGBDPairGuard();self.observed_frames=0;self.consecutive_unqualified=0
+        self.stream_rates={s:RateMeter() for s in ('color','depth')};self.stream_ids={}
     def start(self):
         self.thread=Thread(target=self._run,name='rgbd-capture');self.thread.start()
     def _run(self):
@@ -69,7 +72,20 @@ class CaptureWorker:
             except Exception as exc:
                 if not self.stop_event.is_set():self.error=f'{type(exc).__name__}: {exc}'
                 break
-            self.frames+=1;self.sdk_dropped+=frame.timestamps.get('queued_frames_discarded',0)
+            self.observed_frames+=1;self.sdk_dropped+=frame.timestamps.get('queued_frames_discarded',0)
+            for stream,meter in self.stream_rates.items():
+                ident=frame.timestamps.get(stream+'_frame_number')
+                if type(ident) is int and ident!=self.stream_ids.get(stream):meter.add()
+                self.stream_ids[stream]=ident
+            report=self.pair_guard.inspect(frame.timestamps)
+            if not report['qualified']:
+                self.consecutive_unqualified+=1
+                if self.consecutive_unqualified>=30:
+                    self.error='No qualified RGB-D in 30 SDK observations: '+str(report['reasons'])
+                    break
+                continue
+            self.consecutive_unqualified=0
+            self.frames+=1
             identity=frame_id(frame,self.frames)
             if self.on_frame:self.on_frame(identity,frame)
             self.slot.put((identity,frame));self.rate.add()
@@ -299,6 +315,7 @@ class CADWorker:
     def __init__(self,pipeline=None):
         self.pipeline=pipeline or RGBDVisionPipeline();self.slot=LatestSlot()
         self.results=deque();self.lock=Lock();self.thread=None;self.error=None;self.rate=RateMeter()
+        self.completed_jobs=0
     def start(self):
         self.thread=Thread(target=self._run,name='cad-pose-worker');self.thread.start()
     def submit(self,frame,source_frame_id,fast_objects):
@@ -311,12 +328,13 @@ class CADWorker:
                 continue
             frame,identity,fast=job
             try:
+                validate_sync(frame)
                 result,_=self.pipeline.process(frame,force_cad=True)
                 message=dict(source_frame_id=identity,capture_timestamp=capture_time(frame),result_timestamp=time(),capture_timestamp_source=frame_capture_time(frame)[1],timestamps=frame.timestamps,
                              matches=associate_cad(fast,result['objects']),processing_ms=result['timing_ms']['total'],
                              table_plane=result.get('background_filter_report',{}).get('table_plane'))
                 with self.lock:
-                    self.results.append(message)
+                    self.results.append(message);self.completed_jobs+=1
                     while len(self.results)>8:self.results.popleft()
                 self.rate.add()
             except Exception as exc:
@@ -348,6 +366,7 @@ def cad_for_display(result,current_frame_id,history,now=None):
             capture_timestamp=prior['capture_timestamp'],result_timestamp=prior['result_timestamp'],
             result_age_ms=max(0,(now-prior['capture_timestamp'])*1000),
             fit_status=old['fit_status'],body_xyz=old.get('model_estimated_body_center_xyz'),
+            ring_orientation_candidate=old.get('ring_orientation_candidate'),
             body_yaw_candidate=old.get('body_yaw_candidate'),ring_xyz=old.get('ring_center_candidate'),
             insertion_directions=old.get('insertion_direction_candidates'),
             pose_ambiguity_reasons=[v for v in old.get('ambiguity',[]) if v not in ('FAST_COLOR_DEPTH_CANDIDATE','NO_INDEPENDENT_3D_VALIDATION')],

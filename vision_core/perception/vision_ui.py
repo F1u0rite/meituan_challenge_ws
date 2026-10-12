@@ -55,7 +55,7 @@ class VisionUI:
                 text(rgb,candidate['state']+' '+candidate['color'],x,max(12,y-3),(150,150,150),.35)
         for item,payload in zip(result['objects'],views):
             ambiguous=item.get('candidate_state')=='AMBIGUOUS'
-            color=(160,160,160) if ambiguous else COLORS[item['color_label']];mask[payload['mask']]=color
+            color=COLORS[item['color_label']];mask[payload['mask']]=color
             x,y,w,h=item['bbox']
             if ambiguous:
                 for xx in range(x,x+w,12):
@@ -77,7 +77,8 @@ class VisionUI:
             text(rgb,top_label,max(0,x+3),yy-17,color,.42)
             text(rgb,id_label,max(0,x+3),yy,color,.42)
             marker(item['visible_surface_center_xyz'],(255,150,30))
-            if self.show_cad and item['body_pose_candidate'] is not None:
+            if (self.show_cad and item['body_pose_candidate'] is not None
+                    and item.get('cad_fresh') is True and not item.get('cad_stale',False)):
                 T=np.array(item['body_pose_candidate']);R=T[:3,:3];body=T[:3,3];ring=np.array(item['ring_center_candidate'])
                 dims=geometry['battery']['body_dimensions_mm'];half=np.array([dims['long'],dims['width'],dims['height']])/2000
                 corners=np.array([[x,y,z] for x in [-half[0],half[0]] for y in [-half[1],half[1]] for z in [-half[2],half[2]]])
@@ -113,15 +114,15 @@ class VisionUI:
         text(canvas,f"{mode} | view={self.mode} | BODY/RING INVALID | no robot output",18,53,(70,200,255))
         if 'detection_fps' in result:
             def hz(value):return 'N/A' if value is None else f'{value:.1f}'
-            text(canvas,f"CAM {hz(result.get('camera_fps'))} | DET {hz(result.get('detection_fps'))} | CAD {hz(result.get('cad_fps'))} FPS",1020,30)
+            text(canvas,f"CAM RGB/D {hz(result.get('camera_fps'))}/{hz(result.get('camera_depth_fps'))} | DET {hz(result.get('detection_fps'))} | CAD {hz(result.get('cad_fps'))} FPS",1020,30)
             age=result.get('cad_result_age_ms')
-            text(canvas,f"DET {result['processing_latency_ms']:.0f}ms | CAD age {'N/A' if age is None else f'{age:.0f}ms'} | DROP {result.get('capture_dropped_frames',0)}",1020,54)
+            text(canvas,f"DET {result['processing_latency_ms']:.0f}ms | CAD age {'N/A' if age is None else f'{age:.0f}ms'} | DROP {result.get('capture_dropped_frames',0)} | SYNC rej {result.get('sync_diagnostics',{}).get('rejected',0)}",1020,54)
         else:
             rate=f"{display_fps:.1f}" if display_fps is not None else 'N/A (offline)'
             capture=frame.stream_profiles.get("color",{}).get("fps","N/A")
-            capture_label="Capture" if result.get("mode","").startswith("LIVE") else "Recorded"
+            capture_label="Capture config" if result.get("mode","").startswith("LIVE") else "Recorded config"
             processing=1000/max(result["timing_ms"]["total"],1e-9)
-            text(canvas,f"{capture_label} {capture} FPS | Process {processing:.2f} Hz | {result['timing_ms']['total']:.0f}ms",1020,30)
+            text(canvas,f"{capture_label} {capture} FPS | measured loop {rate} Hz | {result['timing_ms']['total']:.0f}ms",1020,30)
             cad_rate=result.get("cad_pose_update_rate_hz");cad_rate_text="N/A offline" if cad_rate is None else f"{cad_rate:.2f}Hz"
             text(canvas,f"CAD updates {cad_rate_text} | limit {result.get('cad_update_limit_hz','N/A')}Hz | REC {self.recording}",1020,54)
         def place(im,x,y,w,h):
@@ -129,21 +130,29 @@ class VisionUI:
             canvas[y:y+h,x:x+w]=(12,16,20)
             xx=x+(w-s.shape[1])//2;yy=y+(h-s.shape[0])//2
             canvas[yy:yy+s.shape[0],xx:xx+s.shape[1]]=s
-        place(main,12,80,1040,590)
-        place(depth,1070,80,245,138);place(mask,1330,80,255,138)
-        text(canvas,'Aligned depth (0-1000mm)',1070,239);text(canvas,'Instance masks',1330,239)
-        cv2.rectangle(canvas,(12,684),(1052,846),(32,38,43),-1)
-        text(canvas,'OBJECTS | white=contour  cyan=CAD  magenta=body  yellow=ring & +/- entry',22,708)
+        place(main,12,80,780,439)
+        place(depth,808,80,780,439)
+        text(canvas,'RGB '+str(frame.color_bgr.shape[1])+'x'+str(frame.color_bgr.shape[0]),12,540)
+        text(canvas,'Aligned depth 0-1m display; >1m saturated VALID; black=Z16 zero',808,540,(220,230,235),.42)
+        stamps=frame.timestamps
+        text(canvas,'CAPTURE '+str(stamps.get('host_utc','N/A'))+' | RGB/Depth ID '+str(stamps.get('color_frame_number'))+'/'+str(stamps.get('depth_frame_number')),12,552,(180,190,200),.34)
+        cv2.rectangle(canvas,(12,555),(792,846),(32,38,43),-1)
+        text(canvas,'OBJECTS | identity / geometry are separate | POSE INVALID',22,575)
         self.last_display_data={'sample_id':result.get('sample_id'),'objects':result['objects'],
             'labels':[object_label(o) for o in result['objects']], 'selected_index':self.selected,
             'source_frame_id':result.get('source_frame_id'),'camera_fps':result.get('camera_fps'),
             'detection_fps':result.get('detection_fps'),'cad_fps':result.get('cad_fps'),
             'cad_result_age_ms':result.get('cad_result_age_ms'),
-            'capture_dropped_frames':result.get('capture_dropped_frames',0)}
+            'capture_dropped_frames':result.get('capture_dropped_frames',0),
+            'capture_timestamps':frame.timestamps,'depth_display_range_m':[0,1],
+            'depth_above_display_max_still_valid':True,'pose_label':'BODY/RING INVALID',
+            'sync_diagnostics':result.get('sync_diagnostics'),
+            'cad_overlay_object_ids':[o['object_id'] for o in result['objects'] if self.show_cad and o.get('body_pose_candidate') is not None and o.get('cad_fresh') is True and not o.get('cad_stale',False)]}
         for i,item in enumerate(result['objects'][:6]):
-            text(canvas,f"{i+1}. {object_label(item)} | {item['tracking_reliability']} | CAD {item['fit_status']}",22,731+i*19,COLORS[item['color_label']],.42)
+            text(canvas,f"{i+1}. {object_label(item)}",22,600+i*36,COLORS[item['color_label']],.40)
+            text(canvas,f"{item['tracking_reliability']} | CAD {item['fit_status']}",22,615+i*36,COLORS[item['color_label']],.38)
         if not result['objects']:
-            text(canvas,'NO ACCEPTED OBJECT | '+str(result.get('background_filter_report',{}).get('table_failure')),22,738,(80,130,255))
+            text(canvas,'NO ACCEPTED OBJECT | '+str(result.get('background_filter_report',{}).get('table_failure')),22,600,(80,130,255))
         if self.show_info and result['objects']:
             item=result['objects'][min(self.selected,len(result['objects'])-1)]
             old=item.get('historical_cad') if not item.get('cad_fresh') else None
@@ -153,7 +162,14 @@ class VisionUI:
                 yaw=old.get('body_yaw_candidate')
             pose_age=None if item['cad_result_timestamp'] is None else max(0,(time() if result.get('mode','').startswith('LIVE') else result['timestamp'])-item['cad_result_timestamp'])
             freshness='N/A' if pose_age is None else ('STALE ' if pose_age>1 else 'CURRENT_FRAME ')+f'{pose_age:.2f}s'
-            lines=[('OBJECT ID',item['object_id']),('COLOR / confidence',f"{item['color_label']} / {item['color_confidence']:.3f}"),
+            orientation=item.get('ring_orientation_candidate') if old is None else old.get('ring_orientation_candidate')
+            quaternion=None
+            if orientation is not None:
+                from scipy.spatial.transform import Rotation
+                quaternion=np.round(Rotation.from_matrix(np.asarray(orientation)).as_quat(),4).tolist()
+            directions=item.get('insertion_direction_candidates') if old is None else old.get('insertion_directions')
+            directions=None if directions is None else np.round(directions,3).tolist()
+            lines=[('IDENTITY CONFIRMATION',item.get('detection_status','N/A')),('CAD GEOMETRY SUPPORT',item['fit_status']),('OBJECT ID',item['object_id']),('COLOR / confidence',f"{item['color_label']} / {item['color_confidence']:.3f}"),
                 ('BBOX px',item['bbox']),('DEPTH VALID',f"{item['depth_valid_ratio']:.1%}"),
                 ('SURFACE Z',mm(item['surface_depth_z'])),('SURFACE XYZ camera',vec(item['visible_surface_center_xyz'])),
                 ('SURFACE range',mm(item['camera_to_surface_distance'])),
@@ -161,22 +177,28 @@ class VisionUI:
                 ('BODY Z / range',mm(item['body_center_camera_z'])+' / '+mm(item['camera_to_body_center_distance'])),
                 ('BODY YAW candidate' if old is None else 'STALE BODY YAW','N/A' if yaw is None else f"{np.rad2deg(yaw):.2f} deg / {yaw:.4f} rad"),
                 ('RING CENTER ESTIMATED' if old is None else 'STALE RING CENTER',vec(item['ring_center_candidate'] if old is None else old.get('ring_xyz'))),
+                ('RING orientation candidate xyzw',quaternion),('ENTRY +/- unit vectors',directions),
                 ('RING feature',item['ring_feature_status']),
                 ('HOOK +/- yaw rad' if old is None else 'STALE HOOK +/- XYZ unit vectors',item['hook_insertion_yaw_candidates'] if old is None else old.get('insertion_directions')),
                 ('FIT median residual',mm(item['pose_quality'].get('cad_surface_residual_median_m'))),
                 ('CAD freshness',f"{item['candidate_state'] if 'candidate_state' in item else 'DIAGNOSTIC'} current={item['cad_fresh']} age={'N/A' if item['cad_result_timestamp'] is None else freshness}" if old is None else f"STALE {old['result_age_ms']:.0f}ms src={old['source_frame_id']} motion UNKNOWN_WITHOUT_TF"),
                 ('POSE VALID','body=false ring=false | UNVERIFIED'),
                 ('DET / POSE uncertainty','det='+str(item.get('detection_ambiguity','legacy'))+' pose='+str(item.get('pose_ambiguity','legacy'))+' cad_stale='+str(item.get('cad_stale','legacy'))+' det_stale='+str(item.get('detection_stale','unknown'))),
+                ('CAD SOURCE FRAME',item.get('CAD_result_source_frame') or (result.get('source_frame_id','N/A') if item.get('cad_fresh') else 'N/A')),
+                ('CAPTURE host UTC',frame.timestamps.get('host_utc','N/A')),
+                ('RGB/Depth frame IDs',str(frame.timestamps.get('color_frame_number'))+'/'+str(frame.timestamps.get('depth_frame_number'))),
+                ('GEOMETRY ambiguity reasons',item.get('pose_ambiguity_reasons',[])),
                 ('REJECTION',item['rejection_reason'])]
             for i,(name,value) in enumerate(lines):
-                y=272+i*30;text(canvas,name,1070,y,(120,155,175),.42)
+                x=808+(i//14)*390;y=567+(i%14)*20
+                text(canvas,name,x,y,(120,155,175),.35)
                 # Long reasons wrap onto two lines, rather than cover the image.
                 value=str(value)
-                text(canvas,value[:70],1070,y+14,(235,235,235),.40)
+                text(canvas,value[:60],x,y+10,(235,235,235),.35)
         cv2.rectangle(canvas,(0,855),(1600,899),(30,39,46),-1)
-        text(canvas,'s save | r record/stop | c raw candidates | d depth | m mask | f foreground | p cloud | b raw | o CAD | i info | 1-9 select',16,875,(220,230,235),.46)
+        text(canvas,'s save | r live record/stop | c raw candidates | d depth | m mask | f foreground | p cloud | b raw | o CAD | i info | 1-9 select',16,875,(220,230,235),.46)
         obs=result.get('observation',{})
         footer=('OBSERVATION '+obs.get('state','N/A')+' | distinct CAD '+str(obs.get('distinct_capture_observations',0))) if obs else 'n next | SPACE pause/play offline | q exit'
-        text(canvas,footer+' | CAD estimates are NOT validated grasp targets',16,894,(65,190,255),.46)
+        text(canvas,footer+' | q/ESC exit | SPACE pause | n step | CAD estimates are NOT validated grasp targets',16,894,(65,190,255),.46)
         self.last_timing_ms={"depth_render":depth_ms,"ui_overlay":(perf_counter()-ui_start)*1000-depth_ms}
         return canvas

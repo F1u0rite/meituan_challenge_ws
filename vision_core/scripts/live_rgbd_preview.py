@@ -85,6 +85,7 @@ def main(argv=None):
     parser.add_argument('--full-vision', action='store_true',
                         help='Existing RGB-D segmentation + CAD + tracking diagnostic preview')
     parser.add_argument('--replay', type=Path, help='Offline session; never starts a camera')
+    parser.add_argument('--pair-manifest',type=Path,help='Approved original native NPY pairs; requires offline dual-rate replay')
     parser.add_argument('--headless', action='store_true')
     parser.add_argument('--preview-authorized', action='store_true',
                         help='Only use after explicit human camera preparation confirmation')
@@ -95,6 +96,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not args.replay and not args.preview_authorized:
         parser.error('Human confirmation required: 准备好了，启动预览')
+    if args.pair_manifest and not (args.replay and args.dual_rate and args.full_vision):
+        parser.error('--pair-manifest requires --replay --full-vision --dual-rate')
+    if not args.headless and os.name!='nt' and not os.environ.get('DISPLAY'):
+        parser.error('No DISPLAY: run in Ubuntu graphical desktop Terminal, or use --headless for actual offline rendering')
     if args.tcp_send and not (args.dual_rate and args.full_vision):
         parser.error('--tcp-send requires --full-vision --dual-rate')
     if args.ui_smoke and not args.replay:
@@ -119,11 +124,20 @@ def main(argv=None):
     detector = UnifiedBatteryDetector()
     session = f"session_{datetime.now():%Y%m%d_%H%M%S}_red_{args.scene}"
     count = 0
+    from input.rgbd_pair_guard import RGBDPairGuard
+    gate=RGBDPairGuard();consecutive_bad=0
     try:
         profiles = source.start()
         print('Actual queried stream selection:', json.dumps(profiles, ensure_ascii=False))
         while True:
             frame = source.read()
+            report=gate.inspect(frame.timestamps)
+            if not report['qualified']:
+                consecutive_bad+=1
+                print('RGBD_REJECTED',report,flush=True)
+                if consecutive_bad>=30:raise RuntimeError('No qualified RGB-D in 30 SDK observations')
+                continue
+            consecutive_bad=0
             geometry, points, rgb, visualization = _diagnose(frame, detector, source,
                 args.min_depth_m, args.max_depth_m)
             cv2.imshow('RGB-D RED preview (s save, q quit)', visualization)
@@ -167,8 +181,20 @@ def run_full_vision(args):
         frames=((folder.name,load_rgbd_sample(folder)) for folder in folders)
     else:
         source=RealSenseRGBDSource(preferred_color=tuple(args.color_size),preferred_depth=tuple(args.depth_size),fps=args.fps)
+        from input.rgbd_pair_guard import RGBDPairGuard
+        gate=RGBDPairGuard()
         def stream():
-            while True:yield 'live',source.read(latest=True)
+            consecutive_bad=0
+            while True:
+                frame=source.read(latest=True)
+                report=gate.inspect(frame.timestamps)
+                if not report['qualified']:
+                    consecutive_bad+=1
+                    print('RGBD_REJECTED',report,flush=True)
+                    if consecutive_bad>=30:raise RuntimeError('No qualified RGB-D in 30 SDK observations')
+                    continue
+                consecutive_bad=0
+                yield 'live',frame
         frames=stream()
     def save_current(frame,result,views,visualization,trigger):
         nonlocal saved

@@ -41,6 +41,19 @@ def merge_cad_history(history, messages):
     return accepted,rejected
 
 
+def interactive_frame(ui,window,image,on_save,on_record=None,on_render=None):
+    """Existing OpenCV controls; q exits even while paused, n advances one frame."""
+    while True:
+        cv2.imshow(window,image)
+        key=cv2.waitKey(30 if ui.paused else 1)&255
+        if key in (ord('q'),27):return True,image
+        ui.handle_key(key)
+        if on_render is not None and (key!=255 or ui.paused):image=on_render()
+        if key==ord('s'):on_save(image)
+        if key==ord('r') and on_record is not None:on_record()
+        if key==ord('n') or not ui.paused:return False,image
+
+
 def run_dual_rate(args):
     from scripts.live_rgbd_preview import ROOT
     from perception.realtime_rgbd import RGBDVisionPipeline
@@ -56,18 +69,35 @@ def run_dual_rate(args):
     output=args.replay_output or ROOT/'outputs/live_rgbd_integration'/('dual_'+uuid.uuid4().hex[:8])
     if output.exists():raise FileExistsError(output)
     output.mkdir(parents=True)
-    hashes={};folders=[];rows=[];cad_rows=[];views_log=[];screens=[];history={}
+    hashes={};folders=[];rows=[];cad_rows=[];cad_messages=[];views_log=[];screens=[];history={}
+    manual_save_index=0;window_called=False;expected_frames=0
     capture_count=0;cad_rejected=0;last_cad_schedule=-1e9;cad_interval=float(cad.pipeline.config.get('cad_interval_s',1.0))
     total_start=perf_counter();window='Battery RGB-D Dual Rate | OFFLINE' if args.replay else 'Battery RGB-D Dual Rate | LIVE UNVERIFIED'
     if args.replay:
         folders=sorted(args.replay.glob('sample_*'))
         if args.max_frames:folders=folders[:args.max_frames]
-        if not folders:raise ValueError('No samples')
+        if not folders and not getattr(args,'pair_manifest',None):raise ValueError('No samples')
         for folder in folders:
             for name in ('raw_color.png','aligned_depth.png','metadata.json','camera_intrinsics.json'):
                 p=folder/name;hashes[str(p.resolve())]=hashlib.sha256(p.read_bytes()).hexdigest()
-        frames=((frame_id(f,i),f,folder.name) for i,folder in enumerate(folders,1)
-                for f in [load_rgbd_sample(folder)])
+        if getattr(args,'pair_manifest',None):
+            from real_data.native_array_recording import qualified_native_pairs
+            indices=json.loads(args.pair_manifest.read_text())['accepted_original_indices']
+            expected_frames=min(len(indices),args.max_frames) if args.max_frames else len(indices)
+            originals=json.loads((args.pair_manifest.parent/'original_sha256.json').read_text())
+            for index in (indices[:args.max_frames] if args.max_frames else indices):
+                for name in ('metadata.json','color_bgr.npy','raw_depth_z16.npy','aligned_depth_z16.npy'):
+                    relative='frames/'+f'{index:06d}/'+name
+                    hashes[str(args.replay.resolve()/relative)]=originals[relative]
+            def original_frames():
+                for i,(identity,f,folder) in enumerate(qualified_native_pairs(args.replay,args.pair_manifest)):
+                    if args.max_frames and i>=args.max_frames:break
+                    yield identity,f,folder.name
+            frames=original_frames()
+        else:
+            expected_frames=len(folders)
+            frames=((frame_id(f,i),f,folder.name) for i,folder in enumerate(folders,1)
+                    for f in [load_rgbd_sample(folder)])
     else:
         # Construction and start are reachable only after --preview-authorized in the entry point.
         source=RealSenseRGBDSource(preferred_color=tuple(args.color_size),
@@ -108,7 +138,7 @@ def run_dual_rate(args):
             result,object_views=fast.process(frame,identity)
             result['mode']='REAL_RED_RGBD_OFFLINE_DUAL_RATE' if args.replay else 'LIVE_DUAL_RATE_UNVERIFIED'
             result['sample_id']=name
-            received=cad.drain()
+            received=cad.drain();cad_messages.extend(received)
             for message in received:
                 fast.set_table_hint(message.get('table_plane'),message['capture_timestamp'],message['source_frame_id'])
             merged,rejected=merge_cad_history(history,received);cad_rejected+=rejected;cad_rows.extend(merged)
@@ -117,9 +147,13 @@ def run_dual_rate(args):
                 cad.submit(frame,identity,result['objects']);last_cad_schedule=now
             result['observation']=observation.update(result,received)
             cad_for_display(result,identity,history,now=result['capture_timestamp'] if args.replay else None)
-            result['camera_fps']=capture.rate.hz() if capture else None
-            result['detection_fps']=fast.rate.hz() if capture else None
-            result['cad_fps']=cad.rate.hz() if capture else None
+            result['camera_fps']=capture.stream_rates['color'].hz() if capture else None
+            result['camera_depth_fps']=capture.stream_rates['depth'].hz() if capture else None
+            result['qualified_pair_fps']=capture.rate.hz() if capture else None
+            result['detection_fps']=fast.rate.hz()
+            result['cad_fps']=cad.rate.hz()
+            result['sync_diagnostics']=capture.pair_guard.snapshot() if capture else {'qualified_manifest_replay':bool(getattr(args,'pair_manifest',None))}
+            result['cad_clock_policy']='RECORDED_CAPTURE_TIMELINE' if args.replay else 'CURRENT_WALL_TIME'
             result['capture_dropped_frames']=capture.dropped if capture else 0
             result['cad_queue_dropped']=cad.slot.dropped
             result['cad_result_age_ms']=max((o['historical_cad']['result_age_ms'] for o in result['objects']
@@ -133,25 +167,22 @@ def run_dual_rate(args):
             result['timing_ms']['render']=ui.last_timing_ms['depth_render']+ui.last_timing_ms['ui_overlay']
             result['timing_ms']['process_and_render']=(perf_counter()-cycle)*1000
             rows.append(result)
-            if args.replay and (capture_count in (1,18,29,len(folders))):
+            if args.replay and (capture_count in (1,18,29,expected_frames)):
                 target=output/f'frame_{capture_count:04d}.png'
                 cv2.imencode('.png',image)[1].tofile(str(target))
                 screens.append(cv2.resize(image,(800,450)))
+                (output/f'frame_{capture_count:04d}_display.json').write_text(json.dumps(ui.last_display_data,default=str,indent=2))
             if not args.headless:
                 cv2.namedWindow(window,cv2.WINDOW_NORMAL);cv2.resizeWindow(window,1600,900)
-                cv2.imshow(window,image)
-                key=cv2.waitKey(1 if not ui.paused else 30)&255
-                result['display_timestamp']=time()
-                result['capture_to_display_call_ms']=max(0,(result['display_timestamp']-result['capture_timestamp'])*1000) if capture else None
-                result['display_latency_definition']='After imshow/waitKey call; physical monitor scanout not measured'
-                if recorder is not None:recorder.add_detection(identity,result)
-                ui.handle_key(key)
-                if key in (ord('q'),27):break
-                if key==ord('s'):
-                    folder=output/'user_saves'/f'sample_{capture_count:04d}'
-                    save_vision_sample(folder,frame,result,object_views,image)
+                def save_display(current_image):
+                    nonlocal manual_save_index
+                    manual_save_index+=1
+                    folder=output/'user_saves'/f'sample_{manual_save_index:04d}'
+                    save_vision_sample(folder,frame,result,object_views,current_image)
                     print('Saved diagnostic',folder,flush=True)
-                if key==ord('r') and capture:
+                def record_toggle():
+                    nonlocal record_index,recorder
+                    if capture is None:return
                     if recorder is not None:finish_record()
                     else:
                         record_index+=1
@@ -160,15 +191,28 @@ def run_dual_rate(args):
                         new.start()
                         with record_lock:recorder=new
                         ui.recording=True
-                        print('Recording complete RGB-D frames to',target,flush=True)
-                while ui.paused and not args.replay:
-                    k=cv2.waitKey(30)&255
-                    if k in (ord('q'),27):break
-                    ui.handle_key(k)
+                paused_cad_requested=False
+                def refresh_display():
+                    nonlocal paused_cad_requested,cad_rejected
+                    if args.replay and ui.paused and not paused_cad_requested and result['objects']:
+                        cad.submit(frame,identity,result['objects']);paused_cad_requested=True
+                    fresh=cad.drain();cad_messages.extend(fresh)
+                    result['detection_fps']=fast.rate.hz();result['cad_fps']=cad.rate.hz()
+                    merged,late=merge_cad_history(history,fresh);cad_rejected+=late;cad_rows.extend(merged)
+                    cad_for_display(result,identity,history,now=result['capture_timestamp'] if args.replay else None)
+                    return ui.render(frame,result,object_views,cad.pipeline.geometry,source.project if source else None)
+                quit_requested,image=interactive_frame(ui,window,image,save_display,record_toggle,refresh_display)
+                window_called=True
+                result['display_timestamp']=time()
+                result['capture_to_display_call_ms']=max(0,(result['display_timestamp']-result['capture_timestamp'])*1000) if capture else None
+                result['display_latency_definition']='After imshow/waitKey call; physical monitor scanout not measured'
+                if recorder is not None:recorder.add_detection(identity,result)
+                if quit_requested:break
             if recorder is not None and recorder.closed:finish_record()
             if capture and args.max_frames and capture_count>=args.max_frames:break
         cad.close()
-        merged,rejected=merge_cad_history(history,cad.drain());cad_rejected+=rejected;cad_rows.extend(merged)
+        remaining=cad.drain();cad_messages.extend(remaining)
+        merged,rejected=merge_cad_history(history,remaining);cad_rejected+=rejected;cad_rows.extend(merged)
         if args.replay:
             if any(hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h for p,h in hashes.items()):
                 raise RuntimeError('Original RGB-D input changed')
@@ -179,15 +223,19 @@ def run_dual_rate(args):
         if tcp_sender: tcp_sender.close()
         elapsed=perf_counter()-total_start
         summary=dict(mode='offline' if args.replay else 'live_unverified',frames_processed=len(rows),
-            actual_camera_started=bool(capture),input_frames=len(folders) if args.replay else capture_count,
+            actual_camera_started=bool(capture),input_frames=expected_frames if args.replay else capture_count,
+            gui_window_display_called=window_called,
+            camera_fps=None if args.replay else (capture.stream_rates['color'].hz() if capture else None),
+            detection_fps=fast.rate.hz(),cad_fps=cad.rate.hz(),
+            sync_diagnostics=capture.pair_guard.snapshot() if capture else {'qualified_manifest_replay':bool(getattr(args,'pair_manifest',None))},
             fast_timing=_stats([r['processing_latency_ms'] for r in rows]),
-            cad_timing=_stats([c['processing_ms'] for c in cad_rows]),
+            cad_timing=_stats([c['processing_ms'] for c in cad_messages]),
             render_timing=_stats([r['timing_ms']['render'] for r in rows]),
             offline_wall_throughput_hz=len(rows)/elapsed if args.replay else None,
             throughput_is_not_camera_fps=True,
             fast_color_counts={c:sum(o['color_label']==c for r in rows for o in r['objects'])
                                for c in ('red','blue','yellow','green')},
-            cad_jobs_completed=len(cad_rows),cad_worker_error=cad.error,
+            cad_jobs_completed=cad.completed_jobs,cad_matched_object_observations=len(cad_rows),cad_worker_error=cad.error,
             cad_queue_dropped=cad.slot.dropped,cad_out_of_order_rejected=cad_rejected,
             capture_dropped_frames=capture.dropped if capture else 0,
             fast_body_pose_valid_count=sum(o['body_pose_valid'] for r in rows for o in r['objects']),
