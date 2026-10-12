@@ -208,6 +208,8 @@ static int run(const rclcpp::Node::SharedPtr & node,Port & port,mtc::trajectory:
   std::cout<<(pass ? "PASS " : "FAIL ")<<mode<<std::endl;executor.cancel();return pass ? 0 : 1;
 }
 int main(int argc,char ** argv) {
+  try {mtc::trajectory::ControlledFakeStart::validate_environment();}
+  catch (const std::exception & e) {std::cerr<<"BLOCKED: "<<e.what()<<std::endl;return 2;}
   rclcpp::init(argc,argv);int code=1;
   auto node=std::make_shared<rclcpp::Node>("mtc_phase2c_single_owner",rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
   mtc::trajectory::Config cfg;cfg.enable_fake_execution=true;

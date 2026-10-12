@@ -124,3 +124,61 @@ TEST_F(ControlledStart, ConcurrentPollingAndRepeatedScopedCancelRemainBounded) {
     EXPECT_EQ(server->goals,static_cast<size_t>(iteration+1));EXPECT_EQ(server->cancels,static_cast<size_t>(iteration+1));
   }
 }
+
+namespace {
+class ScopedEnvironment {
+public:
+  ScopedEnvironment(const char * key, const char * value) : key_(key) {
+    if (const char * old=std::getenv(key)) {old_=std::string(old);}
+    if (value) {setenv(key,value,1);} else {unsetenv(key);}
+  }
+  ~ScopedEnvironment() {if (old_) {setenv(key_.c_str(),old_->c_str(),1);} else {unsetenv(key_.c_str());}}
+private:
+  std::string key_;
+  std::optional<std::string> old_;
+};
+}
+TEST_F(ControlledStart, DiscoveryServerCannotMintAuthority) {
+  for (const auto * value:{"127.0.0.1:11811",""}) {
+    ScopedEnvironment override("ROS_DISCOVERY_SERVER",value);
+    EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+  }
+}
+TEST_F(ControlledStart, SuperClientCannotMintAuthority) {
+  ScopedEnvironment override("ROS_SUPER_CLIENT","TRUE");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, MissingRmwCannotMintAuthority) {
+  ScopedEnvironment override("RMW_IMPLEMENTATION",nullptr);
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, UnverifiedRmwCannotMintAuthority) {
+  ScopedEnvironment override("RMW_IMPLEMENTATION","rmw_cyclonedds_cpp");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, TransportOverrideCannotMintAuthority) {
+  ScopedEnvironment override("FASTDDS_BUILTIN_TRANSPORTS","UDPv4");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, EnvironmentFileCannotMintAuthority) {
+  ScopedEnvironment override("FASTDDS_ENVIRONMENT_FILE","/tmp/unverified_dds_environment.json");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, UnknownDdsOverrideCannotMintAuthority) {
+  ScopedEnvironment override("FASTDDS_UNREVIEWED_DISCOVERY","enabled");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, UnverifiedQosOverrideCannotMintAuthority) {
+  ScopedEnvironment override("RMW_FASTRTPS_USE_QOS_FROM_XML","1");
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, DomainOverrideAfterInitializationCannotMintAuthority) {
+  const auto different=std::to_string(node->get_node_base_interface()->get_context()->get_domain_id()+1);
+  ScopedEnvironment override("ROS_DOMAIN_ID",different.c_str());
+  EXPECT_THROW(ControlledFakeStart::verify_empty_domain(node,cfg),std::invalid_argument);
+}
+TEST_F(ControlledStart, DiscoveryOverrideBetweenMintAndConsumeRejected) {
+  credential=ControlledFakeStart::verify_empty_domain(node,cfg);
+  ScopedEnvironment override("ROS_DISCOVERY_SERVER","127.0.0.1:11811");
+  EXPECT_THROW(FjtMotionPort(node,cfg,credential),std::invalid_argument);
+}

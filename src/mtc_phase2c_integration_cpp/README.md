@@ -100,6 +100,9 @@ python3 src/mtc_trajectory_execution_cpp/test/verify_results.py --build-base bui
 
 终端必须只加载以下明确的 Jazzy / 只读驱动安装 / 当前工程环境。选择尚未使用的 Domain，
 当前目录不能有隐式 DDS profile；若已有 Node，程序会 BLOCKED，不清理其他成员进程。
+仅支持显式 `rmw_fastrtps_cpp`；Discovery Server、Super Client、DDS/RMW profiles、
+transport/QoS 覆盖及未评审配置必须未设置（空值也拒绝）。签发与消费均核对实际 Context
+的中间件、Domain、LOCALHOST 和零 static peers；single_owner 在 ROS 初始化前先校验。
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -112,14 +115,18 @@ export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export PYTHONDONTWRITEBYTECODE=1
 export ROS_LOG_DIR=/tmp/phase2c_ros
 unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTDDS_DEFAULT_PROFILES_FILE \
-  FASTRTPS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI
+  FASTRTPS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI ROS_DISCOVERY_SERVER ROS_SUPER_CLIENT \
+  FASTDDS_ENVIRONMENT_FILE FASTDDS_BUILTIN_TRANSPORTS RMW_FASTRTPS_USE_QOS_FROM_XML \
+  RMW_FASTRTPS_PUBLICATION_MODE ROS2_EASY_MODE SKIP_DEFAULT_XML_FILE
 ros2 run mtc_phase2c_integration_cpp run_fake_gate.py \
   --mode execute --evidence /tmp/my_phase2c_execute
 ```
 
 保持终端运行。预期冷启动凭据先消费，硬件插件 GenericSystem、控制器 Active、FJT
 Server/Client各1、direct publishers=0；MoveIt规划并拒绝执行入口；一个完整FJT Goal完成，
-新鲜终态后停稳确认，最后输出 `PASS execute`。异常输出 BLOCKED/FAIL，不降低门禁。
+新鲜终态后停稳确认，功能端输出 `PASS execute`；Supervisor 另报 Functional、Teardown、Overall。
+只有功能与退出均 PASS 才返回 0；当前 MoveIt 正常退出失败时 Overall=FAIL、返回 1，
+不能将其描述为整体验收通过。异常输出 BLOCKED/FAIL，不降低门禁。
 
 其他模式：`plan`（仅规划、零FJT Goal）、`mismatch`、`expired`、`foreign`、`cancel`、
 `silence`、`fault`。每次重新受控启动，使用独立证据目录；故障模式不报告已安全停止。
@@ -127,3 +134,6 @@ Server/Client各1、direct publishers=0；MoveIt规划并拒绝执行入口；�
 脚本结束或 Ctrl+C 只终止自身创建的进程组；先请求正常退出，必要时终止软件进程。
 目前 move_group 退出仍可能升级 SIGTERM，此问题单独记录，不宣称正常退出全部通过。
 检查自己的 evidence 日志和退出码，不用清理公共 ROS 图。禁止手动启动真实硬件模式。
+证据目录必须全新；已有目录（包括空目录/符号链接）拒绝覆盖。`*.processes.jsonl` 保存
+实际 Launch 子进程的原始退出码，`results.json` 分离功能、退出和整体结果。
+完整修复验收见[PR #13 Review 修复报告](../../docs/migration/PR13_FINAL_REVIEW_FIX_REPORT.md)。

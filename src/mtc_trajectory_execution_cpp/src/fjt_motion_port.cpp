@@ -8,6 +8,8 @@
 #include <functional>
 #include <thread>
 #include <filesystem>
+#include <cstring>
+#include <rcl/context.h>
 #include <map>
 #include <mutex>
 #include <set>
@@ -18,6 +20,8 @@
 #include <controller_manager_msgs/srv/list_hardware_components.hpp>
 #include <lifecycle_msgs/msg/state.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+
+extern char ** environ;
 
 namespace mtc::trajectory
 {
@@ -522,25 +526,61 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
 };
 static std::mutex leases_mutex;
 static std::set<std::string> leases;
-std::shared_ptr<ControlledFakeStart> ControlledFakeStart::verify_empty_domain(
-  const rclcpp::Node::SharedPtr & node, const Config & config)
+void ControlledFakeStart::validate_environment()
 {
-  config.validate();
   const char * range=std::getenv("ROS_AUTOMATIC_DISCOVERY_RANGE");
-  const char * peers=std::getenv("ROS_STATIC_PEERS");
-  if (!node || !config.enable_fake_execution || !range || std::string(range)!="LOCALHOST" ||
-    (peers && *peers) || node->get_node_base_interface()->get_context()->get_domain_id()==0) {
-    throw std::invalid_argument("controlled start requires explicit non-default isolated LOCALHOST domain");
+  const char * middleware=std::getenv("RMW_IMPLEMENTATION");
+  const char * domain=std::getenv("ROS_DOMAIN_ID");
+  if (!range || std::string(range)!="LOCALHOST" || !middleware ||
+    std::string(middleware)!="rmw_fastrtps_cpp" || !domain || !*domain || std::strlen(domain)>3) {
+    throw std::invalid_argument("controlled start requires explicit LOCALHOST, rmw_fastrtps_cpp and isolated domain");
   }
-  for (const auto * key:{"ROS_LOCALHOST_ONLY","FASTDDS_DEFAULT_PROFILES_FILE",
-    "FASTRTPS_DEFAULT_PROFILES_FILE","CYCLONEDDS_URI"}) {
-    const char * value=std::getenv(key);
-    if (value && *value) {throw std::invalid_argument("uncontrolled DDS/discovery profile prevents cold authority");}
+  unsigned value=0;
+  for (const char * p=domain; *p; ++p) {
+    if (*p<'0' || *p>'9') {throw std::invalid_argument("invalid controlled domain");}
+    value=value*10+static_cast<unsigned>(*p-'0');
+  }
+  if (value==0 || value>232) {throw std::invalid_argument("controlled domain must be 1..232");}
+  // Fail closed on unreviewed middleware/discovery selectors, even an empty override.
+  // Only inspect/log names, never values, profiles or credential files.
+  for (char ** entry=environ; entry && *entry; ++entry) {
+    const char * equals=std::strchr(*entry,'=');
+    const std::string key(*entry,equals ? static_cast<size_t>(equals-*entry) : std::strlen(*entry));
+    if (key.rfind("FASTDDS_",0)==0 || key.rfind("FASTRTPS_",0)==0 ||
+      key.rfind("RMW_FASTRTPS_",0)==0 || key.rfind("ROS_DISCOVERY_",0)==0 ||
+      key.rfind("ROS_SECURITY_",0)==0 || key=="ROS_SUPER_CLIENT" ||
+      key=="ROS2_EASY_MODE" || key=="ROS_STATIC_PEERS" || key=="ROS_LOCALHOST_ONLY" ||
+      key=="CYCLONEDDS_URI" || key=="SKIP_DEFAULT_XML_FILE" || key=="SKIP_DEFAULT_XML") {
+      throw std::invalid_argument("unverified controlled discovery override: "+key);
+    }
   }
   if (std::filesystem::exists("DEFAULT_FASTDDS_PROFILES.xml") ||
     std::filesystem::exists("DEFAULT_FASTRTPS_PROFILES.xml")) {
     throw std::invalid_argument("implicit local DDS profile prevents cold authority");
   }
+}
+static void validate_controlled_context(const rclcpp::Node::SharedPtr & node)
+{
+  ControlledFakeStart::validate_environment();
+  if (!node) {throw std::invalid_argument("controlled node is required");}
+  const auto context=node->get_node_base_interface()->get_context();
+  const auto raw=context->get_rcl_context();
+  const auto middleware=rcl_context_get_rmw_context(raw.get());
+  const auto domain=static_cast<size_t>(std::stoul(std::getenv("ROS_DOMAIN_ID")));
+  if (!middleware || !middleware->implementation_identifier ||
+    std::string(middleware->implementation_identifier)!="rmw_fastrtps_cpp" ||
+    middleware->actual_domain_id!=domain || context->get_domain_id()!=domain ||
+    middleware->options.discovery_options.automatic_discovery_range!=RMW_AUTOMATIC_DISCOVERY_RANGE_LOCALHOST ||
+    middleware->options.discovery_options.static_peers_count!=0) {
+    throw std::invalid_argument("initialized Context does not match reviewed LOCALHOST Fast DDS isolation");
+  }
+}
+std::shared_ptr<ControlledFakeStart> ControlledFakeStart::verify_empty_domain(
+  const rclcpp::Node::SharedPtr & node, const Config & config)
+{
+  config.validate();
+  validate_controlled_context(node);
+  if (!config.enable_fake_execution) {throw std::invalid_argument("controlled Fake execution must be explicitly enabled");}
   // Bounded startup-only observation; never call from a FSM/event callback.
   // Graph silence is not authentication. The trusted supervisor starts fresh children
   // only after this credential has been consumed, and never adopts an existing JTC.
@@ -575,6 +615,7 @@ FjtMotionPort::FjtMotionPort(rclcpp::Node::SharedPtr node, Config config,
 : impl_(std::make_shared<Impl>(std::move(node),std::move(config)))
 {
   if (authority) {
+    validate_controlled_context(impl_->node);  // Recheck before consuming the one-use credential.
     if (authority->node_.lock()!=impl_->node || authority->endpoint_!=impl_->cfg.action_name() ||
       authority->domain_!=impl_->node->get_node_base_interface()->get_context()->get_domain_id() ||
       seconds(Steady::now(),authority->issued_)>1.0 || authority->consumed_.exchange(true)) {

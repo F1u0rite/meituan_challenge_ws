@@ -6,7 +6,7 @@
   <maintainer email="maintainers@example.com">MTC contributors</maintainer>
   <license>Apache-2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>action_msgs</depend><depend>rclcpp</depend><depend>rclcpp_action</depend>
+  <depend>rcl</depend><depend>action_msgs</depend><depend>rclcpp</depend><depend>rclcpp_action</depend>
   <depend>control_msgs</depend><depend>trajectory_msgs</depend><depend>sensor_msgs</depend>
   <depend>controller_manager_msgs</depend><depend>lifecycle_msgs</depend>
   <depend>mtc_core_cpp</depend><depend>mtc_manipulation_cpp</depend>

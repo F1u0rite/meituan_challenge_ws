@@ -14,6 +14,8 @@ namespace mtc::trajectory
 class ControlledFakeStart final
 {
 public:
+  // Call before rclcpp::init so an unreviewed discovery server is never contacted.
+  static void validate_environment();
   static std::shared_ptr<ControlledFakeStart> verify_empty_domain(
     const rclcpp::Node::SharedPtr & node, const Config & config);
 private:
