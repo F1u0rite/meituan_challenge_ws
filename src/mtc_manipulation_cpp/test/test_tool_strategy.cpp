@@ -44,7 +44,7 @@ TEST(ToolStrategyV1, TypeAndPrimitives)
 
   EXPECT_EQ(
     mtc::manipulation::primitive_names(strategy.make_acquire_plan(estimate())),
-    std::vector<std::string>{"side_insert"});
+    (std::vector<std::string>{"side_approach", "side_insert"}));
   EXPECT_EQ(
     mtc::manipulation::primitive_names(strategy.make_engage_plan(estimate())),
     std::vector<std::string>{"hook_engage"});
@@ -90,8 +90,14 @@ TEST(ToolStrategyV1, ContactPrimitivesAreMarkedAndSlow)
   EXPECT_LE(engage[0].max_linear_speed, PassiveHookV1Strategy::CONTACT_LINEAR_SPEED);
 
   const auto acquire = strategy.make_acquire_plan(estimate());
-  ASSERT_EQ(acquire.size(), 1u);
+  ASSERT_EQ(acquire.size(), 2u);
   EXPECT_FALSE(acquire[0].requires_contact);
+  EXPECT_FALSE(acquire[1].requires_contact);
+  // 快速接近段远离提环；最后的预对准段保持原来的低速上限。
+  EXPECT_DOUBLE_EQ(acquire[0].max_linear_speed, PassiveHookV1Strategy::FREE_APPROACH_LINEAR_SPEED);
+  EXPECT_DOUBLE_EQ(acquire[0].max_angular_speed, PassiveHookV1Strategy::FREE_APPROACH_ANGULAR_SPEED);
+  EXPECT_DOUBLE_EQ(acquire[1].max_linear_speed, PassiveHookV1Strategy::DEFAULT_LINEAR_SPEED);
+  EXPECT_DOUBLE_EQ(acquire[1].max_angular_speed, PassiveHookV1Strategy::DEFAULT_ANGULAR_SPEED);
 }
 
 TEST(ToolStrategyV1, PrimitivePreservesSixDofTargetPose)
@@ -99,13 +105,15 @@ TEST(ToolStrategyV1, PrimitivePreservesSixDofTargetPose)
   PassiveHookV1Strategy strategy;
   const auto primitives = strategy.make_acquire_plan(estimate());
 
-  ASSERT_EQ(primitives.size(), 1u);
-  ASSERT_TRUE(primitives[0].target_pose.has_value());
-  // 需求 5：不得退化成只有 XYZ —— frame_id 与姿态必须保留
-  EXPECT_EQ(primitives[0].target_pose->frame_id, "base_link");
-  EXPECT_TRUE(primitives[0].target_pose->is_usable());
-  EXPECT_EQ(primitives[0].target_pose->position.x, 0.4);
-  EXPECT_EQ(primitives[0].target_pose->orientation.w, 1.0);
+  ASSERT_EQ(primitives.size(), 2u);
+  for (const auto & primitive : primitives) {
+    ASSERT_TRUE(primitive.target_pose.has_value());
+    // 需求 5：不得退化成只有 XYZ —— frame_id 与姿态必须保留
+    EXPECT_EQ(primitive.target_pose->frame_id, "base_link");
+    EXPECT_TRUE(primitive.target_pose->is_usable());
+    EXPECT_EQ(primitive.target_pose->position.x, 0.4);
+    EXPECT_EQ(primitive.target_pose->orientation.w, 1.0);
+  }
 }
 
 TEST(ToolStrategyV1, NoUnlockPulseAndNoIoChannels)
@@ -235,7 +243,9 @@ TEST(ToolStrategy, PrimitiveWithoutUsableRingPoseHasNoTargetPose)
   const auto primitives = strategy.make_acquire_plan(
     make_pose_estimate("battery_1", 1, false, true, false, false, true));
 
-  ASSERT_EQ(primitives.size(), 1u);
+  ASSERT_EQ(primitives.size(), 2u);
   EXPECT_FALSE(primitives[0].target_pose.has_value());
-  EXPECT_EQ(primitives[0].name, "side_insert");
+  EXPECT_FALSE(primitives[1].target_pose.has_value());
+  EXPECT_EQ(primitives[0].name, "side_approach");
+  EXPECT_EQ(primitives[1].name, "side_insert");
 }

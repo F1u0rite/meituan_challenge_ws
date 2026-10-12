@@ -155,14 +155,17 @@ TEST(PlanningAudit, NonZeroPlannerTargetsAndFullPoseReachAdapter)
   h.perception->ring_override = pose;
   h.start(); h.reach(PickPlaceState::ENGAGE);
   const auto commands = adapter->call_log();
-  ASSERT_EQ(commands.size(), 1u);
-  EXPECT_EQ(commands[0].target_rad, h.planner->planned_target);
-  ASSERT_TRUE(commands[0].intent);
-  ASSERT_TRUE(commands[0].intent->target_pose);
-  EXPECT_EQ(*commands[0].intent->target_pose, pose);
+  // V1 预对准两段（side_approach + side_insert），各自携带完整 6D 目标与各自的速度上限。
+  ASSERT_EQ(commands.size(), 2u);
   EXPECT_EQ(h.planner->targets[0].ring_pose, pose);
-  EXPECT_EQ(h.planner->targets[0].primitives[0].max_linear_speed,
-    commands[0].intent->max_linear_speed);
+  for (size_t i = 0; i < commands.size(); ++i) {
+    EXPECT_EQ(commands[i].target_rad, h.planner->planned_target);
+    ASSERT_TRUE(commands[i].intent);
+    ASSERT_TRUE(commands[i].intent->target_pose);
+    EXPECT_EQ(*commands[i].intent->target_pose, pose);
+    EXPECT_EQ(h.planner->targets[0].primitives[i].max_linear_speed,
+      commands[i].intent->max_linear_speed);
+  }
 }
 
 TEST(PlanningAudit, MissingOutputDoesNotReachMockAdapter)
@@ -222,7 +225,7 @@ TEST(CommandIdAudit, LongAndRepeatedRequestsRemainUniqueAcrossInstances)
       }
     }
   }
-  EXPECT_EQ(ids.size(), 28u);
+  EXPECT_EQ(ids.size(), 32u);   // 2 实例 × 2 次 × 8 条运动命令（V1 预对准为两段）
 }
 
 TEST(WatchdogAudit, LoadedContextCannotRecoverAndFaultCannotRestart)

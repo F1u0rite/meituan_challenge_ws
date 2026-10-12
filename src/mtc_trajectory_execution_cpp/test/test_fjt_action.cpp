@@ -411,9 +411,14 @@ public:
   explicit ExplicitTrajectoryPlanner(mtc::core::MotionCommand c):prototype(std::move(c)) {}
   std::optional<mtc::core::PlanResult> plan(const mtc::manipulation::PlanTarget & target) override
   {
-    mtc::core::PlanResult result; result.ok=true;
+    // Like a real planner, each primitive starts where the previous one ends (no joint jump).
+    mtc::core::PlanResult result; result.ok=true; double offset=0.0;
     for (const auto & primitive:target.primitives) {
       auto c=prototype; c.primitive_name=primitive.name; c.intent=primitive;
+      if (c.trajectory) {
+        for (auto & p:c.trajectory->points) {for (auto & q:p.positions_rad) {q+=offset;}}
+        offset=c.trajectory->points.back().positions_rad.front();
+      }
       result.commands.push_back(c);
     } return result;
   }
@@ -429,7 +434,8 @@ TEST_F(FjtAction, ExistingPickPlaceFsmDelegatesWholeTrajectoryThroughPort) {
     mtc::manipulation::make_strategy(config.tool_type),config);
   fsm.start("battery_1",1,"P1","fjt-injection",3.0);
   ASSERT_TRUE(wait([&](){fsm.step(); clock->advance(0.001); return fsm.state()==mtc::manipulation::PickPlaceState::ENGAGE;}));
-  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->trajectory().points.size(),3u);
+  // V1 pre-align is two whole trajectories (side_approach, side_insert), each one Goal.
+  EXPECT_EQ(server->goals,2u); EXPECT_EQ(server->trajectory().points.size(),3u);
   EXPECT_TRUE(port->snapshot().result->stop_confirmed);
   EXPECT_FALSE(fsm.result().placement_verified); // First motion only, no fake full pick/place success.
 }
