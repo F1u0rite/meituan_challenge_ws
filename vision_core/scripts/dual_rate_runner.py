@@ -88,7 +88,14 @@ def run_dual_rate(args):
     from perception.realtime_rgbd import RGBDVisionPipeline
     from perception.observation import ObservationMonitor
     observation=ObservationMonitor()
-    fast=FastPerception();cad=CADWorker(RGBDVisionPipeline(args.vision_config));ui=VisionUI()
+    simplified=getattr(args,'perception_pipeline','legacy')=='simplified'
+    if simplified:
+        from perception.simplified_rgbd import SimplifiedPerception,DisabledFullCAD
+        fast=SimplifiedPerception()
+        cad=DisabledFullCAD(fast.geometry)
+    else:fast=FastPerception()
+    if not simplified:cad=CADWorker(RGBDVisionPipeline(args.vision_config))
+    ui=VisionUI()
     source=None;capture=None;recorder=None;record_lock=Lock();record_index=0
     display_channel=getattr(args,'_display_channel',None)
     if display_channel:display_channel.geometry=cad.pipeline.geometry
@@ -106,6 +113,8 @@ def run_dual_rate(args):
     total_start=perf_counter();window='Battery RGB-D Dual Rate | OFFLINE' if args.replay else 'Battery RGB-D Dual Rate | LIVE UNVERIFIED'
     if args.replay:
         folders=sorted(args.replay.glob('sample_*'))
+        if not folders:
+            folders=sorted(p for p in args.replay.glob('frame_*') if p.is_dir() and (p/'metadata.json').exists())
         if args.max_frames:folders=folders[:args.max_frames]
         if not folders and not getattr(args,'pair_manifest',None):raise ValueError('No samples')
         for folder in folders:
@@ -180,7 +189,7 @@ def run_dual_rate(args):
             result['sample_id']=name
             merged,rejected=merge_cad_history(history,received);cad_rejected+=rejected;cad_rows.extend(merged)
             now=monotonic()
-            if result['objects'] and now-last_cad_schedule>=cad_interval:
+            if not simplified and result['objects'] and now-last_cad_schedule>=cad_interval:
                 cad.submit(frame,identity,result['objects']);last_cad_schedule=now
             result['observation']=observation.update(result,[m for m in received if m.get('kind')!='TABLE_READY'])
             cad_for_display(result,identity,history,now=result['capture_timestamp'] if args.replay else None)
@@ -250,7 +259,8 @@ def run_dual_rate(args):
                 def refresh_display():
                     nonlocal paused_cad_requested,cad_rejected
                     if args.replay and ui.paused and not paused_cad_requested and result['objects']:
-                        cad.submit(frame,identity,result['objects']);paused_cad_requested=True
+                        if not simplified:cad.submit(frame,identity,result['objects'])
+                        paused_cad_requested=True
                     fresh=consume_cad_results(fast,cad);cad_messages.extend(fresh)
                     result['detection_fps']=fast.rate.hz();result['cad_fps']=cad.rate.hz()
                     merged,late=merge_cad_history(history,fresh);cad_rejected+=late;cad_rows.extend(merged)

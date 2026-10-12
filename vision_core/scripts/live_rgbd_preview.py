@@ -71,6 +71,8 @@ def _diagnose(frame, detector, source, min_depth, max_depth):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='D435i RGB-D preview; no automatic recording')
     parser.add_argument('--fps', type=int, default=15)
+    parser.add_argument('--perception-pipeline', choices=('legacy', 'simplified'), default='legacy',
+                        help='V4.4 cached CAD gates or V4.5 independent RGB identity and same-frame geometry')
     parser.add_argument('--color-size', type=int, nargs=2, default=(1280, 720), metavar=('W', 'H'))
     parser.add_argument('--depth-size', type=int, nargs=2, default=(640, 480), metavar=('W', 'H'))
     parser.add_argument('--min-depth-m', type=float, default=.15)

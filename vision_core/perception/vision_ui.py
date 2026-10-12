@@ -81,13 +81,22 @@ class VisionUI:
             # Full object_id is retained in the per-object table and selected panel.
             yy=max(36,y-8);short_id=item['object_id'].rsplit('-',1)[-1]
             tag='CONFIRMED ' if item.get('candidate_state')=='CONFIRMED_OBJECT' else ('? ' if ambiguous else 'DIAG ')
-            top_label=f"{tag}{item['color_label'].upper()} {item['surface_depth_z']*1000:.1f}mm"
+            top_label=f"{tag}{item['color_label'].upper()} Z {mm(item['surface_depth_z'])}"
             id_label=f"ID ..{short_id} C{item['color_confidence']:.2f}"
             label_width=max(cv2.getTextSize(t,0,.42,1)[0][0] for t in (top_label,id_label))+8
             cv2.rectangle(rgb,(max(0,x),yy-34),(min(rgb.shape[1]-1,x+label_width),yy+4),(20,25,30),-1)
             text(rgb,top_label,max(0,x+3),yy-17,color,.42)
             text(rgb,id_label,max(0,x+3),yy,color,.42)
-            marker(item['visible_surface_center_xyz'],(255,150,30))
+            if item['visible_surface_center_xyz'] is not None:marker(item['visible_surface_center_xyz'],(255,150,30))
+            if result.get('pipeline_version')=='V4.5':
+                if item.get('model_estimated_body_center_xyz') is not None:marker(item['model_estimated_body_center_xyz'],(220,70,220))
+                for hole in item.get('ring_geometry',{}).get('hole_candidates',[]):
+                    contour=np.asarray(hole['contour'],np.int32).reshape(-1,1,2)
+                    cv2.drawContours(rgb,[contour],-1,(0,255,255),2)
+                if item.get('ring_center_candidate') is not None:
+                    marker(item['ring_center_candidate'],(0,255,255),cv2.MARKER_DIAMOND)
+                    for direction in item.get('insertion_direction_candidates') or []:
+                        line(item['ring_center_candidate'],np.array(item['ring_center_candidate'])+np.array(direction)*.03,(0,255,255),True)
             if (self.show_cad and item['body_pose_candidate'] is not None
                     and item.get('cad_fresh') is True and not item.get('cad_stale',False)):
                 T=np.array(item['body_pose_candidate']);R=T[:3,:3];body=T[:3,3];ring=np.array(item['ring_center_candidate'])

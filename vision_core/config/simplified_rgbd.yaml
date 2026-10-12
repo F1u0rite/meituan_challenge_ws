@@ -1,0 +1,20 @@
+# RGB hypothesis thresholds, not calibrated identification probabilities.
+# RGB-only silhouette prior: H3 extra wood contours cluster around fill 0.63-0.65;
+# this is separate from the unchanged V4.4 0.80 combined confirmation policy.
+min_rgb_contour_fill: 0.70
+# H4 wood background often admitted by legacy S>=65; red plastic interior S~150-200.
+# Provisional, requires separate four-color lighting/negative-scene verification.
+min_chromatic_saturation: 100
+min_rgb_area_px: 2000
+min_rgb_short_side_px: 32
+max_rgb_aspect: 2.5
+min_depth_m: 0.15
+max_depth_m: 1.0
+min_depth_ratio: 0.50
+min_points: 100
+max_points: 1000
+depth_outlier_floor_m: 0.015
+max_plane_residual_m: 0.003
+min_hole_area_px: 100
+min_ring_points: 40
+min_hole_background_gap_m: 0.008
