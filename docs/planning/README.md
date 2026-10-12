@@ -4,6 +4,10 @@
 > 适用范围：**Mock / Fake Hardware，只规划、不执行**。所有输出标记 `simulation_only=true`，
 > 未经现场授权与标定，不得用于真实机械臂。
 
+> **10/12 最新验收**：V1 CAD 规划结果见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md)；
+> 空关节集合拒绝修复、MoveIt 退出缺陷的对照实验与临时规避见
+> [MOVE_GROUP_SHUTDOWN_AUDIT.md](MOVE_GROUP_SHUTDOWN_AUDIT.md)。下文首轮结果仅作历史记录。
+
 ## 1. 一句话说明
 
 把状态机（PickPlace FSM）"下一步要去哪"的请求，交给 MoveIt 2 算出一条**完整的、带时间的关节轨迹**，

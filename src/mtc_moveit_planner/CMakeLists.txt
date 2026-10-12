@@ -94,6 +94,9 @@ install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 # ---------------------------------------------------------------------------
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_pytest REQUIRED)
+
+  ament_add_pytest_test(test_shutdown_evidence test/test_shutdown_evidence.py)
 
   ament_add_gtest(test_pose_math test/test_pose_math.cpp)
   target_link_libraries(test_pose_math mtc_moveit_planner_core)

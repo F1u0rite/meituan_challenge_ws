@@ -260,6 +260,10 @@ V1、V2 单块电池到 T0 均达 `SUCCESS`，规划输出全部通过 `accept_p
 
 ## 8. 风险与阻断清单
 
+> 10/12 P0 / P1 补验见 [MOVE_GROUP_SHUTDOWN_AUDIT.md](MOVE_GROUP_SHUTDOWN_AUDIT.md)：
+> 空关节集合拒绝已修复；原始系统 MoveIt 2.12.4 退出仍有外部生命周期缺陷，已提供对照证据与显式临时规避。
+> 旧证据中的“所有节点消失”不证明正常退出；新证据脚本逐个检查子进程退出并在失败时返回非零。
+
 | # | 问题 | 影响 | 责任人 / 需谁确认 |
 |---|---|---|---|
 | R1 | **预规划起点过期**：`test_lift` 在 ToolPort 接合前规划，`retreat` 在卸载/退钩前规划；本包只能假设 ToolPort 行程（0.03 m）推算起点 | 起点偏差 > 0.01 rad 时 MoveIt 执行 ABORTED；直接发给 JTC 会跳变 | 孙嘉明：MotionAdapter 发送前核对起点并拒绝/触发重规划；**已提供** `check_trajectory_start()` 与 `replan_primitive()` 供执行侧调用 |
