@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T02:39:40+09:00",
+  "generated_at": "2026-10-12T17:02:34+09:00",
   "generator": "python -B scripts/calibration/run_offline_validation.py",
   "environment": {
     "python": "3.11.9",
@@ -9,21 +9,19 @@
     "network": "NOT USED"
   },
   "git": {
-    "head": "df02b2fac594b6cecfd0a76b70f62f70cf241ff3",
+    "head": "b4185155383541e1a4161587c4049a162f74b36d",
     "uncommitted_calibration_paths": [
       " M TF_AND_CALIBRATION_HANDOFF.md",
       " M config/calibration/site_inventory.json",
       " M docs/calibration/FIELD_SOP.md",
-      " M docs/calibration/MODEL_FRAME_AUDIT.md",
+      " M docs/calibration/S3_D435I_MOUNT_DESIGN.md",
       " M docs/calibration/TONIGHT_STATUS.md",
       " M docs/calibration/VALIDATION_REPORT.md",
       " M docs/calibration/measurement_inventory.csv",
       " M docs/calibration/validation/unittest.txt",
+      " M examples/calibration/nominal_mount_design.json",
       " M scripts/calibration/run_offline_validation.py",
-      "?? docs/calibration/FAKE_RUNTIME_AUDIT.md",
-      "?? docs/calibration/validation/fake_model_audit.json",
-      "?? scripts/calibration/audit_fake_model.py",
-      "?? tests/calibration/test_fake_model_audit.py"
+      "?? docs/calibration/CURRENT_MOUNT_TRIAL.md"
     ]
   },
   "unittest": {
@@ -103,7 +101,7 @@
         "status": "ESTIMATED",
         "deployment_ready": false
       },
-      "note": "design estimate only",
+      "note": "historical axial-looking layout regression only; not the current side-looking trial",
       "passed": true,
       "problems": [],
       "result": {
@@ -444,7 +442,7 @@
         21
       ]
     },
-    "local_links_checked": 42
+    "local_links_checked": 51
   },
   "all_passed": true,
   "scope": "offline mechanism evidence only; not hand-eye accuracy, robot motion or competition tolerance"

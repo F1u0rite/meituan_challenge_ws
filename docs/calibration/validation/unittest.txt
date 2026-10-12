@@ -54,6 +54,6 @@ test_sensor_offset_rotates_with_camera_housing (test_nominal_mount.MountDesignTe
 test_nominal_mount_feature_exists (test_nominal_mount.MountFeatureGate.test_nominal_mount_feature_exists) ... ok
 
 ----------------------------------------------------------------------
-Ran 54 tests in 2.173s
+Ran 54 tests in 2.473s
 
 OK
