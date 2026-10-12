@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
+#include <functional>
 #include <map>
 #include <mutex>
 #include <set>
@@ -96,6 +97,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   size_t idle_samples=0;
   rclcpp::TimerBase::SharedPtr timer;
   mutable std::mutex mutex;
+  std::vector<std::function<void()>> outgoing; // At most one send + one scoped cancel per Session.
   std::shared_ptr<Session> active;
   struct Completed
   {
@@ -225,21 +227,39 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   void issue_cancel()
   {
     if (!active || !active->cancel || !active->handle || active->terminal || active->cancel_sent) {return;}
-    auto s=active; s->cancel_sent=true; ++cancels_sent;
-    std::weak_ptr<Impl> weak=shared_from_this();
-    try {
-      client->async_cancel_goal(s->handle,[weak,s](auto f) {
-        auto self=weak.lock(); if (!self) {return;}
-        std::lock_guard<std::mutex> lock(self->mutex);
-        if (self->active!=s || self->closed) {return;}
-        try {
-          auto response=f.get();
-          for (const auto & info:response->goals_canceling) {
-            if (info.goal_id.uuid==s->handle->get_goal_id()) {s->cancel_ack=true;}
-          }
-        } catch (const std::exception & e) {self->fault(std::string("cancel response exception: ")+e.what());}
-      });
-    } catch (const std::exception & e) {fault(std::string("cancel exception: ")+e.what());}
+    auto s=active; s->cancel_sent=true;
+    std::weak_ptr<Impl> weak=shared_from_this(); auto action_client=client;
+    // rclcpp_action invokes callbacks while holding internal Goal locks. Never
+    // acquire those locks while holding mutex: pin the Session, then drain outside.
+    outgoing.push_back([weak,s,action_client]() {
+      try {
+        action_client->async_cancel_goal(s->handle,[weak,s](auto f) {
+          auto self=weak.lock(); if (!self) {return;}
+          std::lock_guard<std::mutex> lock(self->mutex);
+          if (self->active!=s || self->closed) {return;}
+          try {
+            auto response=f.get();
+            for (const auto & info:response->goals_canceling) {
+              if (info.goal_id.uuid==s->handle->get_goal_id()) {s->cancel_ack=true;}
+            }
+          } catch (const std::exception & e) {self->fault(std::string("cancel response exception: ")+e.what());}
+        });
+        if (auto self=weak.lock()) {std::lock_guard<std::mutex> lock(self->mutex); ++self->cancels_sent;}
+      } catch (const std::exception & e) {
+        if (auto self=weak.lock()) {
+          std::lock_guard<std::mutex> lock(self->mutex);
+          // An owned terminal Result can win before the queued Cancel is sent.
+          // UnknownGoalHandle then supplies no ACK; Result + fresh samples remain required.
+          if (!self->closed && self->active==s && !s->terminal) {self->fault(std::string("cancel exception: ")+e.what());}
+        }
+      }
+    });
+  }
+  void drain_outgoing()
+  {
+    std::vector<std::function<void()>> work;
+    {std::lock_guard<std::mutex> lock(mutex); work.swap(outgoing);}
+    for (auto & action:work) {action();}
   }
   void refresh_proofs(Time now)
   {
@@ -342,7 +362,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
     if (!s.stationary_samples) {s.stationary_since=now; s.stationary_stamp_ns=mapped->stamp_ns;}
     ++s.stationary_samples; s.last_stationary=now;
   }
-  void tick()
+  void tick_state()
   {
     std::lock_guard<std::mutex> lock(mutex); if (closed || !cfg.enable_fake_execution) {return;}
     auto now=Steady::now();
@@ -373,6 +393,7 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       s.result=r; completed.emplace(s.id,Completed{s.identity,r}); detail=r.message;
     } catch (const std::exception & e) {fault(std::string("runtime exception: ")+e.what()); issue_cancel();}
   }
+  void tick() {tick_state(); drain_outgoing();}
   void init()
   {
     group=node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -394,13 +415,40 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
   }
   void send(const std::shared_ptr<Session> & s)
   {
+    try {send_unchecked(s);} catch (const std::exception & e) {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (!closed && active==s) {fault(std::string("dispatch proof exception: ")+e.what()); issue_cancel();}
+    }
+  }
+  void send_unchecked(const std::shared_ptr<Session> & s)
+  {
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (closed || active!=s || locked) {return;}
+      if (!environment_healthy(Steady::now()) || !status_usable(Steady::now()) || foreign_goals()) {
+        fault("execution authority lost before wire dispatch"); return;
+      }
+      if (!near(sample->positions,s->trajectory.points.front().positions,cfg.start_tolerance) ||
+        std::any_of(sample->velocities.begin(),sample->velocities.end(),
+          [this](double v) {return std::abs(v)>cfg.stationary_velocity;})) {
+        fault("starting JointState changed before wire dispatch"); return;
+      }
+      if (s->trajectory.header.stamp.sec || s->trajectory.header.stamp.nanosec) {
+        const double delay=(rclcpp::Time(s->trajectory.header.stamp).nanoseconds()-node->now().nanoseconds())/1e9;
+        if (delay<0 || delay>cfg.max_start_delay) {fault("scheduled execution expired before wire dispatch"); return;}
+      }
+    }
     auto weak=weak_from_this(); auto cancel_client=client;
     rclcpp_action::Client<Fjt>::SendGoalOptions options;
-    options.goal_response_callback=[weak,s,cancel_client](Handle::SharedPtr handle) {
+    // Keep this request waitable executable after Port destruction until its
+    // response can cancel only the original accepted handle. No Impl is retained.
+    options.goal_response_callback=[weak,s,cancel_client,response_group=group](Handle::SharedPtr handle) {
+      (void)response_group;
       auto self=weak.lock();
       if (!self) {if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;}
-      std::lock_guard<std::mutex> lock(self->mutex);
+      std::unique_lock<std::mutex> lock(self->mutex);
       if (self->closed || self->active!=s) {
+        lock.unlock();
         if (handle) {try {cancel_client->async_cancel_goal(handle);} catch (...) {}} return;
       }
       if (!handle) {
@@ -436,7 +484,13 @@ struct FjtMotionPort::Impl : std::enable_shared_from_this<Impl>
       s->stationary_samples=0; s->stationary_since={};
     };
     Fjt::Goal goal; goal.trajectory=s->trajectory;
-    client->async_send_goal(goal,options); ++goals_sent;
+    try {
+      client->async_send_goal(goal,options);
+      std::lock_guard<std::mutex> lock(mutex); ++goals_sent;
+    } catch (const std::exception & e) {
+      std::lock_guard<std::mutex> lock(mutex);
+      if (!closed && active==s) {fault(std::string("wire send exception: ")+e.what()); issue_cancel();}
+    }
   }
 };
 static std::mutex leases_mutex;
@@ -470,6 +524,7 @@ FjtMotionPort::~FjtMotionPort()
       (self->active->result->stop_confirmed || self->active->result->exec_state==ExecState::REJECTED)));
     self->closed=true; self->timer->cancel();
   }
+  self->drain_outgoing();
   if (safe) {std::lock_guard<std::mutex> lock(leases_mutex); leases.erase(self->lease_key);}
 }
 std::optional<MotionResult> FjtMotionPort::execute_joint_move(const mtc::core::MotionCommand &)
@@ -504,7 +559,10 @@ std::optional<MotionResult> FjtMotionPort::execute_trajectory(const mtc::core::M
     }
     auto session=std::make_shared<Impl::Session>(c);
     session->trajectory=t; session->timeout_ms=c.timeout_ms; session->sent=Steady::now();
-    self->active=session; self->send(session); return std::nullopt;
+    self->active=session;
+    const auto weak=self->weak_from_this();
+    self->outgoing.push_back([weak,session]() {if (auto self=weak.lock()) {self->send(session);}});
+    return std::nullopt;
   } catch (const std::exception & e) {
     self->fault(std::string("send/graph exception: ")+e.what());
     if (self->active) {return self->active->result;}

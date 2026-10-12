@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""核对 Ownership Audit 基线463项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
+"""核对 Ownership Audit 基线478项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
 import argparse
 from collections import Counter
 from pathlib import Path
@@ -17,7 +17,7 @@ def main():
     git = lambda *a: subprocess.check_output(['git', *a], cwd=root, text=True)
     baseline = set()
     pattern = re.compile(r'\bTEST(?:_F)?\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
-    base = '45f497c'
+    base = '681bb64bfb8cd482d1e78950cef4cfe395b21bff'
     for name in git('ls-tree', '-r', '--name-only', base, 'src').splitlines():
         if re.fullmatch(r'src/(?:mtc_\w+_cpp|mtc_moveit_planner)/test/test_\w+\.cpp', name):
             source = git('show', f'{base}:{name}')
@@ -25,7 +25,7 @@ def main():
                             if (s, c) != ('TrajectoryValidator', 'Name'))
             baseline.update('TrajectoryValidator.' + c for c in
                             re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
-    assert len(baseline) == 463, len(baseline)
+    assert len(baseline) == 478, len(baseline)
     actual = Counter()
     inventory = set()
     by_package = Counter()
@@ -70,7 +70,7 @@ def main():
     assert baseline <= actual.keys(), sorted(baseline - actual.keys())
     assert inventory == actual.keys(), (sorted(inventory - actual.keys()), sorted(actual.keys() - inventory))
     assert all(v == 1 for v in actual.values()), actual
-    print(f'PASS: 原463项身份全部保留并执行；本轮新增{len(inventory - baseline)}项')
+    print(f'PASS: 原478项身份全部保留并执行；本轮新增{len(inventory - baseline)}项')
     print(f'PASS: {len(actual)}项独立GTest / {len(xmls)}个可执行文件；FAIL 0 / SKIP 0')
     for package, count in sorted(by_package.items()):
         print(f'  {package}: {count} PASS')

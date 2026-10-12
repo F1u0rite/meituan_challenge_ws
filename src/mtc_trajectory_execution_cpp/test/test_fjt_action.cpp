@@ -703,3 +703,90 @@ TEST_F(FjtAction, TerminalResultBeforeStatusDoesNotAuthorizeSuccessor) {
   EXPECT_EQ(port->snapshot().ownership,GoalOwnership::NO_ACTIVE_GOAL);
   send(next); EXPECT_TRUE(result(next).success); EXPECT_EQ(server->goals,2u);
 }
+
+// Backport-only concurrency checks: the existing strict live Status fixture is
+// retained. The real Action transport runs in the four-thread executor above.
+TEST_F(FjtAction, ConcurrentPollingAndCancel) {
+  server->no_result=true; auto c=command(); send(c); const auto own=server->goal_id();
+  std::atomic<bool> invalid{false};
+  std::thread polling([&]() {
+    for(int i=0;i<150;++i) {
+      auto r=port->execute_trajectory(c);
+      if(r && r->success) {invalid=true;}
+      std::this_thread::sleep_for(1ms);
+    }
+  });
+  std::thread canceling([&]() {for(int i=0;i<150;++i) {port->cancel_command(c.command_id,"concurrent"); std::this_thread::sleep_for(1ms);}});
+  polling.join(); canceling.join();
+  auto r=result(c); EXPECT_FALSE(invalid); EXPECT_TRUE(r.stop_confirmed); EXPECT_FALSE(r.success);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,1u); EXPECT_EQ(server->cancel_id(),own);
+}
+TEST_F(FjtAction, RepeatedScopedCancelUnderContention) {
+  server->no_result=true; auto c=command(); send(c); const auto own=server->goal_id();
+  std::vector<std::thread> callers;
+  for(int n=0;n<4;++n) {callers.emplace_back([&]() {for(int i=0;i<100;++i) {port->cancel_command(c.command_id,"repeat");}});}
+  for(auto & t:callers) {t.join();}
+  EXPECT_TRUE(result(c).stop_confirmed); EXPECT_EQ(server->cancels,1u); EXPECT_EQ(server->goals,1u);
+  EXPECT_EQ(server->cancel_id(),own);
+}
+TEST_F(FjtAction, ConcurrentSnapshotPolling) {
+  auto c=command(); send(c); std::atomic<bool> bad{false};
+  std::thread observer([&]() {
+    for(int i=0;i<200;++i) {
+      auto s=port->snapshot();
+      if(s.command_id!=c.command_id || s.goals_sent>1 || s.cancel_requests || s.fault_locked) {bad=true;}
+      std::this_thread::sleep_for(1ms);
+    }
+  });
+  auto r=result(c); observer.join(); EXPECT_FALSE(bad); EXPECT_TRUE(r.success);
+  EXPECT_EQ(server->trajectory().points.size(),3u); EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+}
+TEST_F(FjtAction, ConcurrentResponseAndCancelPreservesUuid) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1;})); const auto own=server->request_id();
+  std::thread canceling([&]() {for(int i=0;i<100;++i) {port->cancel_command(c.command_id,"before response"); std::this_thread::sleep_for(1ms);}});
+  std::thread releasing([&]() {server->release_response();}); releasing.join(); canceling.join();
+  auto r=result(c); EXPECT_TRUE(r.stop_confirmed); EXPECT_FALSE(r.success);
+  EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,1u); EXPECT_EQ(server->cancel_id(),own);
+}
+TEST_F(FjtAction, DestroyDuringPendingAction) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1;})); const auto own=server->request_id();
+  EXPECT_TRUE(port->snapshot().goal_uuid.empty()); port.reset(); server->release_response();
+  EXPECT_TRUE(wait([&]() {return server->cancels==1;})); EXPECT_EQ(server->cancel_id(),own);
+  EXPECT_EQ(server->goals,1u); EXPECT_THROW(FjtMotionPort(node,cfg),std::invalid_argument);
+}
+TEST_F(FjtAction, LateGoalResponseAfterFaultRetainsOriginalSession) {
+  server->hold_response=true; server->pending_status=true; server->no_result=true;
+  auto c=command(); c.timeout_ms=400; ASSERT_FALSE(port->execute_trajectory(c));
+  ASSERT_TRUE(wait([&]() {return server->pending_requests==1;})); const auto own=server->request_id();
+  ASSERT_TRUE(wait([&]() {return port->snapshot().fault_locked;}));
+  auto before=port->execute_trajectory(c); ASSERT_TRUE(before); EXPECT_TRUE(before->timed_out);
+  auto next=port->execute_trajectory(command("next")); ASSERT_TRUE(next); EXPECT_TRUE(next->status_unknown);
+  server->release_response(); ASSERT_TRUE(wait([&]() {return server->cancels==1 && port->snapshot().terminal_received;}));
+  EXPECT_EQ(server->cancel_id(),own); EXPECT_EQ(port->snapshot().command_id,c.command_id);
+  auto after=port->execute_trajectory(c); ASSERT_TRUE(after); EXPECT_EQ(after->exec_state,before->exec_state);
+  EXPECT_FALSE(after->stop_confirmed); EXPECT_TRUE(port->snapshot().fault_locked); EXPECT_EQ(server->goals,1u);
+}
+TEST_F(FjtAction, RepeatedSessionPollingAndScopedCancel) {
+  server->no_result=true;
+  for(int pass=0;pass<5;++pass) {
+    ASSERT_TRUE(wait([&]() {return port->snapshot().ready;}));
+    auto c=command("sequence_"+std::to_string(pass)); send(c); const auto own=server->goal_id();
+    std::thread polling([&]() {for(int i=0;i<60;++i) {port->execute_trajectory(c); port->snapshot(); std::this_thread::sleep_for(1ms);}});
+    std::thread canceling([&]() {for(int i=0;i<60;++i) {port->cancel_command(c.command_id,"scoped"); std::this_thread::sleep_for(1ms);}});
+    polling.join(); canceling.join(); auto r=result(c);
+    ASSERT_TRUE(r.stop_confirmed) << r.message; EXPECT_FALSE(r.success);
+    EXPECT_EQ(server->goals,size_t(pass+1)); EXPECT_EQ(server->cancels,size_t(pass+1)); EXPECT_EQ(server->cancel_id(),own);
+  }
+}
+TEST_F(FjtAction, ConcurrentCompletedIdentityRejection) {
+  auto c=command(); send(c); ASSERT_TRUE(result(c).success); auto changed=c; ++changed.timeout_ms;
+  std::atomic<bool> bad{false};
+  std::thread original([&]() {for(int i=0;i<150;++i) {auto r=port->execute_trajectory(c); if(!r || !r->success) {bad=true;}}});
+  std::thread mismatch([&]() {for(int i=0;i<150;++i) {auto r=port->execute_trajectory(changed); if(!r || r->exec_state!=mtc::core::ExecState::REJECTED) {bad=true;}}});
+  original.join(); mismatch.join(); EXPECT_FALSE(bad); EXPECT_EQ(server->goals,1u); EXPECT_EQ(server->cancels,0u);
+  EXPECT_FALSE(port->snapshot().fault_locked);
+}
