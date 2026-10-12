@@ -239,3 +239,15 @@ MotionCommand副本，逐字段比较原始顺序、路点、ID、时戳、scali
 共存场景会打印clients=2、ready=0，退出码2表示BLOCKED。`identity`提交一次完整
 轨迹，再检查缓存重读及三种内容变更拒绝，Goal计数保持1、Cancel计数0。
 没有接入真实硬件；TSan本轮NOT RUN，普通多线程或UBSan通过不等于排除所有竞态。
+
+## Phase 2C 显式受控 Fake 冷启动
+
+默认两参数构造仍保留 Phase 2B 严格 Status 契约。新增三参数构造只接受
+`ControlledFakeStart::verify_empty_domain()` 在受信任隔离 Fake 启动中签发的一次性凭据，
+不能在任意已有 ROS 图中取得执行权。原生事件式 Status 的受控策略不取消
+GenericSystem、Active Controller、新鲜 JointState、唯一发令入口和精确 UUID 门禁。
+
+迁移以 main 为基础保留锁外出站队列、wire dispatch 前起点复核、callback group
+生命周期保护以及8项并发回归。详情见
+[迁移验收报告](../../docs/migration/PHASE2C_ON_MAIN_MIGRATION_REPORT.md)
+和[受控集成包](../mtc_phase2c_integration_cpp/README.md)。

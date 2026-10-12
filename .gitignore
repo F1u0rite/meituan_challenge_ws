@@ -118,3 +118,7 @@ frames/
 !**/lib/**
 !**/Lib/
 !**/Lib/**
+
+# Phase 2C 独立 UBSan 构建产物；保留目录和日志，不提交生成文件。
+/build_ubsan/
+/install_ubsan/
