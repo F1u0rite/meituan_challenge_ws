@@ -1,0 +1,10 @@
+PASS: main 原486项 + 原Phase2C专有32项全部保留并执行；额外新增10项
+PASS: 528项独立GTest / 29个可执行文件；FAIL 0 / SKIP 0
+  mtc_core_cpp: 23 PASS
+  mtc_manipulation_cpp: 120 PASS
+  mtc_motion_execution_cpp: 88 PASS
+  mtc_moveit_planner: 29 PASS
+  mtc_phase2c_integration_cpp: 21 PASS
+  mtc_ros2_action_cpp: 40 PASS
+  mtc_task_cpp: 87 PASS
+  mtc_trajectory_execution_cpp: 120 PASS

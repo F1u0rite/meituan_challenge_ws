@@ -1,5 +1,7 @@
 # Phase 2C P0 — 已合并 Phase 2B 基础上的迁移验收
 
+> 本报告保留原迁移轮次记录。PR #13 最终评审修复后的最新结论见[定向修复报告](PR13_FINAL_REVIEW_FIX_REPORT.md)：528 项 GTest/UBSan 通过，但原生 GenericSystem Teardown/Overall 仍为 FAIL；不能将下述历史功能 PASS 作为当前整体 PASS。
+
 日期：2026-10-12。范围：受控、隔离、非接触 GenericSystem Fake 执行。本报告的数据全部来自本轮实际编译/测试/原生运行，没有用历史验收结果替代。
 
 ## 结论

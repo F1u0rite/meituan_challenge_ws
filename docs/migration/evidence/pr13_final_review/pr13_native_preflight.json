@@ -1,0 +1,8 @@
+{
+  "existing_directory_exit": 2,
+  "existing_directory_output": "BLOCKED: [Errno 17] File exists: '/tmp/pr13_native_review/plan'\n",
+  "evidence_hash_unchanged": true,
+  "discovery_override_exit": 2,
+  "discovery_override_output": "BLOCKED: unreviewed discovery override: ROS_DISCOVERY_SERVER\n",
+  "no_evidence_created": true
+}
