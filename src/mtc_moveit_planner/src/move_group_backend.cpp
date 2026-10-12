@@ -1,10 +1,14 @@
 // Copyright 2026 meituan_challenge_ws contributors
 
 #include "mtc_moveit_planner/move_group_backend.hpp"
+#include "mtc_moveit_planner/scene_ids.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <iomanip>
+#include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -125,6 +129,88 @@ struct MoveGroupBackend::Impl
   std::vector<std::string> joint_names;
   std::unique_ptr<moveit::planning_interface::PlanningSceneInterface> scene;
   rclcpp::Client<moveit_msgs::srv::GetStateValidity>::SharedPtr validity_client;
+
+  struct Timing
+  {
+    double factor = 1.0;        ///< 为满足末端线/角速度上限的均匀时间拉伸系数
+    double max_linear = 0.0;    ///< 拉伸前采样到的末端最大线速度
+    double max_angular = 0.0;
+    double duration = 0.0;      ///< 拉伸后的时长
+  };
+
+  /// 已经 TOTG 的轨迹：按固定间隔采样末端线/角速度（含路点间插值），算出拉伸系数。
+  Timing time_scale(
+    const robot_trajectory::RobotTrajectory & trajectory, const BackendRequest & request,
+    const moveit::core::RobotState & start_state, double sample_dt_s) const
+  {
+    Timing timing;
+    const double duration = trajectory.getDuration();
+    const double dt = std::max(1e-3, sample_dt_s);
+    auto sample = std::make_shared<moveit::core::RobotState>(start_state);
+    std::optional<mtc::core::Pose6D> previous;
+    for (double t = 0.0; ; t = std::min(duration, t + dt)) {
+      trajectory.getStateAtDurationFromStart(t, sample);
+      sample->update();
+      const auto pose = to_pose6d(
+        sample->getGlobalLinkTransform(options.end_effector_link), planning_frame);
+      if (previous) {
+        timing.max_linear =
+          std::max(timing.max_linear, distance_between(pose.position, previous->position) / dt);
+        timing.max_angular = std::max(
+          timing.max_angular, angle_between(pose.orientation, previous->orientation) / dt);
+      }
+      previous = pose;
+      if (t >= duration) {
+        break;
+      }
+    }
+    if (request.max_linear_speed_m_s > 0.0) {
+      timing.factor = std::max(timing.factor, timing.max_linear / request.max_linear_speed_m_s);
+    }
+    if (request.max_angular_speed_rad_s > 0.0) {
+      timing.factor =
+        std::max(timing.factor, timing.max_angular / request.max_angular_speed_rad_s);
+    }
+    if (timing.factor > 1.0) {
+      timing.factor *= 1.02;  // 采样误差余量
+    }
+    timing.duration = duration * timing.factor;
+    return timing;
+  }
+
+  /// 关节空间直线插值（不做碰撞校验）在 TOTG + 末端限速下的时长，用于给 IK 候选排序。
+  /// 只比较相对大小，因此用粗步长（0.1 rad）与粗采样（0.05 s）；最终轨迹仍按细粒度计算。
+  double estimate_interpolated_duration(
+    const moveit::core::RobotState & start_state, const std::vector<double> & goal,
+    const BackendRequest & request) const
+  {
+    constexpr double max_step_rad = 0.1;
+    constexpr double sample_dt_s = 0.05;
+    std::vector<double> from;
+    start_state.copyJointGroupPositions(group, from);
+    double span = 0.0;
+    for (size_t i = 0; i < from.size(); ++i) {
+      span = std::max(span, std::fabs(goal[i] - from[i]));
+    }
+    const int steps = std::max(2, static_cast<int>(std::ceil(span / max_step_rad)));
+    robot_trajectory::RobotTrajectory trajectory(model, group);
+    moveit::core::RobotState state(start_state);
+    std::vector<double> q(from.size());
+    for (int k = 0; k <= steps; ++k) {
+      const double s = static_cast<double>(k) / steps;
+      for (size_t i = 0; i < q.size(); ++i) {
+        q[i] = from[i] + (goal[i] - from[i]) * s;
+      }
+      state.setJointGroupPositions(group, q);
+      state.update();
+      trajectory.addSuffixWayPoint(state, 0.0);
+    }
+    trajectory_processing::TimeOptimalTrajectoryGeneration totg;
+    if (!totg.computeTimeStamps(trajectory, request.velocity_scaling, request.acceleration_scaling)) {
+      return std::numeric_limits<double>::infinity();
+    }
+    return time_scale(trajectory, request, start_state, sample_dt_s).duration;
+  }
 
   /// 关节空间直线插值（起点 → goal），逐点经 /check_state_validity 校验（含附着载荷与路径约束）。
   /// 全部有效则写入 out 并返回 true；why 记录第一处无效原因。
@@ -401,9 +487,13 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
   } else if (request.mode == MotionMode::FREE_SPACE) {
     moveit::planning_interface::MoveGroupInterface::Plan plan;
     auto code = moveit::core::MoveItErrorCode(moveit_msgs::msg::MoveItErrorCodes::FAILURE);
-    // 以起点为种子求 IK：得到离起点最近的关节解，再规划到该关节目标（路径短、可重复）。
+    // 选关节目标：KDL 在种子不收敛时会随机重启，单次 setFromIK 可能落到另一组解（V1 实测
+    // 同一请求 39.6 s / 123 s 来回跳）。因此收集多组候选，按"实际关心的量"排序：
+    //   1) 位姿延拓：起点末端位姿 → 目标位姿分 ik_continuation_steps 步，每步以上一步解为种子；
+    //   2) 固定种子网格：起点 + 腕关节 ±90° 组合，共 27 个种子，顺序固定；
+    // 候选按"关节插值在 TOTG + 末端限速下的预计时长"从短到长排序（关节跨度最小 ≠ 时长最短：
+    // V1 中跨度 3.45 rad 的解要 123 s，2.79 rad 的解 39.6 s），再逐个做逐点碰撞校验。
     // 求解时即要求满足控制器限位（路径约束中的关节约束）。
-    auto seeded = std::make_shared<moveit::core::RobotState>(*start);
     // 回调收到的是候选 IK 解（按 group 变量顺序），此时 state 尚未写入该解。
     const auto within_bounds = [&path_constraints](moveit::core::RobotState *,
         const moveit::core::JointModelGroup * group, const double * values) {
@@ -420,22 +510,130 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
         }
         return true;
       };
-    if (seeded->setFromIK(impl_->group, goal_msg.pose, impl_->options.end_effector_link,
-        impl_->options.ik_timeout_s, within_bounds))
+    std::vector<double> from;
+    start->copyJointGroupPositions(impl_->group, from);
+    struct Candidate
     {
-      std::vector<double> joint_goal;
-      seeded->copyJointGroupPositions(impl_->group, joint_goal);
-      // 确定性优先：关节空间直线插值到种子 IK 解，逐点校验碰撞/约束；不行再交给 OMPL。
-      std::string why;
-      if (impl_->joint_interpolated_path(
-          *start, joint_goal, path_constraints, 0.02, plan.trajectory, why))
-      {
-        code = moveit::core::MoveItErrorCode(moveit_msgs::msg::MoveItErrorCodes::SUCCESS);
-        result.method = "joint_interpolated_ik";
-      } else {
+      std::vector<double> q;
+      double span;
+      double est_duration;
+      std::string source;
+    };
+    std::vector<Candidate> candidates;
+    const auto t_ik = std::chrono::steady_clock::now();
+    double est_s = 0.0;
+    const auto add_candidate = [&](const moveit::core::RobotState & state, const std::string & src) {
+        std::vector<double> q;
+        state.copyJointGroupPositions(impl_->group, q);
+        for (const auto & c : candidates) {
+          double d = 0.0;
+          for (size_t i = 0; i < q.size(); ++i) {
+            d = std::max(d, std::fabs(q[i] - c.q[i]));
+          }
+          if (d < 1e-3) {
+            return;
+          }
+        }
+        double span = 0.0;
+        for (size_t i = 0; i < q.size(); ++i) {
+          span = std::max(span, std::fabs(q[i] - from[i]));
+        }
+        const auto t_est = std::chrono::steady_clock::now();
+        candidates.push_back(Candidate{q, span,
+            impl_->estimate_interpolated_duration(*start, q, request), src});
+        est_s += std::chrono::duration<double>(std::chrono::steady_clock::now() - t_est).count();
+      };
+    {
+      const auto & gp = goal_msg.pose;
+      Eigen::Isometry3d to_pose = Eigen::Isometry3d::Identity();
+      to_pose.translation() = Eigen::Vector3d(gp.position.x, gp.position.y, gp.position.z);
+      to_pose.linear() = Eigen::Quaterniond(
+        gp.orientation.w, gp.orientation.x, gp.orientation.y, gp.orientation.z)
+        .normalized().toRotationMatrix();
+      const Eigen::Isometry3d from_pose =
+        start->getGlobalLinkTransform(impl_->options.end_effector_link);
+      const Eigen::Quaterniond q0(from_pose.rotation());
+      const Eigen::Quaterniond q1(to_pose.rotation());
+      const int n = std::max(1, impl_->options.ik_continuation_steps);
+      moveit::core::RobotState walker(*start);
+      bool tracked = true;
+      for (int k = 1; k <= n && tracked; ++k) {
+        const double s = static_cast<double>(k) / n;
+        Eigen::Isometry3d waypoint = Eigen::Isometry3d::Identity();
+        waypoint.translation() = (1.0 - s) * from_pose.translation() + s * to_pose.translation();
+        waypoint.linear() = q0.slerp(s, q1).toRotationMatrix();
+        tracked = walker.setFromIK(impl_->group, waypoint, impl_->options.end_effector_link,
+            impl_->options.ik_timeout_s, within_bounds);
+      }
+      if (tracked) {
+        add_candidate(walker, "continuation");
+      }
+    }
+    // 固定种子网格：起点 + 三个腕关节各取 {0, -π/2, +π/2} 偏移（共 27 个，顺序固定）。
+    {
+      const auto & names = impl_->group->getVariableNames();
+      std::vector<size_t> wrists;
+      for (const char * w : {"wrist1_joint", "wrist2_joint", "wrist3_joint"}) {
+        const auto it = std::find(names.begin(), names.end(), w);
+        if (it != names.end()) {
+          wrists.push_back(static_cast<size_t>(it - names.begin()));
+        }
+      }
+      const double offsets[] = {0.0, -M_PI / 2.0, M_PI / 2.0};
+      const size_t combos = static_cast<size_t>(std::pow(3.0, wrists.size()));
+      for (size_t c = 0; c < combos; ++c) {
+        std::vector<double> seed = from;
+        size_t code_digits = c;
+        for (const size_t w : wrists) {
+          seed[w] += offsets[code_digits % 3];
+          code_digits /= 3;
+        }
+        moveit::core::RobotState seeded(*start);
+        seeded.setJointGroupPositions(impl_->group, seed);
+        seeded.enforceBounds(impl_->group);
+        seeded.update();
+        if (seeded.setFromIK(impl_->group, goal_msg.pose, impl_->options.end_effector_link,
+            impl_->options.ik_seed_timeout_s, within_bounds))
+        {
+          add_candidate(seeded, c == 0 ? "seed_start" : "seed_grid");
+        }
+      }
+    }
+    // 按"关节插值在 TOTG + 末端限速下的预计时长"排序（这才是看门狗关心的量），平局按跨度。
+    std::stable_sort(candidates.begin(), candidates.end(),
+      [](const Candidate & l, const Candidate & r) {
+        return l.est_duration != r.est_duration ? l.est_duration < r.est_duration : l.span < r.span;
+      });
+    if (!candidates.empty()) {
+      std::ostringstream os;
+      os << std::setprecision(4) << "ik candidates=" << candidates.size() << " est_s/span_rad=[";
+      for (size_t i = 0; i < candidates.size() && i < 6; ++i) {
+        os << (i ? ", " : "") << candidates[i].est_duration << "/" << candidates[i].span << "(" <<
+          candidates[i].source << ")";
+      }
+      os << (candidates.size() > 6 ? ", ...]; " : "]; ");
+      os << "ik+rank " << std::chrono::duration<double>(std::chrono::steady_clock::now() - t_ik).count() <<
+        " s (rank " << est_s << " s); ";
+      result.message += os.str();
+      // 确定性优先：按跨度从小到大，关节空间直线插值，逐点校验碰撞/约束；都不行再交给 OMPL。
+      for (const auto & candidate : candidates) {
+        std::string why;
+        if (impl_->joint_interpolated_path(
+            *start, candidate.q, path_constraints, 0.02, plan.trajectory, why))
+        {
+          code = moveit::core::MoveItErrorCode(moveit_msgs::msg::MoveItErrorCodes::SUCCESS);
+          result.method = "joint_interpolated_ik";
+          std::ostringstream chosen;
+          chosen << std::setprecision(4) << "chosen est " << candidate.est_duration << " s, span " <<
+            candidate.span << " rad (" << candidate.source << "); ";
+          result.message += chosen.str();
+          break;
+        }
         result.message += "joint interpolation rejected (" + why + "); ";
+      }
+      if (code != moveit::core::MoveItErrorCode::SUCCESS) {
         mg.setStartState(*start);
-        mg.setJointValueTarget(impl_->joint_names, joint_goal);
+        mg.setJointValueTarget(impl_->joint_names, candidates.front().q);
         code = mg.plan(plan);
         result.method = "ompl_seeded_ik";
         if (code != moveit::core::MoveItErrorCode::SUCCESS) {
@@ -495,38 +693,10 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     return result;
   }
 
-  // 末端线速度 / 角速度：按固定间隔采样整条轨迹（含路点之间的插值）。
-  const double duration = trajectory.getDuration();
-  const double dt = std::max(1e-3, impl_->options.speed_sample_dt_s);
-  auto sample = std::make_shared<moveit::core::RobotState>(*start);
-  double max_linear = 0.0;
-  double max_angular = 0.0;
-  std::optional<mtc::core::Pose6D> previous;
-  for (double t = 0.0; ; t = std::min(duration, t + dt)) {
-    trajectory.getStateAtDurationFromStart(t, sample);
-    sample->update();
-    const auto pose = to_pose6d(
-      sample->getGlobalLinkTransform(impl_->options.end_effector_link), impl_->planning_frame);
-    if (previous) {
-      max_linear = std::max(max_linear, distance_between(pose.position, previous->position) / dt);
-      max_angular = std::max(
-        max_angular, angle_between(pose.orientation, previous->orientation) / dt);
-    }
-    previous = pose;
-    if (t >= duration) {
-      break;
-    }
-  }
-  double factor = 1.0;
-  if (request.max_linear_speed_m_s > 0.0) {
-    factor = std::max(factor, max_linear / request.max_linear_speed_m_s);
-  }
-  if (request.max_angular_speed_rad_s > 0.0) {
-    factor = std::max(factor, max_angular / request.max_angular_speed_rad_s);
-  }
-  if (factor > 1.0) {
-    factor *= 1.02;  // 采样误差余量
-  }
+  const auto timing = impl_->time_scale(trajectory, request, *start, impl_->options.speed_sample_dt_s);
+  const double factor = timing.factor;
+  const double max_linear = timing.max_linear;
+  const double max_angular = timing.max_angular;
   result.time_scale_applied = factor;
   result.max_linear_speed_m_s = max_linear / factor;
   result.max_angular_speed_rad_s = max_angular / factor;
@@ -557,21 +727,24 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
 
 bool MoveGroupBackend::apply_scene(const std::vector<SceneBox> & boxes)
 {
+  // ID 隔离：只增删带本模块前缀的对象，绝不碰其他模块写入的碰撞体（见 scene_ids.hpp）。
+  std::vector<std::string> local_ids;
+  for (const auto & box : boxes) {
+    local_ids.push_back(box.id);
+  }
+  const std::string id_error = validate_local_scene_ids(local_ids);
+  if (!id_error.empty()) {
+    RCLCPP_ERROR(impl_->node->get_logger(), "apply_scene: %s", id_error.c_str());
+    return false;
+  }
   if (!impl_->scene) {
     impl_->scene = std::make_unique<moveit::planning_interface::PlanningSceneInterface>();
   }
   std::vector<moveit_msgs::msg::CollisionObject> objects;
-  for (const auto & id : impl_->scene_ids) {
-    moveit_msgs::msg::CollisionObject remove;
-    remove.id = id;
-    remove.header.frame_id = impl_->planning_frame;
-    remove.operation = moveit_msgs::msg::CollisionObject::REMOVE;
-    objects.push_back(remove);
-  }
   std::vector<std::string> ids;
   for (const auto & box : boxes) {
-    if (box.id.empty() || !box.pose.is_usable() || !(box.size_m.x > 0.0) ||
-      !(box.size_m.y > 0.0) || !(box.size_m.z > 0.0))
+    if (!box.pose.is_usable() || !(box.size_m.x > 0.0) || !(box.size_m.y > 0.0) ||
+      !(box.size_m.z > 0.0))
     {
       return false;
     }
@@ -580,7 +753,7 @@ bool MoveGroupBackend::apply_scene(const std::vector<SceneBox> & boxes)
       return false;
     }
     moveit_msgs::msg::CollisionObject object;
-    object.id = box.id;
+    object.id = scoped_scene_id(box.id);
     object.header.frame_id = impl_->planning_frame;
     shape_msgs::msg::SolidPrimitive primitive;
     primitive.type = shape_msgs::msg::SolidPrimitive::BOX;
@@ -589,9 +762,20 @@ bool MoveGroupBackend::apply_scene(const std::vector<SceneBox> & boxes)
     object.primitive_poses.push_back(to_msg(*pose));
     object.operation = moveit_msgs::msg::CollisionObject::ADD;
     objects.push_back(object);
-    ids.push_back(box.id);
+    ids.push_back(object.id);
+  }
+  // 需要移除的：场景里本模块的遗留对象（含进程重启前写入的）+ 本实例上次写入但这次不要的。
+  std::vector<std::string> known = impl_->scene->getKnownObjectNames();
+  known.insert(known.end(), impl_->scene_ids.begin(), impl_->scene_ids.end());
+  for (const auto & id : stale_owned_scene_ids(known, ids)) {
+    moveit_msgs::msg::CollisionObject remove;
+    remove.id = id;
+    remove.header.frame_id = impl_->planning_frame;
+    remove.operation = moveit_msgs::msg::CollisionObject::REMOVE;
+    objects.push_back(remove);
   }
   if (objects.empty()) {
+    impl_->scene_ids.clear();
     return true;
   }
   if (!impl_->scene->applyCollisionObjects(objects)) {

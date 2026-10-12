@@ -1,6 +1,7 @@
 // Copyright 2026 meituan_challenge_ws contributors
 
 #include "mtc_moveit_planner/ros_params.hpp"
+#include "mtc_moveit_planner/scene_ids.hpp"
 
 #include <stdexcept>
 #include <string>
@@ -89,6 +90,10 @@ PlannerConfig load_planner_config(rclcpp::Node & node)
 
   const auto box_names = node.get_parameter_or<std::vector<std::string>>(
     "scene.boxes.names", std::vector<std::string>{});
+  const std::string id_error = validate_local_scene_ids(box_names);
+  if (!id_error.empty()) {
+    throw std::runtime_error("parameter scene.boxes.names: " + id_error);
+  }
   for (const auto & name : box_names) {
     SceneBox box;
     box.id = name;
@@ -118,6 +123,10 @@ MoveGroupBackendOptions load_backend_options(rclcpp::Node & node)
   options.tf_timeout_s = node.get_parameter_or("backend.tf_timeout_s", options.tf_timeout_s);
   options.state_timeout_s = node.get_parameter_or("backend.state_timeout_s", options.state_timeout_s);
   options.ik_timeout_s = node.get_parameter_or("backend.ik_timeout_s", options.ik_timeout_s);
+  options.ik_continuation_steps = static_cast<int>(node.get_parameter_or<int64_t>(
+      "backend.ik_continuation_steps", options.ik_continuation_steps));
+  options.ik_seed_timeout_s =
+    node.get_parameter_or("backend.ik_seed_timeout_s", options.ik_seed_timeout_s);
   return options;
 }
 

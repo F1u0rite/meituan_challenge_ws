@@ -6,10 +6,11 @@
 //   * CARTESIAN ：MoveGroupInterface::computeCartesianPath()，要求完整（fraction >= 阈值）；
 //   * 两种结果都用 TOTG 按 velocity/acceleration scaling 重新时间参数化，
 //     再按原语的末端线速度/角速度上限做**均匀时间拉伸**（路径不变）；
-//   * FREE_SPACE 依次尝试：末端直线 → 种子 IK + 关节空间插值（逐点 /check_state_validity）
-//     → OMPL 到种子 IK 关节目标 → 位姿目标 OMPL；
+//   * FREE_SPACE 依次尝试：末端直线 → IK 候选（位姿延拓 + 固定种子网格，按预计时长排序）
+//     + 关节空间插值（逐点 /check_state_validity）→ OMPL 到 IK 关节目标 → 位姿目标 OMPL；
 //   * 电池载荷附着在**起点 RobotState** 上随请求下发，不改 move_group 全局场景；
-//   * 静态障碍物（apply_scene）经 /apply_planning_scene 写入，只增删本类创建的对象；
+//   * 静态障碍物（apply_scene）经 /apply_planning_scene 写入；所有对象 ID 加前缀
+//     "mtc_moveit_planner/"，只增删带该前缀的对象，不碰其他模块的碰撞体（scene_ids.hpp）；
 //   * 只规划、不执行：本类不调用 execute()/move()，不连接控制器 Action。
 
 #ifndef MTC_MOVEIT_PLANNER__MOVE_GROUP_BACKEND_HPP_
@@ -40,7 +41,9 @@ struct MoveGroupBackendOptions
   double tf_timeout_s = 0.5;
   double state_timeout_s = 5.0;
   double speed_sample_dt_s = 0.01;   ///< 末端速度检查的采样间隔
-  double ik_timeout_s = 0.2;         ///< 种子 IK 求解时限
+  double ik_timeout_s = 0.05;        ///< 位姿延拓中单步 IK 时限
+  int ik_continuation_steps = 10;    ///< 位姿延拓 IK 的步数（跟踪离起点最近的解支）
+  double ik_seed_timeout_s = 0.01;   ///< 固定种子网格中单个种子的 IK 时限（27 个种子）
 };
 
 class MoveGroupBackend : public PlanningBackend

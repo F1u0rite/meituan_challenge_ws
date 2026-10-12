@@ -13,7 +13,9 @@
       planner_id: "RRTConnectkConfigDefault"
       tf_timeout_s: 0.5
       state_timeout_s: 5.0
-      ik_timeout_s: 0.2                    # 以起点为种子的 IK 时限
+      ik_timeout_s: 0.05                   # 位姿延拓中单步 IK 时限
+      ik_continuation_steps: 10            # 位姿延拓 IK 步数（跟踪离起点最近的解）
+      ik_seed_timeout_s: 0.01              # 固定种子网格（起点 + 腕关节 ±90° 组合，27 个）单个 IK 时限
 
     planner:
       velocity_scaling: 0.1                # config/manipulation.yaml；上限 0.2
@@ -43,7 +45,7 @@
       hang_below_tcp_m: 0.07               # 载荷中心在 TCP 正下方的距离
       status: "PLACEHOLDER"
 
-    scene:                                 # 写入 move_group 的静态障碍物（PLACEHOLDER）
+    scene:                                 # 写入 move_group 的静态障碍物（PLACEHOLDER）；ID 写本地名，场景中自动加前缀 mtc_moveit_planner/
       boxes:
         names: ["table"]
         # 桌面：机械臂底座立在桌面上（base_link z=0），桌面顶面取 z=-0.005。

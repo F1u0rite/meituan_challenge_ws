@@ -55,4 +55,37 @@ TEST(StartConsistency, MissingJointNanAndEmptyTrajectoryAreRejected)
       -1.0).ok);
 }
 
+TEST(StartConsistency, DuplicateOrEmptyJointNamesAreRejected)
+{
+  // 实际状态重名：即使其中一个值正好匹配，也不能"取第一个"放行。
+  auto check = check_trajectory_start(
+    trajectory(), {"shoulder_joint", "upperArm_joint", "foreArm_joint", "foreArm_joint"},
+    {0.1, 0.2, 0.3, 1.5});
+  EXPECT_FALSE(check.ok);
+  EXPECT_EQ(check.worst_joint, "foreArm_joint");
+  EXPECT_NE(check.message.find("duplicate"), std::string::npos) << check.message;
+
+  // 实际状态重名且两个值都匹配，同样拒绝（数据源本身不可信）。
+  EXPECT_FALSE(check_trajectory_start(
+      trajectory(), {"shoulder_joint", "shoulder_joint", "upperArm_joint", "foreArm_joint"},
+      {0.1, 0.1, 0.2, 0.3}).ok);
+
+  // 轨迹重名。
+  auto dup = trajectory();
+  dup.joint_names[2] = "shoulder_joint";
+  check = check_trajectory_start(
+    dup, {"shoulder_joint", "upperArm_joint", "foreArm_joint"}, {0.1, 0.2, 0.3});
+  EXPECT_FALSE(check.ok);
+  EXPECT_NE(check.message.find("trajectory has duplicate"), std::string::npos) << check.message;
+
+  // 空名。
+  auto blank = trajectory();
+  blank.joint_names[1].clear();
+  EXPECT_FALSE(check_trajectory_start(
+      blank, {"shoulder_joint", "upperArm_joint", "foreArm_joint"}, {0.1, 0.2, 0.3}).ok);
+  EXPECT_FALSE(check_trajectory_start(
+      trajectory(), {"shoulder_joint", "upperArm_joint", "foreArm_joint", ""},
+      {0.1, 0.2, 0.3, 0.0}).ok);
+}
+
 }  // namespace

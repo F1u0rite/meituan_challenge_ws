@@ -284,6 +284,20 @@ TEST(MoveItPlannerPort, ReplanPrimitiveStartsAtMeasuredStateWithoutToolGapAssump
   EXPECT_EQ(missing.message.rfind("[EMPTY_TARGET]", 0), 0u) << missing.message;
 }
 
+TEST(MoveItPlannerPort, ReplanFromStateWithDuplicateJointNamesIsRefused)
+{
+  Fixture f;
+  const auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
+  auto measured = f.backend->state_at(mtc::core::Vector3{0.4, -0.1, 0.247});
+  measured.names.push_back(measured.names.front());
+  measured.positions.push_back(measured.positions.front() + 0.5);
+  const auto result = f.port()->replan_primitive(target, "test_lift", measured);
+  EXPECT_FALSE(result.ok);
+  EXPECT_EQ(result.error_code, ErrorCodes::PLANNING_FAILED);
+  EXPECT_EQ(result.message.rfind("[INVALID_START_STATE]", 0), 0u) << result.message;
+  EXPECT_EQ(f.backend->plan_calls.load(), 0);
+}
+
 TEST(MoveItPlannerPort, AnyPrimitiveFailureFailsWholePlan)
 {
   Fixture f;

@@ -200,8 +200,12 @@ PlanResult MoveItPlannerPort::plan_blocking(
   if (!start) {
     start = backend_->current_state();
   }
-  if (!start || !start->shape_is_valid()) {
+  if (!start) {
     return fail("NO_CURRENT_STATE", "", "robot state unavailable (is /joint_states published?)");
+  }
+  if (!start->shape_is_valid()) {
+    return fail("INVALID_START_STATE", "",
+             "start state must have matching names/positions and unique, non-empty joint names");
   }
   report.start_state = *start;
   JointStateSnapshot chain = *start;

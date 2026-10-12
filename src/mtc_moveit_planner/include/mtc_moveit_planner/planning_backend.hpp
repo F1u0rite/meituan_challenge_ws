@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,14 +31,27 @@ struct JointStateSnapshot
   std::vector<std::string> names;
   std::vector<double> positions;
 
-  bool shape_is_valid() const {return !names.empty() && names.size() == positions.size();}
+  /// 非空、名称与位置数量一致、关节名非空且不重复（重名会让按名取值产生歧义）。
+  bool shape_is_valid() const
+  {
+    if (names.empty() || names.size() != positions.size()) {
+      return false;
+    }
+    std::set<std::string> seen;
+    for (const auto & name : names) {
+      if (name.empty() || !seen.insert(name).second) {
+        return false;
+      }
+    }
+    return true;
+  }
 };
 
 /// 随末端一起运动的载荷（电池）碰撞体：长方体，位姿相对规划末端 link（ee_link）固定。
 /// 只附着在**规划起点状态**上参与碰撞检查，不修改 move_group 的全局规划场景。
 struct AttachedPayload
 {
-  std::string id = "battery_payload";
+  std::string id = "mtc_moveit_planner/battery_payload";  ///< 带本模块前缀，见 scene_ids.hpp
   mtc::core::Vector3 size_m{0.06, 0.06, 0.10};
   Transform ee_to_payload;                 ///< ee_link -> 载荷中心
   std::vector<std::string> touch_links{"ee_link", "wrist3_Link"};
@@ -46,7 +60,7 @@ struct AttachedPayload
 /// 静态场景障碍物（长方体），写入 move_group 规划场景。
 struct SceneBox
 {
-  std::string id;
+  std::string id;                          ///< 本地 ID（如 "table"），写入场景时加本模块前缀
   mtc::core::Pose6D pose;                  ///< 中心位姿（frame_id 必须可 TF 到 planning frame）
   mtc::core::Vector3 size_m;
 };

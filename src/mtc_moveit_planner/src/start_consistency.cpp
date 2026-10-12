@@ -4,12 +4,30 @@
 
 #include <cmath>
 #include <iomanip>
+#include <set>
 #include <sstream>
 
 namespace mtc
 {
 namespace moveit_planner
 {
+
+namespace
+{
+
+/// 返回第一个空名或重复名；全部唯一且非空时返回 nullptr。
+const std::string * first_bad_name(const std::vector<std::string> & names)
+{
+  std::set<std::string> seen;
+  for (const auto & name : names) {
+    if (name.empty() || !seen.insert(name).second) {
+      return &name;
+    }
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 StartCheck check_trajectory_start(
   const mtc::core::TimedTrajectory & trajectory,
@@ -28,6 +46,19 @@ StartCheck check_trajectory_start(
     tolerance_rad < 0.0)
   {
     check.message = "invalid actual state or tolerance";
+    return check;
+  }
+  // 重名会让"按名字取值"有歧义（取到哪一个取决于顺序），必须拒绝而不是取第一个。
+  if (const auto * bad = first_bad_name(trajectory.joint_names)) {
+    check.message = bad->empty() ? "trajectory has an empty joint name" :
+      "trajectory has duplicate joint name " + *bad;
+    check.worst_joint = *bad;
+    return check;
+  }
+  if (const auto * bad = first_bad_name(actual_names)) {
+    check.message = bad->empty() ? "actual state has an empty joint name" :
+      "actual state has duplicate joint name " + *bad;
+    check.worst_joint = *bad;
     return check;
   }
   const auto & first = trajectory.points.front().positions_rad;
