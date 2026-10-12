@@ -32,7 +32,7 @@ struct StartCheck
   std::string message;
 };
 
-/// 按关节**名称**比较轨迹首点与实际关节位置；缺关节、非有限值、空轨迹、
+/// 按关节**名称**比较轨迹首点与实际关节位置；缺关节、非有限值、空轨迹、空关节集合、
 /// 轨迹或实际状态中出现重复 / 空关节名一律不通过（实际状态多出的无关关节允许）。
 StartCheck check_trajectory_start(
   const mtc::core::TimedTrajectory & trajectory,
