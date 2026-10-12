@@ -905,8 +905,30 @@ std::optional<JointStateSnapshot> MoveGroupBackend::solve_ik_max_margin(
     ++solutions;
     std::vector<double> solution;
     state.copyJointGroupPositions(impl_->group, solution);
+    // 行程 >= 2π 的关节，q 与 q±2π 是同一位姿：取限位内离种子最近的等价值，结果才确定。
+    for (size_t i = 0; i < solution.size(); ++i) {
+      for (const double shift : {-2.0 * M_PI, 2.0 * M_PI}) {
+        while (solution[i] + shift >= limits[i].first && solution[i] + shift <= limits[i].second &&
+          std::fabs(solution[i] + shift - from[i]) < std::fabs(solution[i] - from[i]))
+        {
+          solution[i] += shift;
+        }
+      }
+    }
+    state.setJointGroupPositions(impl_->group, solution);
+    state.update();
     const double margin = margin_of(solution);
-    if (margin <= best_margin) {
+    // 裕度相同（如肩关节相差 2π 的同一位姿）时取离种子最近的解，保证结果确定、准备动作最短。
+    const auto distance = [&from](const std::vector<double> & q) {
+        double d = 0.0;
+        for (size_t i = 0; i < q.size(); ++i) {
+          d = std::max(d, std::fabs(q[i] - from[i]));
+        }
+        return d;
+      };
+    if (margin < best_margin - 1e-9 ||
+      (margin <= best_margin + 1e-9 && best && distance(solution) >= distance(*best)))
+    {
       continue;
     }
     std::string invalid_why;

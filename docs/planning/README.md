@@ -51,6 +51,16 @@ PickPlace FSM ◀──PlanResult（每个动作一条完整 TimedTrajectory）�
 | **场景对象 ID 隔离**：本模块写入的对象统一叫 `mtc_moveit_planner/…`，只增删自己前缀的对象；别的模块叫 `table` 的东西不会被覆盖或删掉 | ✅ 单元测试 + Fake move_group 实测反证 |
 | **V1 时长稳定**：复测发现上一轮"可重复"不对（同一请求有时 123 s，因为逆解随机落到另一组解）。改成固定 27 个种子求多组解、按预计时长挑最短的 | 最终代码连续 5 次都是 39.59 s，规划耗时约 0.4–0.5 s；仍超看门狗，保留为已知阻断，没有放宽安全参数 |
 
+## 2C. 第四轮：V1 可行性
+
+| 内容 | 结果 |
+|---|---|
+| 算物理下限：占位几何下从 home 到 V1 预对准要转 **180°**（之前写的 90° 有误），0.1 rad/s 下至少 31.4 s，比 30 s 看门狗还长 | 单段方案任何规划器都做不到 |
+| 末端限速时间最优参数化（上限不变） | 39.59 s → 35.04 s，仍超时 |
+| 拆分提案：快速接近（0.05 m/s / 0.2 rad/s，沿用 Python 原设计）+ 低速预对准（原上限） | Fake 中 V1 8 段全部成功，预对准阶段合计 19.68 s < 24 s；**需孙嘉明批准** |
+
+详见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md)。
+
 ## 3. 规划模块保证的事（对 FSM 的契约）
 
 - 每个动作返回**一条完整轨迹**，按动作名一一对应；一段失败则整体失败，不返回半套结果。
@@ -90,7 +100,7 @@ MTC_RMW=rmw_cyclonedds_cpp bash src/mtc_moveit_planner/scripts/run_planning_evid
 
 | 问题 | 找谁 |
 |---|---|
-| V1 预对准仍需 39.59 s > 24 s（90° 转向 × 0.1 rad/s）：建议加 V1 就绪位或拆分接近/预对准 | 孙嘉明 |
+| V1 预对准：单段方案物理上不可行（占位几何下需转 180°，下限 31.4 s）；拆分提案 `proposal/v1-fast-approach` 待批准，见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md) | 孙嘉明 |
 | `test_lift` / `retreat` 起点依赖工具动作假设：执行前调用 `check_trajectory_start()`，不通过则 `replan_primitive()` | 孙嘉明（执行适配接入） |
 | PLAN_ACQUIRE 看门狗只有 2 s | 孙嘉明 |
 | TCP（ee_link→钩尖）、T0/P1–P3 位姿、提环轴向、相机外参 | 韩明赫 |
