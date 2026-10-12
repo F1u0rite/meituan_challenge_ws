@@ -50,6 +50,7 @@ struct MoveGroupBackendOptions
   double ik_timeout_s = 0.05;        ///< 位姿延拓中单步 IK 时限
   int ik_continuation_steps = 10;    ///< 位姿延拓 IK 的步数（跟踪离起点最近的解支）
   double ik_seed_timeout_s = 0.01;   ///< 固定种子网格中单个种子的 IK 时限（27 个种子）
+  int ik_full_joint_samples = 0;    ///< 无有效局部解时的全关节有界种子数；默认不启用
   /// 关节插值路径用末端限速时间最优参数化（false 时退回 TOTG + 均匀拉伸，便于对比）。
   bool ee_limited_retiming = true;
 };

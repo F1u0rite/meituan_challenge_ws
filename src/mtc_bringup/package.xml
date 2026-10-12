@@ -6,7 +6,7 @@
   <description>
     美团挑战赛 AUBO S3：启动、参数组合与配置校验包（P9）。
     提供 mock_bringup.launch.py（离线 Mock 组合启动，明确打印“Mock 模式，
-    未连接真实 AUBO S3”告警）、sim_bringup.launch.py（骨架，NOT RUN）、
+    未连接真实 AUBO S3”告警）、sim_bringup.launch.py（V1 Gazebo 仿真）、
     real_bringup.launch.py（存在但默认拒绝启动），以及纯 Python 的
     config_loader / validate_config 配置校验工具（不依赖 rclpy，可离线直接运行）。
     安全默认值：Mock / 离线；任何真实设备节点都不由本包启动。
@@ -25,6 +25,7 @@
   <depend>mtc_aubo_bridge</depend>
 
   <exec_depend>launch</exec_depend>
+  <exec_depend>mtc_simulation</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>python3-yaml</exec_depend>

@@ -9,6 +9,7 @@
 #include <cmath>
 #include <iomanip>
 #include <limits>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -528,6 +529,16 @@ std::optional<mtc::core::Pose6D> MoveGroupBackend::transform_to_planning_frame(
 BackendResult MoveGroupBackend::plan(const BackendRequest & request)
 {
   BackendResult result;
+  for (const auto & [name, bounds] : request.goal_joint_bounds) {
+    if (request.mode != MotionMode::FREE_SPACE ||
+      std::find(impl_->joint_names.begin(), impl_->joint_names.end(), name) == impl_->joint_names.end() ||
+      !std::isfinite(bounds.first) || !std::isfinite(bounds.second) || bounds.first > bounds.second)
+    {
+      result.reason = "INVALID_GOAL_BOUNDS";
+      result.message = "goal joint bounds require a free-space request and valid group variables";
+      return result;
+    }
+  }
   const auto start = impl_->state_from(request.start);
   if (!start) {
     result.reason = "INVALID_START";
@@ -585,14 +596,24 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
         max_step = std::max(max_step, std::fabs(pts[i].positions[j] - pts[i - 1].positions[j]));
       }
     }
-    if (fraction >= 1.0 - 1e-9 && max_step <= 0.2) {
+    bool goal_bounds_ok = !pts.empty();
+    for (const auto & [name, bounds] : request.goal_joint_bounds) {
+      const auto & names = straight.joint_trajectory.joint_names;
+      const auto found = std::find(names.begin(), names.end(), name);
+      if (found == names.end() || pts.empty()) {goal_bounds_ok = false; break;}
+      const size_t index = static_cast<size_t>(found - names.begin());
+      if (index >= pts.back().positions.size() || pts.back().positions[index] < bounds.first ||
+        pts.back().positions[index] > bounds.second) {goal_bounds_ok = false; break;}
+    }
+    if (fraction >= 1.0 - 1e-9 && max_step <= 0.2 && goal_bounds_ok) {
       trajectory_msg = straight;
       result.cartesian_fraction = fraction;
       result.method = "cartesian_preferred";
       planned = true;
     } else {
       result.message = "straight line rejected (fraction=" + std::to_string(fraction) +
-        ", max_joint_step=" + std::to_string(max_step) + " rad); ";
+        ", max_joint_step=" + std::to_string(max_step) + " rad, goal_bounds=" +
+        std::to_string(goal_bounds_ok) + "); ";
     }
     mg.setStartState(*start);
   }
@@ -627,12 +648,43 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     const auto add_candidate = [&](const moveit::core::RobotState & state, const std::string & src) {
         std::vector<double> q;
         state.copyJointGroupPositions(impl_->group, q);
+        for (const auto & [name, bounds] : request.goal_joint_bounds) {
+          const size_t index = static_cast<size_t>(std::find(
+              impl_->joint_names.begin(), impl_->joint_names.end(), name) - impl_->joint_names.begin());
+          const auto & physical = impl_->model->getVariableBounds(name);
+          const bool periodic = impl_->model->getJointOfVariable(name)->getType() ==
+            moveit::core::JointModel::REVOLUTE;
+          std::optional<double> selected;
+          for (const double shift : {0.0, -2.0 * M_PI, 2.0 * M_PI}) {
+            if (!periodic && shift != 0.0) {continue;}
+            const double value = q[index] + shift;
+            if (value < bounds.first || value > bounds.second ||
+              (physical.position_bounded_ &&
+              (value < physical.min_position_ || value > physical.max_position_))) {continue;}
+            if (!selected || std::fabs(value - from[index]) < std::fabs(*selected - from[index])) {
+              selected = value;
+            }
+          }
+          if (!selected) {return;}
+          q[index] = *selected;
+        }
+        moveit::core::RobotState goal_state(state);
+        goal_state.setJointGroupPositions(impl_->group, q);
+        goal_state.update();
         for (const auto & c : candidates) {
           double d = 0.0;
           for (size_t i = 0; i < q.size(); ++i) {
             d = std::max(d, std::fabs(q[i] - c.q[i]));
           }
           if (d < 1e-3) {
+            return;
+          }
+        }
+        // A colliding goal cannot be repaired by OMPL. Reject it before ranking,
+        // otherwise the shortest estimate can hide a reachable, valid IK branch.
+        if (request.avoid_collisions) {
+          std::string why;
+          if (!impl_->state_valid(goal_state, path_constraints, why)) {
             return;
           }
         }
@@ -701,6 +753,29 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
         }
       }
     }
+    // Wrist-only seeds may miss an elbow branch in a confined tabletop scene.
+    // Opt-in bounded full-joint seeds are deterministic and never widen limits.
+    if (candidates.empty() && impl_->options.ik_full_joint_samples > 0) {
+      std::mt19937 rng(12);
+      const auto & names = impl_->group->getVariableNames();
+      for (int sample = 0; sample < impl_->options.ik_full_joint_samples; ++sample) {
+        std::vector<double> seed;
+        for (const auto & name : names) {
+          const auto & bounds = impl_->model->getVariableBounds(name);
+          const double lo = bounds.position_bounded_ ? bounds.min_position_ : -M_PI;
+          const double hi = bounds.position_bounded_ ? bounds.max_position_ : M_PI;
+          seed.push_back(std::uniform_real_distribution<double>(lo, hi)(rng));
+        }
+        moveit::core::RobotState seeded(*start);
+        seeded.setJointGroupPositions(impl_->group, seed);
+        seeded.update();
+        if (seeded.setFromIK(impl_->group, goal_msg.pose, impl_->options.end_effector_link,
+            impl_->options.ik_seed_timeout_s, within_bounds))
+        {
+          add_candidate(seeded, "seed_full_joint");
+        }
+      }
+    }
     // 按"关节插值在 TOTG + 末端限速下的预计时长"排序（这才是看门狗关心的量），平局按跨度。
     std::stable_sort(candidates.begin(), candidates.end(),
       [](const Candidate & l, const Candidate & r) {
@@ -746,7 +821,7 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     } else {
       result.message += "seeded IK found no solution within controller limits; ";
     }
-    if (code != moveit::core::MoveItErrorCode::SUCCESS) {
+    if (code != moveit::core::MoveItErrorCode::SUCCESS && request.goal_joint_bounds.empty()) {
       result.method = "ompl";
       mg.setStartState(*start);
       mg.clearPoseTargets();
