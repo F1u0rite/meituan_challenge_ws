@@ -16,6 +16,8 @@ AUBO S3 实机抓放验收通过。
 开发环境：Ubuntu 24.04、ROS 2 Jazzy、C++17。当前只允许 Mock / Fake / 离线开发；
 构建和测试不授权连接控制柜、调用真实 RPC/RTDE、发送实机轨迹或触发实体工具 IO。
 
+**当前进度（2026-10-12）：** main 已合入 Phase 2A、规划 PR #3、标定 PR #6 与 Phase 2B 轨迹执行 PR #7（核对基线 `b418515`）。Phase 2B 候选报告记录普通/UBSan各486项通过，原生Status冷启动与标准MoveIt共存仍BLOCKED；完整FSM抓放与实机未验收。C++ Mock/Web UI已在PR #8交付并部分通过，C1延迟取消最终ABORTED/520，PR尚未合并。最新候选、个人独立复验边界和环境区别统一见[当前验收状态](docs/migration/CURRENT_ACCEPTANCE_STATUS_20261012.md)。以下Phase 2A数量及交接步骤保留其历史范围。
+
 ## 1. 从这里开始
 
 - [FSM 开发者使用指南](README_FSM.md)：四个 C++ 包、主要 API、Port 契约、示例、构建与测试。
@@ -90,7 +92,7 @@ python3 tests/test_mock_end_to_end.py
 仅构建四个 C++ 包、定向 GTest、消费者 CMake 和 sanitizer 方法见
 [开发者指南](README_FSM.md)。这些命令无需真实机器人；不要为测试启动真实驱动。
 
-## 4. 最终验收记录
+## 4. Phase 2A 历史验收记录
 
 以下为 [2026-10-11 Phase 2A 报告](docs/migration/PHASE2A_ROS2_ACTION_REPORT.md)
 记录的实际执行结果；本次文档交接更新没有重新运行构建与全量回归。
@@ -136,6 +138,8 @@ MoveIt 退出异常。手册明确区分独立 Mock、待完成的 FSM 集成、
 真实硬件操作；不提供实机运动命令。新机器修复快照和完整部署仍需独立复验。
 
 ## 7. 系统集成交接（张叔阳）
+
+本节交接基线和步骤是Phase 2A历史记录。统一C++ Mock Bringup、Web UI和对应SOP已交[PR #8](https://github.com/F1u0rite/meituan_challenge_ws/pull/8)，未合并；后续需审查C1取消完成边界，并在选定候选上验证完整MoveIt/FJT宿主。详见[当前验收状态](docs/migration/CURRENT_ACCEPTANCE_STATUS_20261012.md)。
 
 交接基线为 `main@c0f7017`。先阅读 [C++ Action 包指南](src/mtc_ros2_action_cpp/README.md)、
 [Phase 2A 验收报告](docs/migration/PHASE2A_ROS2_ACTION_REPORT.md) 和
@@ -185,7 +189,7 @@ meituan_challenge_ws/
 └── build/、install/、log/        # 本地生成产物，不提交Git
 ```
 
-当前 `colcon list` 注册13个包；description/planning/simulation目录为保留入口，
+Phase 2A报告中的 `colcon list` 注册13个包；description/planning/simulation目录为保留入口，
 不计入该13包构建结果。官方驱动参考工作空间 `/home/aaet/aubo_driver_validation_ws`
 已有独立的 Jazzy Mock Hardware / FollowJointTrajectory / MoveIt 验证记录，
 只读参考；这不等于本仓库的新 C++ FSM 已完成同一集成。
