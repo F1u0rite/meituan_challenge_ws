@@ -223,29 +223,44 @@ V1、V2 单块电池到 T0 均达 `SUCCESS`，规划输出全部通过 `accept_p
 
 | 项 | 做法 | 结果 |
 |---|---|---|
-| 静态规划场景 | `config/planner.yaml` 的 `scene.boxes`（PLACEHOLDER 桌面：顶面 z=-0.005）经 `/apply_planning_scene` 写入；只增删本工具创建的对象 | 碰撞反证（目标在桌面内部）**被拒绝** ✅ |
+| 静态规划场景 | `config/planner.yaml` 的 `scene.boxes`（PLACEHOLDER 桌面：顶面 z=-0.005）经 `/apply_planning_scene` 写入；对象 ID 带前缀 `mtc_moveit_planner/`，只增删该前缀的对象（见 §7B） | 碰撞反证（目标在桌面内部）**被拒绝** ✅ |
 | 电池载荷 | 从 `test_lift` 起到 `seat_contact`，在**规划起点 RobotState** 上附着长方体（PLACEHOLDER 0.06×0.06×0.10 m，挂在 TCP 正下方 0.07 m），不修改全局场景；`retreat` 起不再附着 | V2 全流程在桌面 + 载荷下 7 段 PASS ✅ |
 | 落座几何 | 工位/提环占位高度改为 0.13 m：载荷底面距桌面 1 cm；**最后的接触闭合不由规划完成**（需力控/柔顺，属执行与工具） | — |
 | 起点一致性 | 新增公共函数 `check_trajectory_start()`（按名称比较首点，容差默认 0.01 rad，与 MoveIt allowed_start_tolerance 一致）与 `MoveItPlannerPort::replan_primitive()`（以实测状态为起点、不再假设 ToolPort 行程，只重规划一段） | 供 FollowJointTrajectory 适配在发送前调用 ✅ |
-| V1 规划 | FREE_SPACE 依次：末端直线 → 以起点为种子求 IK（候选解须满足控制器限位）→ **关节空间直线插值，逐点经 `/check_state_validity` 校验（含桌面与载荷）** → OMPL 到该关节目标 → 位姿目标 OMPL | `side_insert` 从 116–196 s（OMPL 随机）降到 **39.6–42.1 s 且可重复**，仍 > 24 s（30 s×80%）❌ |
+| V1 规划 | FREE_SPACE 依次：末端直线 → 以起点为种子求 IK（候选解须满足控制器限位）→ **关节空间直线插值，逐点经 `/check_state_validity` 校验（含桌面与载荷）** → OMPL 到该关节目标 → 位姿目标 OMPL | `side_insert` 从 116–196 s（OMPL 随机）降到 39.6–42.1 s，仍 > 24 s（30 s×80%）❌。**更正**：此轮"可重复"的结论不成立，见 §7B |
 
 证据：[`evidence/20261011_113932/`](evidence/20261011_113932/)（提交 `63d24e3`）。另：固定 6D Pose 规划现在同样走"种子 IK + 关节插值"，
 结果确定（5.91 s / 61 点，终点误差 3.7e-6 m），解决了第一轮"IK 分支跳变、OMPL 时长 5.9–20.9 s 波动"的问题。
 
 **V1 仍阻断的量化原因**：从 `home`（工具朝下）到侧插预对准（工具水平）需转 90°，原语角速度上限 0.1 rad/s
-⇒ 理论下限 15.7 s；末端直线只可行 50%（fraction=0.506），改用关节空间插值后转动不均匀，峰值角速度 0.098 rad/s 已贴上限，得 39.6–42.1 s。
+⇒ 理论下限 15.7 s；末端直线只可行 50%（fraction=0.506），改用关节空间插值后转动不均匀，峰值角速度 0.098 rad/s 已贴上限，得 39.59 s（§7B 后稳定）。
 **未放宽任何安全参数**。可行方向（需孙嘉明决定）：V1 增加"工具已水平"的就绪位，或把"快速接近"与"慢速预对准"拆成两个原语。
+
+## 7B. 第三轮（#4 评审意见）：重复关节名、场景对象 ID 隔离、V1 选解确定化
+
+基于合并 #3、#6 后的最新 `main`（`9fea32e`）全新构建复测。
+
+| 项 | 做法 | 结果 |
+|---|---|---|
+| 起点检查拒绝重复关节名 | `check_trajectory_start()` 对轨迹 `joint_names` 与实测 `names` 先查重复 / 空名，出现即判不通过（消息 `duplicate joint name …`），不"取第一个"；`JointStateSnapshot::shape_is_valid()` 同样拒绝，`replan_primitive()` / `plan_blocking()` 收到重名起点返回 `[INVALID_START_STATE]` 且不调用后端 | GTest ✅（`DuplicateOrEmptyJointNamesAreRejected`、`ReplanFromStateWithDuplicateJointNamesIsRefused`） |
+| 场景对象 ID 隔离 | 新增 `scene_ids.hpp`：所有对象加前缀 `mtc_moveit_planner/`；配置写本地 ID，校验字符集 `[A-Za-z0-9_.-]`、不重复、不得自带前缀（参数加载即报错）；`apply_scene` 只移除"带本前缀且本次不需要"的对象（含进程重启前遗留的），**绝不触碰不带前缀的对象**；附着电池 ID 改为 `mtc_moveit_planner/battery_payload` | GTest ✅（3 项）；Fake move_group 反证 ✅：预置其他模块的 `table`、`perception/battery_3` 与本模块遗留 `mtc_moveit_planner/old_fixture`，规划后前两者原样保留、遗留被清除、本模块桌面为 `mtc_moveit_planner/table`（`scene_isolation.log`） |
+| V1 选解确定化 | 复测发现上一轮"39.6–42.1 s 可重复"不成立：同一请求有时 123 s——单次 KDL IK 在种子不收敛时随机重启，落到另一组解。改为收集候选（位姿延拓 + 起点与腕关节 ±90° 组合的 27 个固定种子），按"关节插值在 TOTG + 末端限速下的预计时长"排序后逐个做逐点碰撞校验。注意关节跨度最小≠时长最短（跨度 3.45 rad 的解 123 s，2.79 rad 的解 39.6 s） | 最终代码连续 5 次 Fake 运行均为 **39.59 s**；`side_insert` 规划耗时 0.41–0.51 s（PLAN_ACQUIRE 看门狗 2 s）；仍 > 24 s ❌，保留为已知阻断，**未改任何安全参数** |
+
+测试：`mtc_moveit_planner` **40 项 GTest**（原 35 + 新增 5）全部通过；与 `mtc_core_cpp`、`mtc_task_cpp`、`mtc_motion_execution_cpp`、
+`mtc_manipulation_cpp`、`mtc_ros2_action_cpp` 合计 424 项测试 0 失败。
+证据：[`evidence/20261011_204211/`](evidence/20261011_204211/)（提交 `5b16415`）：固定位姿 PASS（5.91 s / 61 点，终点误差 3.7e-6 m）、
+场景 ID 隔离 PASS、碰撞反证 PASS、V2 7 段 PASS、V1 FAIL（`EXCEEDS_STATE_WATCHDOG` 39.59 s）。
 
 ## 8. 风险与阻断清单
 
 | # | 问题 | 影响 | 责任人 / 需谁确认 |
 |---|---|---|---|
 | R1 | **预规划起点过期**：`test_lift` 在 ToolPort 接合前规划，`retreat` 在卸载/退钩前规划；本包只能假设 ToolPort 行程（0.03 m）推算起点 | 起点偏差 > 0.01 rad 时 MoveIt 执行 ABORTED；直接发给 JTC 会跳变 | 孙嘉明：MotionAdapter 发送前核对起点并拒绝/触发重规划；**已提供** `check_trajectory_start()` 与 `replan_primitive()` 供执行侧调用 |
-| R2 | PLAN_ACQUIRE 看门狗 2.0 s；ACQUIRE 需 3 次求解（OMPL + 2 次直线） | 真实规划耗时接近上限时 FSM 超时 | 孙嘉明：评估是否放宽；本包 planning_time=1.0 s |
+| R2 | PLAN_ACQUIRE 看门狗 2.0 s；ACQUIRE 需多次求解 | 真实规划耗时接近上限时 FSM 超时 | 孙嘉明：评估是否放宽；Fake 实测 V1 `side_insert` 0.41–0.51 s、V2 各段 < 0.01 s |
 | R3 | `transport` 原语 `target_pose` 为提环位姿而非工位 | 若有人按字段名使用会把电池搬回原处 | 孙嘉明确认设计意图 |
 | R4 | TCP、工位、提环轴向、相机外参均未标定 | 输出只能 `simulation_only` | 韩明赫（MEASURED/ESTIMATED/UNKNOWN 表） |
-| R5 | 碰撞场景：已有占位桌面 + 电池载荷；仍缺工具外形、相机、工位支架，取货电池本体未作为障碍物（需 ACM 允许钩子进入提环） | 不能证明真实场景无碰撞 | 常建烁（现场按实测补） |
-| R6 | **V1 预对准超看门狗（实测）**：关节插值后 39.6–42.1 s（原 OMPL 116–196 s），瓶颈为 90° 转向 × 0.1 rad/s 角速度上限；V2 直线可行 | 明天基础任务若用 V1，PLAN_ACQUIRE 即失败 | **孙嘉明**：增加 V1 就绪位或拆分接近/预对准原语；规划侧不放宽安全参数 |
+| R5 | 碰撞场景：已有占位桌面 + 电池载荷（ID 前缀 `mtc_moveit_planner/` 隔离）；仍缺工具外形、相机、工位支架，取货电池本体未作为障碍物（需 ACM 允许钩子进入提环） | 不能证明真实场景无碰撞 | 常建烁（现场按实测补） |
+| R6 | **V1 预对准超看门狗（实测）**：关节插值 + 按时长选解后稳定 39.59 s（原 OMPL 116–196 s），瓶颈为 90° 转向 × 0.1 rad/s 角速度上限；V2 直线可行 | 明天基础任务若用 V1，PLAN_ACQUIRE 即失败 | **孙嘉明**：增加 V1 就绪位或拆分接近/预对准原语；规划侧不放宽安全参数 |
 | R8 | URDF 与 ros2_control 指令限位不一致（foreArm/wrist1/wrist3） | MoveIt 可能给出超出控制器限位的解；本包已拒绝此类输出，但实机软限位仍未知 | 孙嘉明 / 现场确认实机软限位 |
 | R7 | `Pose6D.stamp_s` 为 FSM 时基，tf2 查询取最新变换 | 动态 TF（相机）时间同步需统一时基 | 韩明赫 / 孙嘉明 |
 
