@@ -1,0 +1,34 @@
+Starting >>> mtc_interfaces
+Starting >>> mtc_core_cpp
+Finished <<< mtc_core_cpp [4.03s]
+Starting >>> mtc_motion_execution_cpp
+Finished <<< mtc_interfaces [10.5s]
+Starting >>> mtc_aubo_bridge
+Finished <<< mtc_motion_execution_cpp [6.59s]
+Starting >>> mtc_manipulation_cpp
+Finished <<< mtc_aubo_bridge [0.79s]
+Starting >>> mtc_manipulation
+Finished <<< mtc_manipulation [0.90s]
+Starting >>> mtc_motion_execution
+Finished <<< mtc_motion_execution [0.83s]
+Starting >>> mtc_safety
+Finished <<< mtc_safety [0.78s]
+Starting >>> mtc_task
+Finished <<< mtc_task [1.25s]
+Starting >>> mtc_task_cpp
+Finished <<< mtc_manipulation_cpp [4.72s]
+Starting >>> mtc_tool
+Finished <<< mtc_tool [0.81s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_task_cpp [4.31s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_moveit_planner [11.2s]
+Starting >>> mtc_bringup
+Finished <<< mtc_bringup [0.81s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [11.9s]
+Finished <<< mtc_trajectory_execution_cpp [23.0s]
+Starting >>> mtc_phase2c_integration_cpp
+Finished <<< mtc_phase2c_integration_cpp [9.14s]
+
+Summary: 16 packages finished [51.6s]

@@ -1,0 +1,13 @@
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.36733 generation_steady=10221.1 ROS_now=1.7918e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=2 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=0 controlled=1
+[single_owner-1] EVIDENCE command_id=phase2c-1791798313593414889/dispatch/1 UUID=226095952834e81d6b5ca84415d1ad31 Goals=1 Cancel=1 Feedback=1 Result=runtime Fake/controller/state/graph or live Status evidence lost StopConfirmed=false FaultLocked=1 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] RESULT success=0 stop_confirmed=0 status_unknown=1 fault_locked=1 Goals=1 Cancel=1 UUID=226095952834e81d6b5ca84415d1ad31 feedback=1 stationary_samples=0 stationary_seconds=0 message=runtime Fake/controller/state/graph or live Status evidence lost
+[single_owner-1] PASS fault

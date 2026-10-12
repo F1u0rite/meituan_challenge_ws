@@ -1,0 +1,14 @@
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.36631 generation_steady=10107.3 ROS_now=1.7918e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=phase2c-1791798201436052822/dispatch/1 UUID=fa22d38985d6fc449ba8c38950f46abe Goals=1 Cancel=0 Feedback=261 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=45 StationarySeconds=0.219818
+[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=fa22d38985d6fc449ba8c38950f46abe feedback=261 stationary_samples=45 stationary_seconds=0.219818 message=FJT successful; fresh post-terminal stationary interval and final joints verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=0.0198052/0.0198052 upperArm_joint=-0.0512158/-0.0512158 foreArm_joint=0.0696566/0.0696566 wrist1_joint=-0.0241826/-0.0241826 wrist2_joint=-9.91301e-05/-9.91301e-05 wrist3_joint=0.0149416/0.0149416
+[single_owner-1] PASS execute
