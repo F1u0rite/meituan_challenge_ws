@@ -84,5 +84,6 @@
     "src/mtc_simulation/test/test_acceptance.py": "18622dc7745d3ecae5a0c5b0fb4cde1b1482f39a6feeafd1ccb6829d53cebf8d",
     "src/mtc_simulation/worlds/basic.sdf": "79357b12ca5bb7c65e7425e58f017c6bc0e0b112464c61ccbddf8319d6f824b1",
     "src/mtc_simulation/worlds/sequence.sdf": "3fc2d896af5c2da2330d7c6a3b70c201ee5a550b4d155f896d47c0eabfc4f642"
-  }
+  },
+  "implementation_commit": "01ed575b6b45264ebc7554d5adf12f864006bc81"
 }

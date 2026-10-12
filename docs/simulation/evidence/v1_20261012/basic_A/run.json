@@ -5,9 +5,11 @@
   "simulation_only": true,
   "physics": "passive contacts; no fixed attachment",
   "perception": "Gazebo ground truth",
-  "output": "/tmp/mtc_v1_basic_17",
+  "output": "/tmp/mtc_v1_basic_19",
   "domain": 86,
-  "gz_partition": "mtc_v1_0abda39f4ec645c79e640899b50a7765",
+  "gz_partition": "mtc_v1_52a20baafc134519b5b67916513b9d95",
+  "rmw": "rmw_fastrtps_cpp",
+  "fastdds_transports": "UDPv4",
   "task_exit_code": 0,
   "process_exit_codes": {
     "gazebo": 0,

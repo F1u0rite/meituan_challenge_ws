@@ -7,14 +7,14 @@
       "object": "battery_A",
       "slot": "T0",
       "passed": true,
-      "max_lift_m": 0.28452597060697304,
-      "final_center_error_m": 3.639103149484619e-05,
+      "max_lift_m": 0.2845260644740977,
+      "final_center_error_m": 3.6285760281908795e-05,
       "final_xyz": [
-        0.2998820014518163,
-        -0.11502439760505268,
-        0.6499999135581469
+        0.2998818472208615,
+        -0.11502430202572268,
+        0.6499999135580057
       ],
-      "stable_from_trace_s": 28.760000000000005
+      "stable_from_trace_s": 28.92
     }
   ],
   "unexpected_contacts_over_1mm": {},

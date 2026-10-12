@@ -3,9 +3,9 @@
     "case": "basic_A",
     "object": "battery_A",
     "slot": "T0",
-    "trial_lift_mm": 19.501336637722577,
-    "center_error_mm": 0.03639103149484619,
-    "stable_seconds": 28.760000000000005,
+    "trial_lift_mm": 19.501336637379406,
+    "center_error_mm": 0.036285760281908795,
+    "stable_seconds": 28.92,
     "passed": true
   },
   {
