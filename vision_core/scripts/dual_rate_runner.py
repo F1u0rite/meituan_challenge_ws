@@ -18,6 +18,14 @@ def _stats(values):
     return dict(mean_ms=float(np.mean(values)),p95_ms=float(np.percentile(values,95))) if values else None
 
 
+def consume_cad_results(fast,cad):
+    """Every consumer preserves table evidence, including paused/key refreshes."""
+    messages=cad.drain()
+    for message in messages:
+        fast.set_table_hint(message.get('table_plane'),message['capture_timestamp'],message['source_frame_id'])
+    return messages
+
+
 def pipeline_diagnostics(capture,cad,result):
     sync=capture.pair_guard.snapshot() if capture else None
     return dict(usb_packet_loss=None,usb_packet_loss_status='NOT_MEASURED',
@@ -159,9 +167,7 @@ def run_dual_rate(args):
             result,object_views=fast.process(frame,identity)
             result['mode']='REAL_RED_RGBD_OFFLINE_DUAL_RATE' if args.replay else 'LIVE_DUAL_RATE_UNVERIFIED'
             result['sample_id']=name
-            received=cad.drain();cad_messages.extend(received)
-            for message in received:
-                fast.set_table_hint(message.get('table_plane'),message['capture_timestamp'],message['source_frame_id'])
+            received=consume_cad_results(fast,cad);cad_messages.extend(received)
             merged,rejected=merge_cad_history(history,received);cad_rejected+=rejected;cad_rows.extend(merged)
             now=monotonic()
             if result['objects'] and now-last_cad_schedule>=cad_interval:
@@ -221,7 +227,7 @@ def run_dual_rate(args):
                     nonlocal paused_cad_requested,cad_rejected
                     if args.replay and ui.paused and not paused_cad_requested and result['objects']:
                         cad.submit(frame,identity,result['objects']);paused_cad_requested=True
-                    fresh=cad.drain();cad_messages.extend(fresh)
+                    fresh=consume_cad_results(fast,cad);cad_messages.extend(fresh)
                     result['detection_fps']=fast.rate.hz();result['cad_fps']=cad.rate.hz()
                     merged,late=merge_cad_history(history,fresh);cad_rejected+=late;cad_rows.extend(merged)
                     cad_for_display(result,identity,history,now=result['capture_timestamp'] if args.replay else None)
