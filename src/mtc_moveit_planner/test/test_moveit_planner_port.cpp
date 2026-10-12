@@ -142,7 +142,8 @@ TEST(MoveItPlannerPort, V1AcquireReturnsOneFullTrajectoryPerPrimitive)
 {
   Fixture f;
   const auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
-  ASSERT_EQ(target.primitive_names, (std::vector<std::string>{"side_insert", "test_lift"}));
+  ASSERT_EQ(target.primitive_names,
+    (std::vector<std::string>{"side_approach", "side_insert", "test_lift"}));
   const auto result = f.port()->plan_blocking(target);
   expect_fsm_compatible(result, target);
   EXPECT_EQ(result.error_code, ErrorCodes::OK);
@@ -155,25 +156,33 @@ TEST(MoveItPlannerPort, AcquireGeometryStandoffEngageGapAndTestLift)
   Fixture f;
   const auto result = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   ASSERT_TRUE(result.ok) << result.message;
-  // 预对准：提环 (0.4,-0.1,0.25) 沿插入轴 +Z 退 0.03（TCP 为单位变换）。
-  const auto & pre_align = result.commands[0].trajectory->points;
-  EXPECT_NEAR(x_of(pre_align.front()), 0.30, kTol);  // 从当前状态出发
+  // 快速接近：从当前状态出发，停在提环 (0.4,-0.1,0.25) 沿插入轴 +Z 退 0.05 处。
+  const auto & approach = result.commands[0].trajectory->points;
+  EXPECT_NEAR(x_of(approach.front()), 0.30, kTol);  // 从当前状态出发
+  EXPECT_NEAR(z_of(approach.back()), 0.20, kTol);
+  // 预对准：接着走最后 0.02 m 到退 0.03 处（TCP 为单位变换）。
+  const auto & pre_align = result.commands[1].trajectory->points;
+  EXPECT_NEAR(z_of(pre_align.front()), 0.20, kTol);
   EXPECT_NEAR(x_of(pre_align.back()), 0.40, kTol);
   EXPECT_NEAR(y_of(pre_align.back()), -0.10, kTol);
   EXPECT_NEAR(z_of(pre_align.back()), 0.22, kTol);
   // 试提：起点假设 ToolPort 插入 0.03 后的位置，再上提 0.01。
-  const auto & test_lift = result.commands[1].trajectory->points;
+  const auto & test_lift = result.commands[2].trajectory->points;
   EXPECT_NEAR(z_of(test_lift.front()), 0.25, kTol);
   EXPECT_NEAR(z_of(test_lift.back()), 0.26, kTol);
 
-  ASSERT_EQ(f.backend->requests.size(), 3u);
-  EXPECT_EQ(f.backend->requests[0].label, "side_insert");
-  EXPECT_EQ(f.backend->requests[1].label, "simulated_ENGAGE_INSERT");
-  EXPECT_EQ(f.backend->requests[2].label, "test_lift");
+  ASSERT_EQ(f.backend->requests.size(), 4u);
+  EXPECT_EQ(f.backend->requests[0].label, "side_approach");
+  EXPECT_EQ(f.backend->requests[1].label, "side_insert");
+  EXPECT_EQ(f.backend->requests[2].label, "simulated_ENGAGE_INSERT");
+  EXPECT_EQ(f.backend->requests[3].label, "test_lift");
   EXPECT_EQ(f.backend->requests[0].mode, mtc::moveit_planner::MotionMode::FREE_SPACE);
-  EXPECT_EQ(f.backend->requests[2].mode, mtc::moveit_planner::MotionMode::CARTESIAN);
+  EXPECT_EQ(f.backend->requests[1].mode, mtc::moveit_planner::MotionMode::FREE_SPACE);
+  EXPECT_EQ(f.backend->requests[3].mode, mtc::moveit_planner::MotionMode::CARTESIAN);
   // 原语速度上限原样下传给后端做时间参数化。
-  EXPECT_DOUBLE_EQ(f.backend->requests[2].max_linear_speed_m_s, 0.01);
+  EXPECT_DOUBLE_EQ(f.backend->requests[0].max_linear_speed_m_s, 0.05);
+  EXPECT_DOUBLE_EQ(f.backend->requests[1].max_linear_speed_m_s, 0.02);
+  EXPECT_DOUBLE_EQ(f.backend->requests[3].max_linear_speed_m_s, 0.01);
 }
 
 TEST(MoveItPlannerPort, V2TopInsertIsPlanned)
@@ -222,13 +231,14 @@ TEST(MoveItPlannerPort, PayloadAttachedFromTestLiftUntilRelease)
   Fixture f;
   auto acquire = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   ASSERT_TRUE(acquire.ok) << acquire.message;
-  // side_insert / 插入假设：无载荷；test_lift：挂上电池。
-  ASSERT_EQ(f.backend->requests.size(), 3u);
+  // side_approach / side_insert / 插入假设：无载荷；test_lift：挂上电池。
+  ASSERT_EQ(f.backend->requests.size(), 4u);
   EXPECT_FALSE(f.backend->requests[0].payload.has_value());
   EXPECT_FALSE(f.backend->requests[1].payload.has_value());
-  ASSERT_TRUE(f.backend->requests[2].payload.has_value());
+  EXPECT_FALSE(f.backend->requests[2].payload.has_value());
+  ASSERT_TRUE(f.backend->requests[3].payload.has_value());
   // 载荷中心在 TCP（单位 TCP 时即 ee_link）正下方 hang_below_tcp_m。
-  const auto & payload = *f.backend->requests[2].payload;
+  const auto & payload = *f.backend->requests[3].payload;
   EXPECT_NEAR(payload.ee_to_payload.translation.x, 0.0, kTol);
   EXPECT_NEAR(payload.ee_to_payload.translation.y, 0.0, kTol);
   EXPECT_NEAR(payload.ee_to_payload.translation.z, -f.config.payload.hang_below_tcp_m, kTol);
@@ -338,7 +348,7 @@ TEST(MoveItPlannerPort, UntransformableFrameIsRefusedWithoutCopyingXyz)
   const auto result = f.port()->plan_blocking(
     acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate("camera_color_optical_frame")));
   EXPECT_FALSE(result.ok);
-  EXPECT_EQ(result.message.rfind("[TF_UNAVAILABLE] side_insert", 0), 0u) << result.message;
+  EXPECT_EQ(result.message.rfind("[TF_UNAVAILABLE] side_approach", 0), 0u) << result.message;
   EXPECT_EQ(f.backend->plan_calls.load(), 0);
 }
 
@@ -348,7 +358,7 @@ TEST(MoveItPlannerPort, MissingRingPoseIsRefused)
   const auto result = f.port()->plan_blocking(
     acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate("base_link", false)));
   EXPECT_FALSE(result.ok);
-  EXPECT_EQ(result.message.rfind("[TARGET_POSE_MISSING] side_insert", 0), 0u) << result.message;
+  EXPECT_EQ(result.message.rfind("[TARGET_POSE_MISSING] side_approach", 0), 0u) << result.message;
 }
 
 TEST(MoveItPlannerPort, NoRobotStateIsRefused)
@@ -363,24 +373,17 @@ TEST(MoveItPlannerPort, NoRobotStateIsRefused)
 TEST(MoveItPlannerPort, TrajectoryLongerThanStateWatchdogIsRefused)
 {
   Fixture f;
-  f.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = 5.0;
+  f.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = 1.0;
   const auto result = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   EXPECT_FALSE(result.ok);
-  EXPECT_EQ(result.message.rfind("[EXCEEDS_STATE_WATCHDOG] side_insert", 0), 0u)
+  EXPECT_EQ(result.message.rfind("[EXCEEDS_STATE_WATCHDOG] side_approach", 0), 0u)
     << result.message;
 }
 
-/// 拆分提案：快速接近（side_approach）+ 慢速预对准（side_insert），两者都在 MOVE_PRE_ALIGN 执行。
+/// V1 预对准两段：快速接近（side_approach）+ 低速预对准（side_insert），都在 MOVE_PRE_ALIGN 执行。
 PlanTarget split_acquire_target()
 {
-  auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
-  auto approach = target.primitives.front();
-  approach.name = "side_approach";
-  approach.max_linear_speed = 0.15;
-  approach.max_angular_speed = 0.3;
-  target.primitives.insert(target.primitives.begin(), approach);
-  target.primitive_names.insert(target.primitive_names.begin(), approach.name);
-  return target;
+  return acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
 }
 
 TEST(MoveItPlannerPort, SplitApproachStopsShortOfStandoffAndKeepsSlowFinalSegment)
@@ -388,7 +391,7 @@ TEST(MoveItPlannerPort, SplitApproachStopsShortOfStandoffAndKeepsSlowFinalSegmen
   Fixture f;
   const auto result = f.port()->plan_blocking(split_acquire_target());
   ASSERT_TRUE(result.ok) << result.message;
-  ASSERT_EQ(result.commands.size(), 3u);
+  ASSERT_EQ(result.commands.size(), 3u);   // + test_lift
   EXPECT_EQ(result.commands[0].primitive_name, "side_approach");
   EXPECT_EQ(result.commands[1].primitive_name, "side_insert");
   // 接近段停在提环前 0.05 m（预对准 0.03 + 退让 0.02），预对准段只走最后 0.02 m。
@@ -397,7 +400,7 @@ TEST(MoveItPlannerPort, SplitApproachStopsShortOfStandoffAndKeepsSlowFinalSegmen
   EXPECT_NEAR(z_of(approach_end), 0.25 - 0.05, 1e-9);
   EXPECT_NEAR(z_of(insert_end), 0.25 - 0.03, 1e-9);
   ASSERT_GE(f.backend->requests.size(), 2u);
-  EXPECT_DOUBLE_EQ(f.backend->requests[0].max_linear_speed_m_s, 0.15);
+  EXPECT_DOUBLE_EQ(f.backend->requests[0].max_linear_speed_m_s, 0.05);
   EXPECT_DOUBLE_EQ(f.backend->requests[1].max_linear_speed_m_s, 0.02);
 }
 
@@ -439,11 +442,11 @@ TEST(MoveItPlannerPort, StartMismatchAndMissingJointAreRefused)
 TEST(MoveItPlannerPort, TighterControllerJointLimitsAreEnforced)
 {
   Fixture f;
-  // 假后端 foreArm_joint = 末端 z；预对准终点 z=0.22 超过此限位。
+  // 假后端 foreArm_joint = 末端 z；第一段（快速接近）轨迹已超出此限位，必须在该段就拒绝。
   f.config.joint_position_limits["foreArm_joint"] = {-0.1, 0.2};
   const auto result = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   EXPECT_FALSE(result.ok);
-  EXPECT_EQ(result.message.rfind("[JOINT_LIMIT_VIOLATION] side_insert", 0), 0u) << result.message;
+  EXPECT_EQ(result.message.rfind("[JOINT_LIMIT_VIOLATION] side_approach", 0), 0u) << result.message;
 }
 
 TEST(MoveItPlannerPort, ScalingAboveExecutorCapIsRefused)
@@ -461,7 +464,7 @@ TEST(MoveItPlannerPort, CalibrationGate)
   strict.config.allow_uncalibrated_geometry = false;
   auto result = strict.port()->plan_blocking(
     acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
-  EXPECT_EQ(result.message.rfind("[TCP_UNKNOWN] side_insert", 0), 0u) << result.message;
+  EXPECT_EQ(result.message.rfind("[TCP_UNKNOWN] side_approach", 0), 0u) << result.message;
 
   Fixture measured;
   measured.config.tcp_status = CalibrationStatus::MEASURED;
@@ -498,7 +501,7 @@ TEST(MoveItPlannerPort, AsyncReturnsNulloptUntilDoneAndNeverDuplicatesWork)
   }
   ASSERT_TRUE(result.has_value());
   expect_fsm_compatible(*result, target);
-  EXPECT_EQ(f.backend->plan_calls.load(), 3);  // side_insert + 插入假设 + test_lift，只做一次
+  EXPECT_EQ(f.backend->plan_calls.load(), 4);  // 接近 + 预对准 + 插入假设 + test_lift，只做一次
 }
 
 }  // namespace

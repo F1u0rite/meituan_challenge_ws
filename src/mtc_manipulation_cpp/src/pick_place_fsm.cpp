@@ -747,18 +747,33 @@ PickPlaceFsm::HandlerOutcome PickPlaceFsm::h_move_pre_align()
   if (primitives_list.empty()) {
     return make_error(mtc::core::ErrorCodes::PLANNING_FAILED, "接近段无运动原语", true);
   }
-  const auto command = cached_command("pre_align", primitives_list.front());
-  primitive_calls_.push_back(primitives_list.front().name);
+  // 接近段可由多个原语组成（V1：快速接近 + 低速预对准），按顺序逐个执行，共用本状态看门狗。
+  // 安全语义：已有运动结果的原语直接取缓存，不再构造命令——否则会替换在途命令、生成新
+  // command_id 并重发。第一个原语沿用原标签（pre_align / motion），单原语时行为与原来完全一致。
+  for (size_t i = 0; i < primitives_list.size(); ++i) {
+    const auto & primitive = primitives_list[i];
+    const std::string suffix = i == 0 ? std::string() : "_" + std::to_string(i);
+    const std::string motion_label = "motion" + suffix;
+    const auto done = motion_cache_.find(make_cache_key(motion_label));
+    if (done != motion_cache_.end()) {
+      if (auto failure = motion_failure(done->second); failure.has_value()) {
+        return failure;
+      }
+      continue;
+    }
+    const auto command = cached_command("pre_align" + suffix, primitive);
+    primitive_calls_.push_back(primitive.name);
 
-  mtc::core::MotionResult motion;
-  if (!resolve_cached(
-      motion_cache_, "motion",
-      [this, &command]() {return execute_motion(command);}, motion))
-  {
-    return std::nullopt;
-  }
-  if (auto failure = motion_failure(motion); failure.has_value()) {
-    return failure;
+    mtc::core::MotionResult motion;
+    if (!resolve_cached(
+        motion_cache_, motion_label,
+        [this, &command]() {return execute_motion(command);}, motion))
+    {
+      return std::nullopt;
+    }
+    if (auto failure = motion_failure(motion); failure.has_value()) {
+      return failure;
+    }
   }
   StepResult result;
   result.state = PickPlaceState::ENGAGE;

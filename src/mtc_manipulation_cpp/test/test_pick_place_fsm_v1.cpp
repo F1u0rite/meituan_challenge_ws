@@ -23,6 +23,7 @@ namespace
 
 using mtc::core::ErrorCodes;
 using mtc::core::ManualClock;
+using mtc::manipulation::PassiveHookV1Strategy;
 using mtc::manipulation::PickPlaceConfig;
 using mtc::manipulation::PickPlaceFsm;
 using mtc::manipulation::PickPlaceState;
@@ -153,6 +154,7 @@ TEST(PickPlaceV1, MotionCommandSequenceUsesOnlyNonToolPrimitives)
   // 只有 MOVE_PRE_ALIGN / TEST_LIFT / LIFT / TRANSPORT / MOVE_PRE_SEAT /
   // SEAT / RETREAT 会发运动指令；ENGAGE、UNLOAD、DISENGAGE 走 ToolPort。
   const std::vector<std::string> expected = {
+    "side_approach",
     "side_insert",
     "test_lift",
     "lift",
@@ -162,6 +164,53 @@ TEST(PickPlaceV1, MotionCommandSequenceUsesOnlyNonToolPrimitives)
     "retreat",
   };
   EXPECT_EQ(harness.motion_primitives(), expected);
+}
+
+TEST(PickPlaceV1, PreAlignRunsFastApproachThenSlowInsertWithoutResend)
+{
+  Harness harness;
+  harness.motion->pending_ticks = 3;   // 快速接近段在途 3 个 step
+  harness.start();
+  const auto result = harness.run();
+  ASSERT_TRUE(result.success) << result.message;
+
+  std::vector<mtc::core::MotionCommand> pre_align;
+  for (const auto & command : harness.motion->commands) {
+    if (command.primitive_name == "side_approach" || command.primitive_name == "side_insert") {
+      pre_align.push_back(command);
+    }
+  }
+  // 在途期间重复查询的是同一条命令（同一 command_id），完成后才发下一段，且不再回头重发。
+  ASSERT_EQ(pre_align.size(), 5u);
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_EQ(pre_align[i].primitive_name, "side_approach");
+    EXPECT_EQ(pre_align[i].command_id, pre_align[0].command_id);
+  }
+  EXPECT_EQ(pre_align[4].primitive_name, "side_insert");
+  EXPECT_NE(pre_align[4].command_id, pre_align[0].command_id);
+
+  // 速度上限：快速段沿用 Python 设计的自由空间速度；最后一段保持原来的低速。
+  ASSERT_TRUE(pre_align[0].intent.has_value());
+  ASSERT_TRUE(pre_align[4].intent.has_value());
+  EXPECT_DOUBLE_EQ(pre_align[0].intent->max_linear_speed,
+    PassiveHookV1Strategy::FREE_APPROACH_LINEAR_SPEED);
+  EXPECT_DOUBLE_EQ(pre_align[0].intent->max_angular_speed,
+    PassiveHookV1Strategy::FREE_APPROACH_ANGULAR_SPEED);
+  EXPECT_DOUBLE_EQ(pre_align[4].intent->max_linear_speed,
+    PassiveHookV1Strategy::DEFAULT_LINEAR_SPEED);
+  EXPECT_DOUBLE_EQ(pre_align[4].intent->max_angular_speed,
+    PassiveHookV1Strategy::DEFAULT_ANGULAR_SPEED);
+}
+
+TEST(PickPlaceV1, FailureInSecondPreAlignPrimitiveStopsBeforeEngage)
+{
+  Harness harness;
+  harness.motion->unknown_primitives = {"side_insert"};
+  harness.start();
+  const auto result = harness.run();
+  EXPECT_FALSE(result.success);
+  EXPECT_EQ(result.final_state, PickPlaceState::FAULT);
+  EXPECT_EQ(harness.tool->engage_calls, 0);
 }
 
 TEST(PickPlaceV1, NoElectromagneticActionAtAll)

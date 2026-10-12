@@ -123,8 +123,15 @@ std::string PassiveHookV1Strategy::type() const
 mtc::core::MotionPrimitiveList PassiveHookV1Strategy::make_acquire_plan(
   const mtc::core::PoseEstimate & ring_pose) const
 {
-  return {make_primitive(
-    "side_insert", ring_pose, DEFAULT_LINEAR_SPEED, DEFAULT_ANGULAR_SPEED, false)};
+  // 两段（与 Python mtc_tool 的 side_insert_pre_align + side_insert 设计一致）：
+  //   side_approach：自由空间快速接近到预对准位之前，完成工具"朝下 -> 水平"的大角度转向；
+  //   side_insert  ：最后几厘米低速对准，速度上限不变。
+  // 合并为一段时，转向 90°~180° 受 0.1 rad/s 限制需 16~31 s 以上，超过 MOVE_PRE_ALIGN 看门狗。
+  return {
+    make_primitive(
+      "side_approach", ring_pose, FREE_APPROACH_LINEAR_SPEED, FREE_APPROACH_ANGULAR_SPEED, false),
+    make_primitive(
+      "side_insert", ring_pose, DEFAULT_LINEAR_SPEED, DEFAULT_ANGULAR_SPEED, false)};
 }
 
 mtc::core::MotionPrimitiveList PassiveHookV1Strategy::make_engage_plan(

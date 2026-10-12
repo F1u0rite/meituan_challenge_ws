@@ -49,6 +49,10 @@ public:
   static constexpr double DEFAULT_LINEAR_SPEED = 0.02;
   static constexpr double DEFAULT_ANGULAR_SPEED = 0.1;
   static constexpr double CONTACT_LINEAR_SPEED = 0.005;
+  /// V1 快速接近段（自由空间、远离提环）的末端速度上限。数值沿用 Python mtc_tool
+  /// PassiveHookParams.free_linear_speed_m_s / free_angular_speed_rad_s（未标定占位值）。
+  static constexpr double FREE_APPROACH_LINEAR_SPEED = 0.05;
+  static constexpr double FREE_APPROACH_ANGULAR_SPEED = 0.2;
 
   // -- 必须实现 ----------------------------------------------------------
 

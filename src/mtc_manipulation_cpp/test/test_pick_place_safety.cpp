@@ -367,14 +367,18 @@ TEST(PickPlaceSafety, InFlightCommandIsReusedNeverResent)
   EXPECT_EQ(harness.fsm->state(), PickPlaceState::MOVE_PRE_ALIGN);
   harness.fsm->step();   // 仍在途
   EXPECT_EQ(harness.fsm->state(), PickPlaceState::MOVE_PRE_ALIGN);
-  harness.fsm->step();   // 成功 -> ENGAGE
+  harness.fsm->step();   // 快速接近段成功，低速预对准段立即完成 -> ENGAGE
   EXPECT_EQ(harness.fsm->state(), PickPlaceState::ENGAGE);
 
-  EXPECT_EQ(harness.motion->execute_calls, 3);
-  ASSERT_EQ(harness.motion->command_ids.size(), 3u);
-  // 三次调用必须复用同一条命令：绝不因为"等待"而重新发令
+  EXPECT_EQ(harness.motion->execute_calls, 4);
+  ASSERT_EQ(harness.motion->command_ids.size(), 4u);
+  // 在途的三次调用必须复用同一条命令：绝不因为"等待"而重新发令
   EXPECT_EQ(harness.motion->command_ids[0], harness.motion->command_ids[1]);
   EXPECT_EQ(harness.motion->command_ids[1], harness.motion->command_ids[2]);
+  // 第二段是新命令，且第一段完成后不再被重发
+  EXPECT_NE(harness.motion->command_ids[3], harness.motion->command_ids[0]);
+  EXPECT_EQ(harness.motion->commands[0].primitive_name, "side_approach");
+  EXPECT_EQ(harness.motion->commands[3].primitive_name, "side_insert");
 }
 
 TEST(PickPlaceSafety, ProgressIsNotBlockedByInFlightPorts)

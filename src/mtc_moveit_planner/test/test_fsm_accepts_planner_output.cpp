@@ -141,7 +141,10 @@ TEST(FsmAcceptsPlannerOutput, V1SingleBatteryToT0Synchronous)
 {
   Harness h(TOOL_PASSIVE_HOOK_V1, false);
   expect_success_with_whole_trajectories(h, "T0");
-  EXPECT_EQ(h.motion->trajectory_commands.front().primitive_name, "side_insert");
+  // V1 预对准：快速接近 + 低速预对准，两条完整轨迹依次派发。
+  ASSERT_GE(h.motion->trajectory_commands.size(), 2u);
+  EXPECT_EQ(h.motion->trajectory_commands[0].primitive_name, "side_approach");
+  EXPECT_EQ(h.motion->trajectory_commands[1].primitive_name, "side_insert");
 }
 
 TEST(FsmAcceptsPlannerOutput, V2SingleBatteryToT0Synchronous)
