@@ -253,9 +253,12 @@ def run_dual_rate(args):
         print('DUAL_RATE_RESULT',output,json.dumps(summary,indent=2),flush=True)
         return summary
     finally:
-        if tcp_sender: tcp_sender.close()
-        finish_record()
-        if capture:capture.close()
-        elif source:source.stop()
-        if cad.thread and cad.thread.is_alive():cad.close()
-        if not args.headless:cv2.destroyAllWindows()
+        # Run every cleanup even if a recorder/source cleanup raises.
+        from contextlib import ExitStack
+        with ExitStack() as cleanup:
+            if not args.headless:cleanup.callback(cv2.destroyAllWindows)
+            if cad.thread and cad.thread.is_alive():cleanup.callback(cad.close)
+            if capture:cleanup.callback(capture.close)
+            elif source:cleanup.callback(source.stop)
+            cleanup.callback(finish_record)
+            if tcp_sender:cleanup.callback(tcp_sender.close)

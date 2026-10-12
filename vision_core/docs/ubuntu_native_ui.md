@@ -55,7 +55,49 @@ processing wall time. Offline CAD source association uses the recorded capture
 timeline; this does not promote a historical observation to current live data.
 Image display metadata sidecars preserve original timestamps and IDs.
 
-## Future live input
+## Manual Ubuntu native LIVE input
+
+In the VMware Ubuntu graphical desktop Terminal, run the existing venv launcher:
+
+```bash
+bash /path/to/workspace/vision_core/scripts/start_native_live_ui.sh
+```
+
+Executing this launcher authorizes opening the real D435i. It selects `--live
+--preview-authorized`, which reuses full-vision dual-rate processing, with RGB
+1280x720 BGR8 and Depth 640x480 Z16 at preferred 15 FPS. Actual SDK stream
+selection is printed; nearest supported fallback is reported by the existing
+source. SDK alignment, intrinsics, depth scale and original timestamps are used.
+No ROS2 Publisher or TCP sender starts by default.
+
+The launcher activates `$HOME/.venvs/mtc-vision-jazzy-py312`; override with
+`MTC_VISION_VENV` if the installed environment has another location. It resolves
+and enters the workspace automatically. No installation is performed.
+Outputs default to `$HOME/private_data/mtc_live_ui/live_<timestamp>`; override
+the root with `MTC_VISION_OUTPUT_ROOT`. `s` saves original RGB/raw Z16/aligned
+depth, intrinsics, timestamps, candidates and the displayed image below
+`user_saves/sample_NNNN`. `q`, ESC or Ctrl+C stops and releases the camera.
+`r` optionally starts/stops the existing bounded recorder. SPACE pauses display;
+acquisition continues so unpausing uses the latest qualified pair.
+
+LIVE Camera RGB/Depth rates count observed unique SDK frame IDs. Fast/CAD rates
+measure their own events. The configured 15 FPS is not a measured rate. CAD
+uses its existing bounded latest-job worker; preview does not wait for CAD.
+Historical CAD is labeled stale and excluded from current-image overlays.
+All Body/Ring candidates remain INVALID regardless of identity confirmation.
+Live-device performance and ROS2 publication acceptance require later tests.
+
+Direct equivalent (after activating the same existing venv in the workspace):
+
+```bash
+python vision_core/scripts/live_rgbd_preview.py --live --preview-authorized \
+  --color-size 1280 720 --depth-size 640 480 --fps 15 \
+  --run-output /path/to/new/private/live-output
+```
+
+`--run-output` also accepts the old `--replay-output` spelling. LIVE and offline
+replay inputs are mutually exclusive. `--help` and launcher syntax checks do not
+touch the camera. Missing DISPLAY fails before SDK startup.
 
 Do not start a real camera until the user again confirms Ubuntu attachment and
 explicitly authorizes it. Live operation still requires --preview-authorized.

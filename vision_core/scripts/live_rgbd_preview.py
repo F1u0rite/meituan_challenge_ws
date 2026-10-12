@@ -85,15 +85,21 @@ def main(argv=None):
     parser.add_argument('--full-vision', action='store_true',
                         help='Existing RGB-D segmentation + CAD + tracking diagnostic preview')
     parser.add_argument('--replay', type=Path, help='Offline session; never starts a camera')
+    parser.add_argument('--live', action='store_true', help='Native camera UI; selects existing full-vision dual-rate pipeline')
     parser.add_argument('--pair-manifest',type=Path,help='Approved original native NPY pairs; requires offline dual-rate replay')
     parser.add_argument('--headless', action='store_true')
     parser.add_argument('--preview-authorized', action='store_true',
                         help='Only use after explicit human camera preparation confirmation')
     parser.add_argument('--vision-config', type=Path, default=ROOT/'config/realtime_rgbd.yaml')
-    parser.add_argument('--replay-output', type=Path, help='New offline results directory; must not exist')
+    parser.add_argument('--run-output', '--replay-output', dest='replay_output', type=Path,
+                        help='New results directory; must not exist (legacy replay alias retained)')
     parser.add_argument('--ui-smoke', action='store_true', help='Finite offline GUI check only')
     parser.add_argument('--max-frames', type=int, default=0)
     args = parser.parse_args(argv)
+    if args.live:
+        if args.replay or args.pair_manifest:
+            parser.error('--live cannot be combined with offline replay inputs')
+        args.full_vision = args.dual_rate = True
     if not args.replay and not args.preview_authorized:
         parser.error('Human confirmation required: 准备好了，启动预览')
     if args.pair_manifest and not (args.replay and args.dual_rate and args.full_vision):

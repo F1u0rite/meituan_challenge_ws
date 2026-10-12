@@ -67,6 +67,14 @@ class CaptureWorker:
     def start(self):
         self.thread=Thread(target=self._run,name='rgbd-capture');self.thread.start()
     def _run(self):
+        try:
+            self._capture_loop()
+        except Exception as exc:
+            if not self.stop_event.is_set():self.error=f'{type(exc).__name__}: {exc}'
+        finally:
+            self.slot.close()
+
+    def _capture_loop(self):
         while not self.stop_event.is_set():
             try:frame=self.source.read(latest=True)
             except Exception as exc:
@@ -89,12 +97,14 @@ class CaptureWorker:
             identity=frame_id(frame,self.frames)
             if self.on_frame:self.on_frame(identity,frame)
             self.slot.put((identity,frame));self.rate.add()
-        self.slot.close()
     def close(self,timeout=5):
-        self.stop_event.set();self.slot.close();self.source.stop()
-        if self.thread:
-            self.thread.join(timeout)
-            if self.thread.is_alive():raise RuntimeError('Capture worker did not stop')
+        self.stop_event.set();self.slot.close()
+        try:
+            self.source.stop()
+        finally:
+            if self.thread:
+                self.thread.join(timeout)
+                if self.thread.is_alive():raise RuntimeError('Capture worker did not stop')
     @property
     def dropped(self):return self.sdk_dropped+self.slot.dropped
 
