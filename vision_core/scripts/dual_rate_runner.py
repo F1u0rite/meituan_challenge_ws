@@ -48,6 +48,11 @@ def run_dual_rate(args):
     observation=ObservationMonitor()
     fast=FastPerception();cad=CADWorker(RGBDVisionPipeline(args.vision_config));ui=VisionUI()
     source=None;capture=None;recorder=None;record_lock=Lock();record_index=0
+    tcp_sender=None
+    if getattr(args,'tcp_send',False):
+        import yaml
+        from perception.tcp_vision_sender import TCPVisionSender
+        tcp_sender=TCPVisionSender(**yaml.safe_load(args.tcp_config.read_text(encoding='utf-8-sig')))
     output=args.replay_output or ROOT/'outputs/live_rgbd_integration'/('dual_'+uuid.uuid4().hex[:8])
     if output.exists():raise FileExistsError(output)
     output.mkdir(parents=True)
@@ -94,6 +99,7 @@ def run_dual_rate(args):
             print('Actual streams:',json.dumps(source.start()),flush=True)
             capture=CaptureWorker(source,on_frame=record_frame)
         cad.start()
+        if tcp_sender: tcp_sender.start()
         if capture:
             capture.start()
             print('s save current diagnostic; r begin/end continuous RGB-D (bounded); q exit',flush=True)
@@ -119,6 +125,9 @@ def run_dual_rate(args):
             result['cad_result_age_ms']=max((o['historical_cad']['result_age_ms'] for o in result['objects']
                 if 'historical_cad' in o),default=None)
             result['result_age_ms']=None if args.replay else max(0,(time()-result['capture_timestamp'])*1000)
+            if tcp_sender:
+                tcp_sender.offer_vision(result,mode='test' if args.replay else 'live',timestamps=frame.timestamps)
+                result['tcp_sender']=tcp_sender.snapshot()
             image=ui.render(frame,result,object_views,cad.pipeline.geometry,source.project if source else None,
                            capture.rate.hz() if capture else None)
             result['timing_ms']['render']=ui.last_timing_ms['depth_render']+ui.last_timing_ms['ui_overlay']
@@ -167,6 +176,7 @@ def run_dual_rate(args):
             while len(screens)<4:screens.append(np.zeros_like(screens[0]))
             sheet=np.vstack((np.hstack(screens[:2]),np.hstack(screens[2:])))
             cv2.imencode('.png',sheet)[1].tofile(str(output/'ui_contact_sheet.png'))
+        if tcp_sender: tcp_sender.close()
         elapsed=perf_counter()-total_start
         summary=dict(mode='offline' if args.replay else 'live_unverified',frames_processed=len(rows),
             actual_camera_started=bool(capture),input_frames=len(folders) if args.replay else capture_count,
@@ -184,7 +194,8 @@ def run_dual_rate(args):
             fast_ring_pose_valid_count=sum(o['ring_pose_valid'] for r in rows for o in r['objects']),
             body_pose_valid=False,ring_pose_valid=False,position_accuracy='NOT_MEASURED',
             yaw_accuracy='NOT_MEASURED',live_test='NOT RUN' if args.replay else 'LIVE_SESSION',
-            raw_inputs_unchanged=True if args.replay else None)
+            raw_inputs_unchanged=True if args.replay else None,
+            tcp_sender=tcp_sender.snapshot() if tcp_sender else None)
         with (output/'detections.jsonl').open('w',encoding='utf-8') as f:
             for row in rows:f.write(json.dumps(row,allow_nan=False,default=str)+'\n')
         with (output/'cad_results.jsonl').open('w',encoding='utf-8') as f:
@@ -194,6 +205,7 @@ def run_dual_rate(args):
         print('DUAL_RATE_RESULT',output,json.dumps(summary,indent=2),flush=True)
         return summary
     finally:
+        if tcp_sender: tcp_sender.close()
         finish_record()
         if capture:capture.close()
         elif source:source.stop()

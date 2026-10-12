@@ -166,7 +166,7 @@ class VisionUI:
                 ('FIT median residual',mm(item['pose_quality'].get('cad_surface_residual_median_m'))),
                 ('CAD freshness',f"{item['candidate_state'] if 'candidate_state' in item else 'DIAGNOSTIC'} current={item['cad_fresh']} age={'N/A' if item['cad_result_timestamp'] is None else freshness}" if old is None else f"STALE {old['result_age_ms']:.0f}ms src={old['source_frame_id']} motion UNKNOWN_WITHOUT_TF"),
                 ('POSE VALID','body=false ring=false | UNVERIFIED'),
-                ('AMBIGUITY',', '.join(item['ambiguity'])),
+                ('DET / POSE uncertainty','det='+str(item.get('detection_ambiguity','legacy'))+' pose='+str(item.get('pose_ambiguity','legacy'))+' cad_stale='+str(item.get('cad_stale','legacy'))+' det_stale='+str(item.get('detection_stale','unknown'))),
                 ('REJECTION',item['rejection_reason'])]
             for i,(name,value) in enumerate(lines):
                 y=272+i*30;text(canvas,name,1070,y,(120,155,175),.42)

@@ -97,11 +97,30 @@ class FastPerception:
         if self.table_hint is None or capture_timestamp>self.table_hint['capture_timestamp']:
             self.table_hint=dict(plane=plane,capture_timestamp=capture_timestamp,source_frame_id=source_frame_id)
 
+    def table_hint_evidence(self,stamp,motion,source_frame_id=None,max_age_s=2.5):
+        hint=self.table_hint;reasons=[]
+        report=dict(usable=False,reasons=reasons,source_frame_id=hint['source_frame_id'] if hint else None,
+                    age_s=stamp-hint['capture_timestamp'] if hint else None,
+                    current_motion_stable=motion.get('stable'),current_motion_reason=motion.get('reason'))
+        if hint is None:reasons.append('TABLE_HINT_MISSING');return report
+        age=report['age_s']
+        if age<0:reasons.append('TABLE_HINT_FROM_FUTURE')
+        if age>max_age_s:reasons.append('TABLE_HINT_EXPIRED')
+        same=(age==0 and source_frame_id is not None and source_frame_id==hint['source_frame_id'])
+        report['same_rgbd_frame']=same
+        if same and not reasons:
+            report.update(usable=True,transfer='NOT_REQUIRED_CURRENT_FRAME');return report
+        if motion.get('stable') is None:reasons.append('CURRENT_BACKGROUND_MOTION_UNKNOWN')
+        elif motion.get('stable') is not True:reasons.append('CURRENT_BACKGROUND_MOTION_UNSTABLE')
+        interval=[stable for t,stable in self.motion_history if t>hint['capture_timestamp']]
+        report['interval_observations']=len(interval)
+        report['interval_unstable_or_unknown']=sum(stable is not True for stable in interval)
+        if not all(stable is True for stable in interval):reasons.append('BACKGROUND_NOT_STABLE_SINCE_TABLE_CAPTURE')
+        report['usable']=not reasons
+        return report
+
     def _hint_usable(self,stamp,motion,max_age_s=2.5):
-        hint=self.table_hint
-        if hint is None or motion.get('stable') is not True:return False
-        age=stamp-hint['capture_timestamp']
-        return 0<=age<=max_age_s and all(stable for t,stable in self.motion_history if t>hint['capture_timestamp'])
+        return self.table_hint_evidence(stamp,motion,max_age_s=max_age_s)['usable']
 
     def _motion_proxy(self,frame,masks):
         gray=cv2.resize(cv2.cvtColor(frame.color_bgr,cv2.COLOR_BGR2GRAY),(320,180))
@@ -195,7 +214,8 @@ class FastPerception:
                                  depth_valid_ratio=ratio,color=color,xyz=xyz.tolist(),contour_fill=float(d.confidence)))
         motion=self._motion_proxy(frame,[p['mask'] for p in payloads])
         self.motion_history.append((stamp,motion.get('stable') is True))
-        hint_used=self._hint_usable(stamp,motion)
+        hint_evidence=self.table_hint_evidence(stamp,motion,source_frame_id)
+        hint_used=hint_evidence['usable']
         if hint_used:
             n=np.asarray(self.table_hint['plane']['normal_camera_xyz']);o=np.asarray(self.table_hint['plane']['point_camera_m'])
             filtered=[];kept=[]
@@ -209,7 +229,9 @@ class FastPerception:
                 payload['xyz']=np.median(payload['points'],axis=0).tolist()
                 filtered.append(candidate);kept.append(payload)
             candidates,payloads=filtered,kept
-        for payload in payloads:payload['confirmation']=self.confirmation_evidence(payload,hint_used)
+        for payload in payloads:
+            payload['confirmation']=self.confirmation_evidence(payload,hint_used)
+            payload['confirmation']['evidence']['table_hint']=hint_evidence
         tracking=self.tracker.update(candidates,stamp)
         objects=[];views=[];used=set()
         for t in tracking['observed']:
@@ -246,10 +268,11 @@ class FastPerception:
         elapsed=(perf_counter()-start)*1000;end=time();self.rate.add()
         result=dict(timestamp=stamp,capture_timestamp=stamp,capture_timestamp_source=frame_capture_time(frame)[1],result_timestamp=end,source_frame_id=source_frame_id,
             result_age_ms=max(0,(end-stamp)*1000),processing_latency_ms=elapsed,timestamps=frame.timestamps,
+            max_detection_age_s=self.confirmation.get('max_detection_age_s',2.5),
             coordinate_frame='camera_color_optical',camera_motion_proxy=motion,objects=objects,candidate_count=len(raw),
             accepted_object_count=sum(o['candidate_state']=='CONFIRMED_OBJECT' for o in objects),diagnostic_object_count=len(objects),candidate_diagnostics=diagnostics,rejections=rejections,
             background_filter_report={'table_failure':'CACHED_DIAGNOSTIC_PLANE' if hint_used else 'NOT_RUN_FAST_PATH',
-                'table_hint_used':hint_used,'table_hint_age_ms':(stamp-self.table_hint['capture_timestamp'])*1000 if hint_used else None,
+                'table_hint_evidence':hint_evidence,'table_hint_used':hint_used,'table_hint_age_ms':(stamp-self.table_hint['capture_timestamp'])*1000 if hint_used else None,
                 'table_hint_source_frame_id':self.table_hint['source_frame_id'] if hint_used else None},
             tracking_status={k:tracking[k] for k in ('missed','lost','ambiguous_candidate_indices')},
             timing_ms=dict(detection=elapsed,total=elapsed,cad_fit=0.,tracking=0.),
@@ -320,13 +343,14 @@ def cad_for_display(result,current_frame_id,history,now=None):
             CAD_capture_timestamp=prior['capture_timestamp'],CAD_result_timestamp=prior['result_timestamp'],
             CAD_capture_timestamp_source=prior.get('capture_timestamp_source','UNAVAILABLE'),
             CAD_result_age_ms=max(0,(now-prior['capture_timestamp'])*1000),
-            stale_status='CURRENT_FRAME' if same else 'STALE')
+            cad_stale=not same,stale_status='CURRENT_FRAME' if same else 'STALE')
         item['historical_cad']=dict(source_frame_id=prior['source_frame_id'],
             capture_timestamp=prior['capture_timestamp'],result_timestamp=prior['result_timestamp'],
             result_age_ms=max(0,(now-prior['capture_timestamp'])*1000),
             fit_status=old['fit_status'],body_xyz=old.get('model_estimated_body_center_xyz'),
             body_yaw_candidate=old.get('body_yaw_candidate'),ring_xyz=old.get('ring_center_candidate'),
             insertion_directions=old.get('insertion_direction_candidates'),
+            pose_ambiguity_reasons=[v for v in old.get('ambiguity',[]) if v not in ('FAST_COLOR_DEPTH_CANDIDATE','NO_INDEPENDENT_3D_VALIDATION')],
             camera_motion_status='UNKNOWN_WITHOUT_TF',status='CURRENT_FRAME' if same else 'STALE')
         if same:
             for key in ('body_pose_candidate','ring_pose_candidate','model_estimated_body_center_xyz',

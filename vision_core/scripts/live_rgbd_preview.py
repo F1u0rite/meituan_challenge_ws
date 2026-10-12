@@ -77,6 +77,8 @@ def main(argv=None):
     parser.add_argument('--max-depth-m', type=float, default=2.0)
     parser.add_argument('--scene', choices=('top', 'tilted', 'side'), default='top')
     parser.add_argument('--output', type=Path, default=ROOT/'data'/'rgbd')
+    parser.add_argument('--tcp-send', action='store_true', help='Opt-in V1 loopback TCP diagnostics; requires dual-rate')
+    parser.add_argument('--tcp-config', type=Path, default=ROOT/'config/tcp_sender.yaml')
     parser.add_argument('--dual-rate', action='store_true', help='Bounded capture, fast detection and slower CAD worker')
     parser.add_argument('--continuous-max-seconds', type=float, default=30.)
     parser.add_argument('--continuous-max-frames', type=int, default=450)
@@ -91,6 +93,10 @@ def main(argv=None):
     parser.add_argument('--ui-smoke', action='store_true', help='Finite offline GUI check only')
     parser.add_argument('--max-frames', type=int, default=0)
     args = parser.parse_args(argv)
+    if not args.replay and not args.preview_authorized:
+        parser.error('Human confirmation required: 准备好了，启动预览')
+    if args.tcp_send and not (args.dual_rate and args.full_vision):
+        parser.error('--tcp-send requires --full-vision --dual-rate')
     if args.ui_smoke and not args.replay:
         parser.error('--ui-smoke is offline only')
     if args.replay and not args.full_vision:

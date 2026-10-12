@@ -26,7 +26,9 @@ def native_array(result):
     for obj in result['objects']:
         if (obj.get('detection_status')!='CONFIRMED_OBJECT' or
                 obj.get('color') not in COLORS or obj['color']=='unknown' or
-                obj.get('stale_status')=='STALE'):
+                obj.get('detection_ambiguity') is True or
+                (obj.get('detection_stale') is not False if 'detection_stale' in obj
+                 else obj.get('stale_status')=='STALE')):
             continue
         identity=obj['object_id']
         if not identity or identity in seen:
