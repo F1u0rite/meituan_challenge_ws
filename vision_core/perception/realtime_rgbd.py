@@ -1,5 +1,5 @@
 """Current-frame RGB-D/CAD diagnostics; reuse detector, segmentation and tracker."""
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from time import perf_counter, time
 from datetime import datetime
 import sys,json,hashlib
@@ -18,6 +18,14 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT.parent/'src/mtc_vision_adapter'))
 from mtc_vision_adapter.core import Tracker
 
+def verify_cad_sources(geometry, asset_dir):
+    """Verify cached STEP provenance, including Windows-authored source paths."""
+    for name in ('battery','hook'):
+        source=geometry[name]['source']
+        path=Path(asset_dir)/PureWindowsPath(source['source_path']).name
+        if hashlib.sha256(path.read_bytes()).hexdigest()!=source['sha256']:
+            raise ValueError('CAD cache source mismatch; rerun existing analyze_cad_rgbd.py')
+
 class RGBDVisionPipeline:
     def __init__(self,config_path=ROOT/'config/realtime_rgbd.yaml',
                  detector=None,geometry=None,surface=None,clock=perf_counter):
@@ -28,11 +36,7 @@ class RGBDVisionPipeline:
             raise ValueError('Invalid depth range or CAD interval')
         self.geometry=geometry or json.loads((ROOT/'outputs/cad_analysis/geometry.json').read_text(encoding='utf-8'))
         if geometry is None:
-            for name in ('battery','hook'):
-                source=self.geometry[name]['source']
-                path=ROOT/'assets/cad'/Path(source['source_path']).name
-                if hashlib.sha256(path.read_bytes()).hexdigest()!=source['sha256']:
-                    raise ValueError('CAD cache source mismatch; rerun existing analyze_cad_rgbd.py')
+            verify_cad_sources(self.geometry,ROOT/'assets/cad')
         self.surface=surface if surface is not None else sample_surface(
             np.load(ROOT/'outputs/cad_analysis/cad_meshes.npz')['battery'],
             count=int(self.config['cad_surface_samples']))
