@@ -5,6 +5,14 @@
 默认执行禁用；只支持明确核实的 `mock_components/GenericSystem`。不包含真实
 AUBO SDK、RPC/RTDE、工具IO或MoveIt Planner，不改变Phase 2A的三个Mock Server。
 
+2026-10-12 Action Mutex Backport：锁外出站队列与迟到响应生命周期修复已完成。
+原478项身份保留，新增8项，486项GTest与486项UBSan通过；9项并发/身份测试重复40轮通过。
+TSan启动因unexpected memory mapping受阻（完整回归NOT RUN）；原生GenericSystem仍因
+严格Status缺失保持BLOCKED、Goal0。独立模块验收不代表完整联合执行完成。详见
+[Action mutex回移验收报告](../../docs/migration/PHASE2B_ACTION_MUTEX_BACKPORT_GATE.md)。
+
+以下为此前Ownership阶段的历史结果：
+
 2026-10-12 Ownership Final Review：本轮新增15项真实ROS异步测试，原463项身份
 全部保留；478项GTest及478项UBSan通过，TSan NOT RUN。FJT包为30项校验 +
 61项ROS Action测试。当前原生GenericSystem控制器未提供初始实时Status证据，
