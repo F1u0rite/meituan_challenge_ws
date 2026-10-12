@@ -1,6 +1,8 @@
 {
   "data_kind": "MOUNT_DESIGN",
   "status": "ESTIMATED",
+  "purpose": "HISTORICAL_LAYOUT_REGRESSION_ONLY_NOT_CURRENT_MOUNT",
+  "current_mount_trial": "docs/calibration/CURRENT_MOUNT_TRIAL.md",
   "length_unit": "m",
   "camera_model": "D435i",
   "front_glass_center_in_F": [0.100, 0.0, 0.040],

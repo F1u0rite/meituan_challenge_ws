@@ -8,7 +8,7 @@
 | 常提供的 fake 模型 / TF 日志 | PASS，仅离线材料一致性 | [fake_model_audit.json](validation/fake_model_audit.json)：独立 4×4 FK、SRDF、EE +90°、三份日志；本机未重新运行 ROS，未证明真实标定 |
 | 合成 Pose/TF case | PASS，exit 0 | [synthetic.json](validation/synthetic.json)：位置约 [1,1.1,0.05]，完整姿态与 stamp 保留，simulation_only=true、motion_authorized=false |
 | UNKNOWN 相机安装外参 | EXPECTED REJECTION，exit 2 | [unknown_extrinsic.json](validation/unknown_extrinsic.json)：UNKNOWN_CALIBRATION，不代入单位变换 |
-| 支架设计推导 | PASS，exit 0；ESTIMATED | [nominal_mount.json](validation/nominal_mount.json)：D435i，F→depth optical [0.0825,0,0.0358] m；输出 `assumptions` 逐项标出假设与数据手册来源；不宣称 deployment_ready |
+| 历史布局设计推导 | PASS，exit 0；ESTIMATED，仅数学回归 | [nominal_mount.json](validation/nominal_mount.json)：旧布局 F→depth optical [0.0825,0,0.0358] m；输出 `assumptions` 逐项标出假设与来源，非 deployment_ready；不适用于[当前侧视试装](CURRENT_MOUNT_TRIAL.md) |
 | 设计 JSON 当作观测 case | EXPECTED REJECTION，exit 2 | [design_not_real_case.json](validation/design_not_real_case.json)：INVALID_CONFIG。仅说明 schema 不兼容；状态隔离由单元测试覆盖 |
 | 站点清单当作观测 case | EXPECTED REJECTION，exit 2 | results.json `site_inventory_not_a_case`：INVALID_POSE，没有观测，不能形成目标 |
 | 生成的反例 | EXPECTED REJECTION，两个 CLI 均 exit 2 | [generated_negative_inputs.json](validation/generated_negative_inputs.json)：10**400 坐标 → INVALID_VECTOR；20 万层嵌套 JSON → INVALID_INPUT；设计中把 mm 写成 m → IMPLAUSIBLE_DESIGN；所有输出 motion_authorized=false |
@@ -18,6 +18,8 @@
 | 自动规划拒绝规则接入 | NOT IMPLEMENTED HERE | 诊断工具输出拒绝原因；实际适配器接入由对应成员完成 |
 
 ## 过程记录
+
+- 10/12 试装选择修订：用户选择窄底面贴蓝色圆盘端面；新增当前安装记录，旧名义数值保留为历史回归示例。当前安装没有新数值外参，真实安装边仍 UNKNOWN/null；该更新没有修改变换算法或测试断言。下列历史测试过程保留溯源。
 
 - 首轮（Codex）：基础校验模块未实现时，门禁测试失败 1 项、28 项跳过；安装推导脚本未实现时，门禁失败 1 项、4 项跳过；随后 34 项通过。跳过的用例不算已观察到的行为失败。当时的超大整数问题按原审查意见修正。
 - 独立复核（Claude，报告：`D:\RA\美团比赛\Claude复核\Claude_independent_review_20261011_1957\REVIEW_REPORT.md`）：外参代数经独立矩阵与 NumPy 交叉核算正确；指出 17.5 mm 的基准是 1/4-20 中心线而非外壳中心、M3 孔位无官方尺寸，以及若干 CLI/文档小问题。

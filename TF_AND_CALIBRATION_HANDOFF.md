@@ -2,13 +2,15 @@
 
 适用：AUBO S3、法兰附近安装的 D435i、V1 舌规。依据任务书第 05 节，交付范围为坐标定义、已有/待测表、离线校验和 10/12 现场标定流程。V2 参数不用于明天 V1。
 
-**当前结论：离线软件/文档与 fake 模型证据核验已有产物；真实内外参、V1 TCP、台面和工位标定尚未完成。** 最终运行验证结果见 [验收记录](docs/calibration/VALIDATION_REPORT.md)。本分支 `feat/calibration-tf-v1` 已同步下列 main；最终提交和 PR 以 GitHub 分支为准。
+**当前结论：离线软件/文档与 fake 模型证据核验已有产物；真实内外参、V1 TCP、台面和工位标定尚未完成。** 最终运行验证结果见 [验收记录](docs/calibration/VALIDATION_REPORT.md)。初版分支 `feat/calibration-tf-v1` 已通过 PR #6 合入 main；当前修订分支为 `fix/calibration-side-mount-trial`，最终提交和 PR 以 GitHub 为准。
+
+**10/12 安装选择更新：原交付 PR #6 已合入 main；用户现选定先试“相机带螺孔的窄底面贴蓝色圆盘正面”。此时镜头大致侧向观察，与法兰轴线垂直。旧 `[82.5,0,35.8]` mm 与旧旋转仅保留为历史布局示例，不用于当前试装。** 详见 [当前试装与测量要求](docs/calibration/CURRENT_MOUNT_TRIAL.md)；真实相机安装外参仍 UNKNOWN/null。本修订基于 main `b418515`。
 
 ## 1. 阅读基线与确认条件
 
 | 项目 | 已确认内容 | 确认来源 |
 | --- | --- | --- |
-| 团队仓库 | `F1u0rite/meituan_challenge_ws`，本轮 main=`f7eaa2c0d2887aeada4fd635112c63c237962ff7`；初版基线为 `1d940f7` | git fetch 后同步；含规划 PR #3 |
+| 团队仓库 | `F1u0rite/meituan_challenge_ws`，本次修订 main=`b418515`；初版核验 main=`f7eaa2c`、初始基线=`1d940f7` | git fetch 后同步；原交付 PR #6 已合入 |
 | 环境 | Ubuntu 24.04 / ROS 2 Jazzy；离线脚本 Python ≥3.10，无 ROS/NumPy 依赖 | 团队 README；本机 Python 3.11.9 |
 | 机械臂 | AUBO S3 | 实物照片、团队模型文档 |
 | 相机 | D435i，固定安装在法兰附近，随末端运动 | 用户本轮确认 |
@@ -86,7 +88,7 @@ flowchart TD
 | 提环原点与进入方向 | UNKNOWN | 与实物、V1 接合方向、视觉输出一致 |
 | 位置/姿态误差及观测年龄阈值 | UNKNOWN | 根据实物余量和实际数据由团队确认 |
 
-相机官网提供的是内部传感器参数，不能直接提供你们的法兰安装外参。[官方参数调查与读取流程](docs/calibration/D435I_OFFICIAL_PARAMETERS.md)。用户现已确认支架可调整；已追加 [S3/D435i 安装候选与设计外参](docs/calibration/S3_D435I_MOUNT_DESIGN.md)：前玻璃中心相对物理法兰设计 F 为 `[100,0,40]` mm，光学轴与 F 对齐，推算 `T_F_depth_optical` 平移 `[0.0825,0,0.0358]` m、xyzw `[0,0,0,1]`（D435i）。其中 17.5 mm 是数据手册中“1/4-20 螺孔中心线→左 imager”的参考尺寸，把螺孔当作外壳中心、把光心当作半高都是假设，背面 M3 孔相对外壳也没有官方尺寸。这是 ESTIMATED 布局提案；V1 干涉、法兰 F 与机器人 frame 对齐、M3 孔位、内部 TF 与安装误差待核验，真实清单仍保留 UNKNOWN。
+相机官网提供的是内部传感器参数，不能直接提供你们的法兰安装外参。[官方参数调查与读取流程](docs/calibration/D435I_OFFICIAL_PARAMETERS.md)。[旧安装候选](docs/calibration/S3_D435I_MOUNT_DESIGN.md) 的前玻璃中心 `[100,0,40]` mm、深度原点 `[82.5,0,35.8]` mm 和旧旋转只适用于其光学轴与 F 对齐的历史布局，现仅供数学回归。17.5 mm 是“1/4-20 螺孔中心线→左 imager”的参考尺寸；合成到当前试装时必须按实际相机轴向旋转，不能照搬平移或只补一个未经核验的 90°。当前底面贴端面的试装待测完整位置和朝向，真实清单仍保留 UNKNOWN。
 
 ## 6. 今晚离线复现
 

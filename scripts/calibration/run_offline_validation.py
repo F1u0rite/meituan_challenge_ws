@@ -183,7 +183,7 @@ def main():
         check_case('unknown_extrinsic', [CHECK, UNKNOWN], 2, {'status': 'REJECTED', 'code': 'UNKNOWN_CALIBRATION'},
                    note='UNKNOWN mount edge must not become identity'),
         check_case('nominal_mount', [DERIVE, DESIGN], 0, {'status': 'ESTIMATED', 'deployment_ready': False},
-                   mount_numbers, 'design estimate only'),
+                   mount_numbers, 'historical axial-looking layout regression only; not the current side-looking trial'),
         check_case('design_not_real_case', [CHECK, DESIGN], 2, {'status': 'REJECTED', 'code': 'INVALID_CONFIG'},
                    note='schema mismatch only; status isolation is covered by unit tests'),
         check_case('site_inventory_not_a_case', [CHECK, INVENTORY], 2, {'status': 'REJECTED', 'code': 'INVALID_POSE'},
