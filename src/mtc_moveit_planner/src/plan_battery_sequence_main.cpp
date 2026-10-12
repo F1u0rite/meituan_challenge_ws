@@ -23,6 +23,7 @@
 #include "mtc_moveit_planner/move_group_backend.hpp"
 #include "mtc_moveit_planner/moveit_planner_port.hpp"
 #include "mtc_moveit_planner/plan_report_io.hpp"
+#include "mtc_moveit_planner/pose_math.hpp"
 #include "mtc_moveit_planner/ros_params.hpp"
 #include "mtc_moveit_planner/trajectory_conversion.hpp"
 
@@ -85,6 +86,18 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
   // 规划起点：SRDF 命名状态（默认 "home"）；为空则用 /joint_states 当前状态。只规划，不移动机器人。
   const std::string start_named_state =
     node->get_parameter_or<std::string>("sequence.start_named_state", "home");
+  // start_mode = "named_state"：从上面的命名状态出发；
+  // start_mode = "ready"：先算"就绪位"——第一个接近原语的目标再沿插入轴后退 ready_backoff_m，
+  // 工具姿态已与提环对齐——再从就绪位出发规划（命名状态只作 IK 种子与准备动作起点）。
+  const std::string start_mode =
+    node->get_parameter_or<std::string>("sequence.start_mode", "named_state");
+  const double ready_backoff_m = node->get_parameter_or("sequence.ready_backoff_m", 0.10);
+  // 准备动作（命名状态 -> 就绪位）的末端速度上限：默认与接近原语相同；
+  // 设为 transport 的 0.15 m/s / 0.3 rad/s 可评估"快速接近 + 慢速预对准"拆分方案。
+  const double setup_linear = node->get_parameter_or(
+    "sequence.setup_max_linear_speed", mtc::manipulation::ToolStrategy::DEFAULT_LINEAR_SPEED);
+  const double setup_angular = node->get_parameter_or(
+    "sequence.setup_max_angular_speed", mtc::manipulation::ToolStrategy::DEFAULT_ANGULAR_SPEED);
 
   mtc::core::PoseEstimate ring;
   ring.object_id = node->get_parameter_or<std::string>("sequence.object_id", "battery_1");
@@ -127,6 +140,87 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
       return 2;
     }
   }
+  std::ostringstream ready_yaml;
+  if (start_mode == "ready") {
+    if (!acquire_start) {
+      RCLCPP_ERROR(logger, "start_mode=ready needs sequence.start_named_state as IK seed");
+      return 2;
+    }
+    const auto & first = acquire_primitives.front().name;
+    const auto spec = config.primitives.find(first);
+    const auto ring_in_frame = backend->transform_to_planning_frame(ring.ring_pose);
+    if (spec == config.primitives.end() || !ring_in_frame) {
+      RCLCPP_ERROR(logger, "cannot derive ready pose for primitive '%s'", first.c_str());
+      return 2;
+    }
+    const auto tcp_ready = mtc::moveit_planner::offset_along_local_axis(
+      *ring_in_frame, config.insertion_axis, -(spec->second.distance_m + ready_backoff_m));
+    const auto ee_ready = mtc::moveit_planner::apply(
+      tcp_ready, mtc::moveit_planner::inverse(config.ee_to_tcp));
+    std::string info;
+    const auto ready = backend->solve_ik_max_margin(
+      ee_ready, *acquire_start, config.joint_position_limits, info);
+    if (!ready) {
+      RCLCPP_ERROR(logger, "ready pose: %s", info.c_str());
+      return 1;
+    }
+    std::ostringstream joints;
+    for (size_t i = 0; i < ready->names.size(); ++i) {
+      joints << (i ? ", " : "") << ready->names[i] << "=" << std::fixed << std::setprecision(4) <<
+        ready->positions[i];
+    }
+    RCLCPP_INFO(logger, "ready pose (%s + %.3f m back along insertion axis): %s; %s",
+      first.c_str(), ready_backoff_m, joints.str().c_str(), info.c_str());
+
+    // 仅供参考：从命名状态到就绪位的一次性准备动作（不属于任何 PickPlace 状态，FSM 尚无此动作）。
+    mtc::moveit_planner::BackendRequest setup;
+    setup.label = "setup_to_ready";
+    setup.mode = mtc::moveit_planner::MotionMode::FREE_SPACE;
+    setup.ee_goal = ee_ready;
+    setup.start = *acquire_start;
+    setup.velocity_scaling = config.velocity_scaling;
+    setup.acceleration_scaling = config.acceleration_scaling;
+    setup.max_linear_speed_m_s = setup_linear;
+    setup.max_angular_speed_rad_s = setup_angular;
+    setup.planning_time_s = config.planning_time_s;
+    setup.cartesian_step_m = config.cartesian_step_m;
+    setup.prefer_straight_line = true;
+    setup.joint_bounds = config.joint_position_limits;
+    const auto setup_result = backend->plan(setup);
+    double setup_duration = 0.0;
+    if (setup_result.ok && !setup_result.trajectory.points.empty()) {
+      setup_duration = setup_result.trajectory.points.back().time_from_start_s;
+    }
+    RCLCPP_INFO(logger,
+      "setup move %s -> ready (reference only, caps %.3f m/s %.3f rad/s): %s method=%s "
+      "duration=%.2fs %s", start_named_state.c_str(), setup_linear, setup_angular,
+      setup_result.ok ? "ok" : "FAILED", setup_result.method.c_str(), setup_duration,
+      setup_result.ok ? "" : setup_result.message.c_str());
+    ready_yaml << "ready_pose:\n";
+    ready_yaml << "  derived_from: \"" << first << " goal + " << ready_backoff_m <<
+      " m back along insertion axis\"\n";
+    ready_yaml << "  joint_names: [";
+    for (size_t i = 0; i < ready->names.size(); ++i) {
+      ready_yaml << (i ? ", " : "") << "\"" << ready->names[i] << "\"";
+    }
+    ready_yaml << "]\n  positions_rad: [";
+    for (size_t i = 0; i < ready->positions.size(); ++i) {
+      ready_yaml << (i ? ", " : "") << std::setprecision(6) << ready->positions[i];
+    }
+    ready_yaml << "]\n  ik_info: \"" << info << "\"\n";
+    ready_yaml << "  setup_move_reference_only:\n";
+    ready_yaml << "    from: \"" << start_named_state << "\"\n";
+    ready_yaml << "    ok: " << (setup_result.ok ? "true" : "false") << "\n";
+    ready_yaml << "    method: \"" << setup_result.method << "\"\n";
+    ready_yaml << "    duration_s: " << setup_duration << "\n";
+    ready_yaml << "    max_linear_speed_m_s: " << setup_linear << "\n";
+    ready_yaml << "    max_angular_speed_rad_s: " << setup_angular << "\n";
+    ready_yaml << "    note: \"one-time move outside PickPlace; no FSM state/watchdog owns it yet\"\n";
+    acquire_start = ready;
+  } else if (start_mode != "named_state") {
+    RCLCPP_ERROR(logger, "sequence.start_mode must be named_state or ready");
+    return 2;
+  }
   const auto acquire_result = port.plan_blocking(acquire, acquire_start);
   const auto acquire_report = port.last_report();
   log_report(logger, acquire_result, acquire_report);
@@ -138,8 +232,10 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
   yaml << "wall_time: \"" << mtc::moveit_planner::timestamp_for_filename() << "\"\n";
   yaml << "tool_type: \"" << tool << "\"\n";
   yaml << "slot: \"" << slot << "\"\n";
-  yaml << "start: \"" << (start_named_state.empty() ? std::string("current /joint_states") :
+  yaml << "start: \"" << (start_mode == "ready" ? std::string("ready pose (see ready_pose)") :
+    start_named_state.empty() ? std::string("current /joint_states") :
     "SRDF named state " + start_named_state) << "\"\n";
+  yaml << ready_yaml.str();
   yaml << "ring_pose:\n" << mtc::moveit_planner::pose_to_yaml(ring.ring_pose, "  ");
   yaml << "tcp:\n";
   yaml << "  status: \"" << mtc::moveit_planner::to_string(config.tcp_status) << "\"\n";

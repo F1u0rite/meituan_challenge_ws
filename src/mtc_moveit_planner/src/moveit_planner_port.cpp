@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <iomanip>
+#include <map>
 #include <sstream>
 #include <utility>
 
@@ -236,6 +237,8 @@ PlanResult MoveItPlannerPort::plan_blocking(
   bool payload_released = false;
 
   std::vector<mtc::core::MotionCommand> commands;
+  // 同一 PickPlace 状态内顺序执行的原语共用一个看门狗：按状态累计时长。
+  std::map<mtc::manipulation::PickPlaceState, double> state_duration;
   for (const auto & primitive : target.primitives) {
     PrimitivePlanReport entry;
     entry.primitive_name = primitive.name;
@@ -456,13 +459,18 @@ PlanResult MoveItPlannerPort::plan_blocking(
     entry.state_watchdog_s = watchdog;
     entry.point_count = trajectory.points.size();
     entry.duration_s = duration;
-    if (watchdog > 0.0 && duration > watchdog * config_.state_timeout_usage) {
+    const double state_total = state_duration[spec.executing_state] + duration;
+    if (watchdog > 0.0 && state_total > watchdog * config_.state_timeout_usage) {
+      const bool shared = state_total > duration;
       return fail_primitive("EXCEEDS_STATE_WATCHDOG",
-               "trajectory lasts " + fmt(duration) + " s, more than " +
+               "trajectory lasts " + fmt(duration) + " s" +
+               (shared ? " (" + fmt(state_total) + " s with earlier primitives in the same state)" :
+               std::string()) + ", more than " +
                fmt(config_.state_timeout_usage * 100.0) + "% of the " +
                mtc::manipulation::to_string(spec.executing_state) + " watchdog (" +
                fmt(watchdog) + " s)");
     }
+    state_duration[spec.executing_state] = state_total;
     const auto timeout_ms = static_cast<uint32_t>(
       std::ceil(duration * config_.timeout_factor * 1000.0)) + config_.timeout_margin_ms;
     entry.timeout_ms = timeout_ms;

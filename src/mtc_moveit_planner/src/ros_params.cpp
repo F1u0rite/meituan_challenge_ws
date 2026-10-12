@@ -127,6 +127,8 @@ MoveGroupBackendOptions load_backend_options(rclcpp::Node & node)
       "backend.ik_continuation_steps", options.ik_continuation_steps));
   options.ik_seed_timeout_s =
     node.get_parameter_or("backend.ik_seed_timeout_s", options.ik_seed_timeout_s);
+  options.ee_limited_retiming =
+    node.get_parameter_or("backend.ee_limited_retiming", options.ee_limited_retiming);
   return options;
 }
 

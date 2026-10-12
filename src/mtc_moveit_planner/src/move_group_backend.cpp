@@ -2,6 +2,7 @@
 
 #include "mtc_moveit_planner/move_group_backend.hpp"
 #include "mtc_moveit_planner/scene_ids.hpp"
+#include "mtc_moveit_planner/ee_limited_retiming.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -91,6 +92,27 @@ mtc::core::Pose6D to_pose6d(const Eigen::Isometry3d & transform, const std::stri
   return pose;
 }
 
+/// IK 候选过滤：候选解（按 group 变量顺序，state 尚未写入）须满足关节约束。
+moveit::core::GroupStateValidityCallbackFn within_bounds_fn(
+  const moveit_msgs::msg::Constraints & constraints)
+{
+  return [constraints](moveit::core::RobotState *,
+           const moveit::core::JointModelGroup * group, const double * values) {
+           const auto & names = group->getVariableNames();
+           for (const auto & jc : constraints.joint_constraints) {
+             const auto it = std::find(names.begin(), names.end(), jc.joint_name);
+             if (it == names.end()) {
+               continue;
+             }
+             const double v = values[it - names.begin()];
+             if (v > jc.position + jc.tolerance_above || v < jc.position - jc.tolerance_below) {
+               return false;
+             }
+           }
+           return true;
+         };
+}
+
 Eigen::Isometry3d to_eigen(const Transform & t)
 {
   const auto q = normalized(t.rotation);
@@ -178,7 +200,58 @@ struct MoveGroupBackend::Impl
     return timing;
   }
 
-  /// 关节空间直线插值（不做碰撞校验）在 TOTG + 末端限速下的时长，用于给 IK 候选排序。
+  /// 关节空间直线路径的末端限速时间最优参数化（ee_limited_retiming.hpp），直接写回 trajectory 的
+  /// 路点时长、速度、加速度。末端上限内部再留 2% 余量；最终轨迹仍由 time_scale() 密采样复核。
+  bool ee_limited_retime(
+    robot_trajectory::RobotTrajectory & trajectory, const BackendRequest & request,
+    std::string & why) const
+  {
+    EeLimitedRetimingInput in;
+    const size_t n = trajectory.getWayPointCount();
+    Eigen::Isometry3d previous = Eigen::Isometry3d::Identity();
+    for (size_t k = 0; k < n; ++k) {
+      const auto & wp = trajectory.getWayPoint(k);
+      std::vector<double> q;
+      wp.copyJointGroupPositions(group, q);
+      in.waypoints.push_back(q);
+      const Eigen::Isometry3d pose = wp.getGlobalLinkTransform(options.end_effector_link);
+      if (k > 0) {
+        in.segment_linear_m.push_back((pose.translation() - previous.translation()).norm());
+        in.segment_angular_rad.push_back(
+          Eigen::AngleAxisd(previous.rotation().transpose() * pose.rotation()).angle());
+      }
+      previous = pose;
+    }
+    for (const auto * joint : group->getActiveJointModels()) {
+      const auto & bounds = joint->getVariableBounds().front();
+      if (!bounds.velocity_bounded_) {
+        why = "joint " + joint->getName() + " has no velocity limit";
+        return false;
+      }
+      in.joint_velocity_limits.push_back(bounds.max_velocity_ * request.velocity_scaling);
+      // 与 TOTG 一致：未给加速度上限时按 1 rad/s²。
+      in.joint_acceleration_limits.push_back(
+        (bounds.acceleration_bounded_ ? bounds.max_acceleration_ : 1.0) *
+        request.acceleration_scaling);
+    }
+    in.max_linear_speed_m_s = request.max_linear_speed_m_s * 0.98;
+    in.max_angular_speed_rad_s = request.max_angular_speed_rad_s * 0.98;
+    const auto timed = retime_straight_joint_path(in);
+    if (!timed.ok) {
+      why = timed.message;
+      return false;
+    }
+    for (size_t k = 0; k < n; ++k) {
+      auto & wp = trajectory.getWayPointPtr(k);
+      wp->setJointGroupVelocities(group, timed.velocities[k]);
+      wp->setJointGroupAccelerations(group, timed.accelerations[k]);
+      trajectory.setWayPointDurationFromPrevious(
+        k, k == 0 ? 0.0 : timed.time_from_start_s[k] - timed.time_from_start_s[k - 1]);
+    }
+    return true;
+  }
+
+  /// 关节空间直线插值（不做碰撞校验）在末端限速时间最优参数化下的时长，用于给 IK 候选排序。
   /// 只比较相对大小，因此用粗步长（0.1 rad）与粗采样（0.05 s）；最终轨迹仍按细粒度计算。
   double estimate_interpolated_duration(
     const moveit::core::RobotState & start_state, const std::vector<double> & goal,
@@ -205,11 +278,61 @@ struct MoveGroupBackend::Impl
       state.update();
       trajectory.addSuffixWayPoint(state, 0.0);
     }
-    trajectory_processing::TimeOptimalTrajectoryGeneration totg;
-    if (!totg.computeTimeStamps(trajectory, request.velocity_scaling, request.acceleration_scaling)) {
+    std::string why;
+    if (!ee_limited_retime(trajectory, request, why)) {
       return std::numeric_limits<double>::infinity();
     }
     return time_scale(trajectory, request, start_state, sample_dt_s).duration;
+  }
+
+  /// 控制器限位中比 URDF 更窄的关节 -> MoveIt 关节约束。
+  moveit_msgs::msg::Constraints joint_constraints(
+    const std::map<std::string, std::pair<double, double>> & bounds) const
+  {
+    moveit_msgs::msg::Constraints path_constraints;
+    path_constraints.name = "mtc_controller_joint_limits";
+    for (const auto & bound : bounds) {
+      const auto * joint = model->getJointModel(bound.first);
+      if (joint == nullptr || joint->getVariableCount() != 1) {
+        continue;
+      }
+      const auto & urdf = joint->getVariableBounds()[0];
+      if (urdf.position_bounded_ && bound.second.first <= urdf.min_position_ &&
+        bound.second.second >= urdf.max_position_)
+      {
+        continue;  // 不比 URDF 更窄，无需约束
+      }
+      moveit_msgs::msg::JointConstraint jc;
+      jc.joint_name = bound.first;
+      jc.position = 0.5 * (bound.second.first + bound.second.second);
+      jc.tolerance_above = bound.second.second - jc.position;
+      jc.tolerance_below = jc.position - bound.second.first;
+      jc.weight = 1.0;
+      path_constraints.joint_constraints.push_back(jc);
+    }
+    return path_constraints;
+  }
+
+  /// 单个状态经 /check_state_validity 校验（含附着体与约束）。
+  bool state_valid(
+    const moveit::core::RobotState & state, const moveit_msgs::msg::Constraints & constraints,
+    std::string & why) const
+  {
+    auto request = std::make_shared<moveit_msgs::srv::GetStateValidity::Request>();
+    moveit::core::robotStateToRobotStateMsg(state, request->robot_state, true);
+    request->group_name = group->getName();
+    request->constraints = constraints;
+    auto future = validity_client->async_send_request(request);
+    if (future.wait_for(std::chrono::seconds(2)) != std::future_status::ready) {
+      why = "/check_state_validity timed out";
+      return false;
+    }
+    const auto response = future.get();
+    if (!response->valid) {
+      why = std::to_string(response->contacts.size()) + " contact(s) or constraint violation";
+      return false;
+    }
+    return true;
   }
 
   /// 关节空间直线插值（起点 → goal），逐点经 /check_state_validity 校验（含附着载荷与路径约束）。
@@ -421,27 +544,7 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
   mg.setPlanningTime(request.planning_time_s);
 
   // 控制器限位比 URDF 窄的关节：以路径约束下发（起点与目标也必须满足）。
-  moveit_msgs::msg::Constraints path_constraints;
-  path_constraints.name = "mtc_controller_joint_limits";
-  for (const auto & bound : request.joint_bounds) {
-    const auto * joint = impl_->model->getJointModel(bound.first);
-    if (joint == nullptr || joint->getVariableCount() != 1) {
-      continue;
-    }
-    const auto & urdf = joint->getVariableBounds()[0];
-    if (urdf.position_bounded_ && bound.second.first <= urdf.min_position_ &&
-      bound.second.second >= urdf.max_position_)
-    {
-      continue;  // 不比 URDF 更窄，无需约束
-    }
-    moveit_msgs::msg::JointConstraint jc;
-    jc.joint_name = bound.first;
-    jc.position = 0.5 * (bound.second.first + bound.second.second);
-    jc.tolerance_above = bound.second.second - jc.position;
-    jc.tolerance_below = jc.position - bound.second.first;
-    jc.weight = 1.0;
-    path_constraints.joint_constraints.push_back(jc);
-  }
+  const auto path_constraints = impl_->joint_constraints(request.joint_bounds);
   if (!path_constraints.joint_constraints.empty()) {
     mg.setPathConstraints(path_constraints);
   } else {
@@ -495,21 +598,7 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     // V1 中跨度 3.45 rad 的解要 123 s，2.79 rad 的解 39.6 s），再逐个做逐点碰撞校验。
     // 求解时即要求满足控制器限位（路径约束中的关节约束）。
     // 回调收到的是候选 IK 解（按 group 变量顺序），此时 state 尚未写入该解。
-    const auto within_bounds = [&path_constraints](moveit::core::RobotState *,
-        const moveit::core::JointModelGroup * group, const double * values) {
-        const auto & names = group->getVariableNames();
-        for (const auto & jc : path_constraints.joint_constraints) {
-          const auto it = std::find(names.begin(), names.end(), jc.joint_name);
-          if (it == names.end()) {
-            continue;
-          }
-          const double v = values[it - names.begin()];
-          if (v > jc.position + jc.tolerance_above || v < jc.position - jc.tolerance_below) {
-            return false;
-          }
-        }
-        return true;
-      };
+    const auto within_bounds = within_bounds_fn(path_constraints);
     std::vector<double> from;
     start->copyJointGroupPositions(impl_->group, from);
     struct Candidate
@@ -686,11 +775,21 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     result.message = "planner returned fewer than 2 waypoints";
     return result;
   }
-  trajectory_processing::TimeOptimalTrajectoryGeneration totg;
-  if (!totg.computeTimeStamps(trajectory, request.velocity_scaling, request.acceleration_scaling)) {
-    result.reason = "TIME_PARAMETERIZATION_FAILED";
-    result.message = "TOTG could not time-parameterize the path";
-    return result;
+  // 关节插值路径（关节空间直线）：末端限速时间最优参数化；其余路径：TOTG + 均匀拉伸。
+  bool retimed = false;
+  if (result.method == "joint_interpolated_ik" && impl_->options.ee_limited_retiming) {
+    std::string why;
+    retimed = impl_->ee_limited_retime(trajectory, request, why);
+    result.message += retimed ? "retiming=ee_limited; " :
+      "ee-limited retiming unavailable (" + why + "), using TOTG; ";
+  }
+  if (!retimed) {
+    trajectory_processing::TimeOptimalTrajectoryGeneration totg;
+    if (!totg.computeTimeStamps(trajectory, request.velocity_scaling, request.acceleration_scaling)) {
+      result.reason = "TIME_PARAMETERIZATION_FAILED";
+      result.message = "TOTG could not time-parameterize the path";
+      return result;
+    }
   }
 
   const auto timing = impl_->time_scale(trajectory, request, *start, impl_->options.speed_sample_dt_s);
@@ -723,6 +822,111 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
   result.ok = true;
   result.message += "ok";
   return result;
+}
+
+std::optional<JointStateSnapshot> MoveGroupBackend::solve_ik_max_margin(
+  const mtc::core::Pose6D & ee_goal, const JointStateSnapshot & seed,
+  const std::map<std::string, std::pair<double, double>> & joint_bounds, std::string & why)
+{
+  const auto start = impl_->state_from(seed);
+  if (!start) {
+    why = "seed state has unknown joints or non-finite values";
+    return std::nullopt;
+  }
+  const auto goal = transform_to_planning_frame(ee_goal);
+  if (!goal) {
+    why = "cannot transform goal from '" + ee_goal.frame_id + "'";
+    return std::nullopt;
+  }
+  if (!impl_->validity_client->wait_for_service(std::chrono::seconds(2))) {
+    why = "/check_state_validity unavailable";
+    return std::nullopt;
+  }
+  const auto constraints = impl_->joint_constraints(joint_bounds);
+  const auto within_bounds = within_bounds_fn(constraints);
+  const auto goal_msg = to_msg(*goal);
+
+  // 有效限位 = URDF ∩ 控制器限位；裕度 = 各关节到最近限位的距离 / 该关节行程，取最小值。
+  const auto & names = impl_->group->getVariableNames();
+  std::vector<std::pair<double, double>> limits;
+  for (const auto & name : names) {
+    const auto & b = impl_->model->getJointModel(name)->getVariableBounds()[0];
+    double lo = b.min_position_;
+    double hi = b.max_position_;
+    const auto it = joint_bounds.find(name);
+    if (it != joint_bounds.end()) {
+      lo = std::max(lo, it->second.first);
+      hi = std::min(hi, it->second.second);
+    }
+    limits.emplace_back(lo, hi);
+  }
+  const auto margin_of = [&limits](const std::vector<double> & q) {
+      double margin = std::numeric_limits<double>::infinity();
+      for (size_t i = 0; i < q.size(); ++i) {
+        const double range = limits[i].second - limits[i].first;
+        margin = std::min(margin, std::min(q[i] - limits[i].first, limits[i].second - q[i]) / range);
+      }
+      return margin;
+    };
+
+  // 固定种子：起点关节 + 前臂 {0, ±0.8} × 三个腕关节 {0, ±π/2}（81 个，顺序固定）。
+  std::vector<double> from;
+  start->copyJointGroupPositions(impl_->group, from);
+  std::vector<size_t> varied;
+  for (const char * j : {"foreArm_joint", "wrist1_joint", "wrist2_joint", "wrist3_joint"}) {
+    const auto it = std::find(names.begin(), names.end(), j);
+    if (it != names.end()) {
+      varied.push_back(static_cast<size_t>(it - names.begin()));
+    }
+  }
+  std::optional<std::vector<double>> best;
+  double best_margin = -std::numeric_limits<double>::infinity();
+  size_t solutions = 0;
+  size_t invalid = 0;
+  const size_t combos = static_cast<size_t>(std::pow(3.0, varied.size()));
+  for (size_t c = 0; c < combos; ++c) {
+    std::vector<double> q = from;
+    size_t digits = c;
+    for (const size_t v : varied) {
+      const double step = names[v] == "foreArm_joint" ? 0.8 : M_PI / 2.0;
+      const double offsets[] = {0.0, -step, step};
+      q[v] += offsets[digits % 3];
+      digits /= 3;
+    }
+    moveit::core::RobotState state(*start);
+    state.setJointGroupPositions(impl_->group, q);
+    state.enforceBounds(impl_->group);
+    state.update();
+    if (!state.setFromIK(impl_->group, goal_msg, impl_->options.end_effector_link,
+        impl_->options.ik_seed_timeout_s, within_bounds))
+    {
+      continue;
+    }
+    ++solutions;
+    std::vector<double> solution;
+    state.copyJointGroupPositions(impl_->group, solution);
+    const double margin = margin_of(solution);
+    if (margin <= best_margin) {
+      continue;
+    }
+    std::string invalid_why;
+    if (!impl_->state_valid(state, constraints, invalid_why)) {
+      ++invalid;
+      continue;
+    }
+    best = solution;
+    best_margin = margin;
+  }
+  if (!best) {
+    why = "no collision-free IK solution within joint limits (" + std::to_string(solutions) +
+      " solution(s), " + std::to_string(invalid) + " in collision)";
+    return std::nullopt;
+  }
+  std::ostringstream os;
+  os << std::setprecision(3) << "ik solutions=" << solutions << ", min joint-limit margin " <<
+    best_margin * 100.0 << "% of range";
+  why = os.str();
+  return JointStateSnapshot{names, *best};
 }
 
 bool MoveGroupBackend::apply_scene(const std::vector<SceneBox> & boxes)

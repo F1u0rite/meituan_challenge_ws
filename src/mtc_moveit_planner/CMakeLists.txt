@@ -26,6 +26,7 @@ add_library(mtc_moveit_planner_core SHARED
   src/moveit_planner_port.cpp
   src/start_consistency.cpp
   src/scene_ids.cpp
+  src/ee_limited_retiming.cpp
 )
 target_include_directories(mtc_moveit_planner_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -104,6 +105,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_scene_ids test/test_scene_ids.cpp)
   target_link_libraries(test_scene_ids mtc_moveit_planner_core)
+
+  ament_add_gtest(test_ee_limited_retiming test/test_ee_limited_retiming.cpp)
+  target_link_libraries(test_ee_limited_retiming mtc_moveit_planner_core)
 
   ament_add_gtest(test_moveit_planner_port test/test_moveit_planner_port.cpp)
   target_link_libraries(test_moveit_planner_port mtc_moveit_planner_core)

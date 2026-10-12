@@ -370,6 +370,59 @@ TEST(MoveItPlannerPort, TrajectoryLongerThanStateWatchdogIsRefused)
     << result.message;
 }
 
+/// 拆分提案：快速接近（side_approach）+ 慢速预对准（side_insert），两者都在 MOVE_PRE_ALIGN 执行。
+PlanTarget split_acquire_target()
+{
+  auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
+  auto approach = target.primitives.front();
+  approach.name = "side_approach";
+  approach.max_linear_speed = 0.15;
+  approach.max_angular_speed = 0.3;
+  target.primitives.insert(target.primitives.begin(), approach);
+  target.primitive_names.insert(target.primitive_names.begin(), approach.name);
+  return target;
+}
+
+TEST(MoveItPlannerPort, SplitApproachStopsShortOfStandoffAndKeepsSlowFinalSegment)
+{
+  Fixture f;
+  const auto result = f.port()->plan_blocking(split_acquire_target());
+  ASSERT_TRUE(result.ok) << result.message;
+  ASSERT_EQ(result.commands.size(), 3u);
+  EXPECT_EQ(result.commands[0].primitive_name, "side_approach");
+  EXPECT_EQ(result.commands[1].primitive_name, "side_insert");
+  // 接近段停在提环前 0.05 m（预对准 0.03 + 退让 0.02），预对准段只走最后 0.02 m。
+  const auto & approach_end = result.commands[0].trajectory->points.back();
+  const auto & insert_end = result.commands[1].trajectory->points.back();
+  EXPECT_NEAR(z_of(approach_end), 0.25 - 0.05, 1e-9);
+  EXPECT_NEAR(z_of(insert_end), 0.25 - 0.03, 1e-9);
+  ASSERT_GE(f.backend->requests.size(), 2u);
+  EXPECT_DOUBLE_EQ(f.backend->requests[0].max_linear_speed_m_s, 0.15);
+  EXPECT_DOUBLE_EQ(f.backend->requests[1].max_linear_speed_m_s, 0.02);
+}
+
+TEST(MoveItPlannerPort, PrimitivesSharingAStateShareItsWatchdog)
+{
+  Fixture probe;
+  probe.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = 1000.0;
+  auto port = probe.port();
+  ASSERT_TRUE(port->plan_blocking(split_acquire_target()).ok);
+  const double d1 = port->last_report().primitives[0].duration_s;
+  const double d2 = port->last_report().primitives[1].duration_s;
+  ASSERT_GT(d1, 0.0);
+  ASSERT_GT(d2, 0.0);
+
+  // 每段单独都在 80% 以内，但两段之和超过：必须拒绝。
+  Fixture f;
+  const double threshold = 0.5 * (std::max(d1, d2) + d1 + d2);
+  f.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = threshold / f.config.state_timeout_usage;
+  const auto result = f.port()->plan_blocking(split_acquire_target());
+  EXPECT_FALSE(result.ok);
+  EXPECT_EQ(result.message.rfind("[EXCEEDS_STATE_WATCHDOG] side_insert", 0), 0u) << result.message;
+  EXPECT_NE(result.message.find("with earlier primitives in the same state"), std::string::npos)
+    << result.message;
+}
+
 TEST(MoveItPlannerPort, StartMismatchAndMissingJointAreRefused)
 {
   Fixture f;

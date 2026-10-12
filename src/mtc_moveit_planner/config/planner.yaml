@@ -15,6 +15,7 @@
       state_timeout_s: 5.0
       ik_timeout_s: 0.05                   # 位姿延拓中单步 IK 时限
       ik_continuation_steps: 10            # 位姿延拓 IK 步数（跟踪离起点最近的解）
+      ee_limited_retiming: true            # 关节插值路径：末端限速时间最优参数化（上限不变）
       ik_seed_timeout_s: 0.01              # 固定种子网格（起点 + 腕关节 ±90° 组合，27 个）单个 IK 时限
 
     planner:
