@@ -20,9 +20,12 @@ def _stats(values):
 
 def consume_cad_results(fast,cad):
     """Every consumer preserves table evidence, including paused/key refreshes."""
-    messages=cad.drain()
+    messages=(cad.drain_table() if hasattr(cad,'drain_table') else [])+cad.drain()
     for message in messages:
-        fast.set_table_hint(message.get('table_plane'),message['capture_timestamp'],message['source_frame_id'])
+        fast.set_table_hint(message.get('table_plane'),message['capture_timestamp'],message['source_frame_id'],
+            plane_generated_host_s=message.get('plane_generated_host_s'),
+            cad_completed_host_s=message.get('result_timestamp') if message.get('kind')!='TABLE_READY' else None,
+            cad_submitted_host_s=message.get('submitted_host_s'),cad_started_host_s=message.get('started_host_s'))
     return messages
 
 
@@ -87,6 +90,8 @@ def run_dual_rate(args):
     observation=ObservationMonitor()
     fast=FastPerception();cad=CADWorker(RGBDVisionPipeline(args.vision_config));ui=VisionUI()
     source=None;capture=None;recorder=None;record_lock=Lock();record_index=0
+    display_channel=getattr(args,'_display_channel',None)
+    if display_channel:display_channel.geometry=cad.pipeline.geometry
     tcp_sender=None;ros_publisher=None
     if getattr(args,'tcp_send',False):
         import yaml
@@ -134,6 +139,7 @@ def run_dual_rate(args):
         def live_frames():
             index=0
             while True:
+                if display_channel and display_channel.stop.is_set():break
                 packet=capture.slot.get(.3)
                 if packet is None:
                     if capture.error:raise RuntimeError(capture.error)
@@ -150,13 +156,16 @@ def run_dual_rate(args):
             summary=old.close(capture.dropped if capture else 0)
             print('Continuous recording:',old.folder,json.dumps(summary),flush=True)
             ui.recording=False
+            if display_channel:display_channel.recording=False
     try:
         if getattr(args,'ros_publish',False):
             from mtc_vision_adapter.native_result_publisher import NativeResultPublisher
             ros_publisher=NativeResultPublisher(getattr(args,'ros_wait_subscriber_s',0.))
         if source:
             print('Actual streams:',json.dumps(source.start()),flush=True)
-            capture=CaptureWorker(source,on_frame=record_frame)
+            capture=CaptureWorker(source,on_frame=record_frame,
+                on_preview=display_channel.preview if display_channel else None)
+            if display_channel:display_channel.capture=capture
         cad.start()
         if tcp_sender: tcp_sender.start()
         if capture:
@@ -164,15 +173,16 @@ def run_dual_rate(args):
             print('s save current diagnostic; r begin/end continuous RGB-D (bounded); q exit',flush=True)
         for identity,frame,name in frames:
             capture_count+=1;cycle=perf_counter()
+            # Consume completed evidence before the current confirmation gate.
+            received=consume_cad_results(fast,cad);cad_messages.extend(received)
             result,object_views=fast.process(frame,identity)
             result['mode']='REAL_RED_RGBD_OFFLINE_DUAL_RATE' if args.replay else 'LIVE_DUAL_RATE_UNVERIFIED'
             result['sample_id']=name
-            received=consume_cad_results(fast,cad);cad_messages.extend(received)
             merged,rejected=merge_cad_history(history,received);cad_rejected+=rejected;cad_rows.extend(merged)
             now=monotonic()
             if result['objects'] and now-last_cad_schedule>=cad_interval:
                 cad.submit(frame,identity,result['objects']);last_cad_schedule=now
-            result['observation']=observation.update(result,received)
+            result['observation']=observation.update(result,[m for m in received if m.get('kind')!='TABLE_READY'])
             cad_for_display(result,identity,history,now=result['capture_timestamp'] if args.replay else None)
             result['camera_fps']=capture.stream_rates['color'].hz() if capture else None
             result['camera_depth_fps']=capture.stream_rates['depth'].hz() if capture else None
@@ -193,18 +203,32 @@ def run_dual_rate(args):
             if tcp_sender:
                 tcp_sender.offer_vision(result,mode='test' if args.replay else 'live',timestamps=frame.timestamps)
                 result['tcp_sender']=tcp_sender.snapshot()
-            image=ui.render(frame,result,object_views,cad.pipeline.geometry,source.project if source else None,
-                           capture.rate.hz() if capture else None)
-            result['timing_ms']['render']=ui.last_timing_ms['depth_render']+ui.last_timing_ms['ui_overlay']
+            if display_channel:
+                image=None;result['timing_ms']['render']=0.
+            else:
+                image=ui.render(frame,result,object_views,cad.pipeline.geometry,source.project if source else None,
+                               capture.rate.hz() if capture else None)
+                result['timing_ms']['render']=ui.last_timing_ms['depth_render']+ui.last_timing_ms['ui_overlay']
             result['timing_ms']['process_and_render']=(perf_counter()-cycle)*1000
             rows.append(result)
+            if display_channel:display_channel.publish(result,object_views)
+            if display_channel and display_channel.record_request.is_set():
+                display_channel.record_request.clear()
+                if recorder is not None:finish_record()
+                else:
+                    record_index+=1
+                    new=ContinuousRGBDRecorder(output/f'continuous_{record_index:03d}',args.continuous_max_seconds,args.continuous_max_frames)
+                    new.start()
+                    with record_lock:recorder=new
+                    display_channel.recording=True
             if args.replay and (capture_count in (1,18,29,expected_frames)):
                 target=output/f'frame_{capture_count:04d}.png'
                 cv2.imencode('.png',image)[1].tofile(str(target))
                 screens.append(cv2.resize(image,(800,450)))
                 (output/f'frame_{capture_count:04d}_display.json').write_text(json.dumps(ui.last_display_data,default=str,indent=2))
             if not args.headless:
-                cv2.namedWindow(window,cv2.WINDOW_NORMAL);cv2.resizeWindow(window,1600,900)
+                if not window_called:
+                    cv2.namedWindow(window,cv2.WINDOW_NORMAL);cv2.resizeWindow(window,1600,900)
                 def save_display(current_image):
                     nonlocal manual_save_index
                     manual_save_index+=1
@@ -242,7 +266,7 @@ def run_dual_rate(args):
             if recorder is not None and recorder.closed:finish_record()
             if capture and args.max_frames and capture_count>=args.max_frames:break
         cad.close()
-        remaining=cad.drain();cad_messages.extend(remaining)
+        remaining=consume_cad_results(fast,cad);cad_messages.extend(remaining)
         merged,rejected=merge_cad_history(history,remaining);cad_rejected+=rejected;cad_rows.extend(merged)
         if args.replay:
             if any(hashlib.sha256(Path(p).read_bytes()).hexdigest()!=h for p,h in hashes.items()):
@@ -260,7 +284,7 @@ def run_dual_rate(args):
             detection_fps=fast.rate.hz(),cad_fps=cad.rate.hz(),
             sync_diagnostics=capture.pair_guard.snapshot() if capture else {'qualified_manifest_replay':bool(getattr(args,'pair_manifest',None))},
             fast_timing=_stats([r['processing_latency_ms'] for r in rows]),
-            cad_timing=_stats([c['processing_ms'] for c in cad_messages]),
+            cad_timing=_stats([c['processing_ms'] for c in cad_messages if c.get('kind')!='TABLE_READY']),
             render_timing=_stats([r['timing_ms']['render'] for r in rows]),
             offline_wall_throughput_hz=len(rows)/elapsed if args.replay else None,
             throughput_is_not_camera_fps=True,
@@ -281,6 +305,8 @@ def run_dual_rate(args):
             for row in rows:f.write(json.dumps(row,allow_nan=False,default=str)+'\n')
         with (output/'cad_results.jsonl').open('w',encoding='utf-8') as f:
             for row in cad_rows:f.write(json.dumps(row,allow_nan=False,default=str)+'\n')
+        with (output/'cad_lifecycle.jsonl').open('w',encoding='utf-8') as f:
+            for row in cad_messages:f.write(json.dumps(row,allow_nan=False,default=str)+'\n')
         (output/'summary.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
         if hashes:(output/'raw_input_sha256.json').write_text(json.dumps(hashes,indent=2),encoding='utf-8')
         print('DUAL_RATE_RESULT',output,json.dumps(summary,indent=2),flush=True)

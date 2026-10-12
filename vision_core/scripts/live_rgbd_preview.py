@@ -126,6 +126,9 @@ def main(argv=None):
         if not args.replay and not args.preview_authorized:
             parser.error('Human confirmation required: 准备好了，启动预览')
         if args.dual_rate:
+            if not args.replay and not args.headless:
+                from scripts.live_display import run_live_display
+                return run_live_display(args)
             from scripts.dual_rate_runner import run_dual_rate
             return run_dual_rate(args)
         return run_full_vision(args)

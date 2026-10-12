@@ -9,9 +9,11 @@ from scripts import dual_rate_runner as runner
 
 
 def test_live_dispatch_and_stream_preferences(monkeypatch, tmp_path):
+    from scripts import live_display
     monkeypatch.setenv('DISPLAY', ':test')
     received=[]
     monkeypatch.setattr(runner, 'run_dual_rate', lambda args: received.append(args))
+    monkeypatch.setattr(live_display, 'run_live_display', lambda args: received.append(args))
     entry.main(['--live', '--preview-authorized', '--run-output', str(tmp_path/'out')])
     args=received[0]
     assert args.full_vision and args.dual_rate and not args.replay

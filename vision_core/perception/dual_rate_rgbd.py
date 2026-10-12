@@ -59,11 +59,12 @@ class RateMeter:
             return (len(self.events)-1)/max(self.events[-1]-self.events[0],1e-6) if len(self.events)>=2 else None
 
 class CaptureWorker:
-    def __init__(self,source,on_frame=None):
+    def __init__(self,source,on_frame=None,on_preview=None):
         self.source=source;self.on_frame=on_frame;self.slot=LatestSlot();self.stop_event=Event()
         self.thread=None;self.error=None;self.frames=0;self.sdk_dropped=0;self.rate=RateMeter()
         self.pair_guard=RGBDPairGuard();self.observed_frames=0;self.consecutive_unqualified=0
         self.stream_rates={s:RateMeter() for s in ('color','depth')};self.stream_ids={}
+        self.on_preview=on_preview
     def start(self):
         self.thread=Thread(target=self._run,name='rgbd-capture');self.thread.start()
     def _run(self):
@@ -86,6 +87,7 @@ class CaptureWorker:
                 if type(ident) is int and ident!=self.stream_ids.get(stream):meter.add()
                 self.stream_ids[stream]=ident
             report=self.pair_guard.inspect(frame.timestamps)
+            if self.on_preview:self.on_preview(frame_id(frame,self.observed_frames),frame,report)
             if not report['qualified']:
                 self.consecutive_unqualified+=1
                 if self.consecutive_unqualified>=30:
@@ -118,16 +120,27 @@ class FastPerception:
         self.body_dimensions=json.loads(geometry_file.read_text(encoding='utf-8'))['battery']['body_dimensions_mm'] if geometry_file.exists() else None
         self.tracker=Tracker(max_gap_s=1.,max_distance=80.,confirmation_hits=2,ambiguity_px=8.,allow_unknown=True)
         self.last_timestamp=None;self.rate=RateMeter();self.previous_background=None;self.table_hint=None;self.motion_history=deque(maxlen=64)
-    def set_table_hint(self,plane,capture_timestamp,source_frame_id):
+    def set_table_hint(self,plane,capture_timestamp,source_frame_id,**lifecycle):
         if plane is None:return
         if self.table_hint is None or capture_timestamp>self.table_hint['capture_timestamp']:
-            self.table_hint=dict(plane=plane,capture_timestamp=capture_timestamp,source_frame_id=source_frame_id)
+            self.table_hint=dict(plane=plane,capture_timestamp=capture_timestamp,source_frame_id=source_frame_id,
+                cache_updated_host_s=time(),**lifecycle)
+        elif capture_timestamp==self.table_hint['capture_timestamp'] and source_frame_id==self.table_hint['source_frame_id']:
+            self.table_hint.update({k:v for k,v in lifecycle.items() if v is not None})
 
     def table_hint_evidence(self,stamp,motion,source_frame_id=None,max_age_s=2.5):
         hint=self.table_hint;reasons=[]
         report=dict(usable=False,reasons=reasons,source_frame_id=hint['source_frame_id'] if hint else None,
                     age_s=stamp-hint['capture_timestamp'] if hint else None,
                     current_motion_stable=motion.get('stable'),current_motion_reason=motion.get('reason'))
+        report.update(consumed_capture_timestamp=stamp,consumed_host_s=time(),
+            source_capture_timestamp=hint['capture_timestamp'] if hint else None,
+            expiry_capture_timestamp=hint['capture_timestamp']+max_age_s if hint else None,
+            cache_updated_host_s=hint.get('cache_updated_host_s') if hint else None,
+            plane_generated_host_s=hint.get('plane_generated_host_s') if hint else None,
+            cad_completed_host_s=hint.get('cad_completed_host_s') if hint else None,
+            cad_submitted_host_s=hint.get('cad_submitted_host_s') if hint else None,
+            cad_started_host_s=hint.get('cad_started_host_s') if hint else None)
         if hint is None:reasons.append('TABLE_HINT_MISSING');return report
         age=report['age_s']
         if age<0:reasons.append('TABLE_HINT_FROM_FUTURE')
@@ -167,8 +180,13 @@ class FastPerception:
         if transform is None:return dict(stable=None,reason='BACKGROUND_MOTION_MODEL_FAILED')
         ratio=float(inliers.mean());shift=float(np.median(np.linalg.norm(b[ix]-a[ix],axis=1))*frame.intrinsics.width/320)
         rotation=float(abs(np.rad2deg(np.arctan2(transform[1,0],transform[0,0]))))
+        inlier_shift=float(np.median(np.linalg.norm(b[ix]-a[ix],axis=1)[inliers.ravel().astype(bool)])*frame.intrinsics.width/320)
+        background=(excluded==0)&(old[1]==0)
+        gray_delta=float(np.median(gray[background].astype(float)-old[0][background].astype(float))) if background.any() else None
         return dict(stable=bool(ratio>=.7 and shift<=2. and rotation<=.25),
                     median_flow_px=shift,rotation_deg=rotation,inlier_ratio=ratio,
+                    feature_count=len(features),flow_matches=len(ix),median_inlier_flow_px=inlier_shift,
+                    background_gray_delta_proxy=gray_delta,
                     reference='VISUAL_BACKGROUND_PROXY_WITHOUT_TF; OBJECT_MOTION_NOT_COMPENSATED')
 
     def confirmation_evidence(self,payload,hint_used):
@@ -325,24 +343,37 @@ class CADWorker:
     def __init__(self,pipeline=None):
         self.pipeline=pipeline or RGBDVisionPipeline();self.slot=LatestSlot()
         self.results=deque();self.lock=Lock();self.thread=None;self.error=None;self.rate=RateMeter()
+        self.table_results=deque(maxlen=8)
         self.completed_jobs=0
     def start(self):
         self.thread=Thread(target=self._run,name='cad-pose-worker');self.thread.start()
     def submit(self,frame,source_frame_id,fast_objects):
-        return self.slot.put((frame,source_frame_id,[dict(o) for o in fast_objects]))
+        return self.slot.put((frame,source_frame_id,[dict(o) for o in fast_objects],time()))
     def _run(self):
         while True:
             job=self.slot.get(.1)
             if job is None:
                 if self.slot.closed:return
                 continue
-            frame,identity,fast=job
+            frame,identity,fast,submitted=job
             try:
                 validate_sync(frame)
+                started=time()
+                def table_ready(plane,generated):
+                    message=dict(kind='TABLE_READY',matches={},source_frame_id=identity,
+                        capture_timestamp=capture_time(frame),result_timestamp=generated,
+                        submitted_host_s=submitted,started_host_s=started,plane_generated_host_s=generated,
+                        table_plane=plane,processing_ms=(generated-started)*1000,
+                        timestamps=frame.timestamps,source_age_at_completion_s=generated-capture_time(frame))
+                    with self.lock:self.table_results.append(message)
+                self.pipeline.on_table_plane=table_ready
                 result,_=self.pipeline.process(frame,force_cad=True)
                 message=dict(source_frame_id=identity,capture_timestamp=capture_time(frame),result_timestamp=time(),capture_timestamp_source=frame_capture_time(frame)[1],timestamps=frame.timestamps,
                              matches=associate_cad(fast,result['objects']),processing_ms=result['timing_ms']['total'],
                              table_plane=result.get('background_filter_report',{}).get('table_plane'))
+                message.update(submitted_host_s=submitted,started_host_s=started,
+                    plane_generated_host_s=result.get('background_filter_report',{}).get('plane_generated_host_s'),
+                    source_age_at_completion_s=message['result_timestamp']-message['capture_timestamp'])
                 with self.lock:
                     self.results.append(message);self.completed_jobs+=1
                     while len(self.results)>8:self.results.popleft()
@@ -352,6 +383,9 @@ class CADWorker:
     def drain(self):
         with self.lock:
             rows=list(self.results);self.results.clear();return rows
+    def drain_table(self):
+        with self.lock:
+            rows=list(self.table_results);self.table_results.clear();return rows
     def close(self,timeout=10):
         self.slot.close()
         if self.thread:

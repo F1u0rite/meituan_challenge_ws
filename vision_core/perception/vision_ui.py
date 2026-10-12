@@ -53,6 +53,17 @@ class VisionUI:
                     cv2.line(rgb,(xx,y),(min(xx+5,x+w),y),(100,100,100),1)
                     cv2.line(rgb,(xx,y+h),(min(xx+5,x+w),y+h),(100,100,100),1)
                 text(rgb,candidate['state']+' '+candidate['color'],x,max(12,y-3),(150,150,150),.35)
+        if result.get('annotation_is_current') is False and result.get('annotation_age_ms') is not None and result['annotation_age_ms']<=2500:
+            # Explicit historical 2D outline only; no mask/XYZ/CAD projection transfer.
+            for item in result['objects']:
+                x,y,w,h=item['bbox']
+                for xx in range(x,x+w,14):
+                    cv2.line(rgb,(xx,y),(min(xx+6,x+w),y),(180,180,180),1)
+                    cv2.line(rgb,(xx,y+h),(min(xx+6,x+w),y+h),(180,180,180),1)
+                for yy in range(y,y+h,14):
+                    cv2.line(rgb,(x,yy),(x,min(yy+6,y+h)),(180,180,180),1)
+                    cv2.line(rgb,(x+w,yy),(x+w,min(yy+6,y+h)),(180,180,180),1)
+                text(rgb,f"HISTORY {item['object_id']} {result['annotation_age_ms']:.0f}ms",x,max(12,y-4),(180,180,180),.35)
         for item,payload in zip(result['objects'],views):
             ambiguous=item.get('candidate_state')=='AMBIGUOUS'
             color=COLORS[item['color_label']];mask[payload['mask']]=color
@@ -114,7 +125,7 @@ class VisionUI:
         text(canvas,f"{mode} | view={self.mode} | BODY/RING INVALID | no robot output",18,53,(70,200,255))
         if 'detection_fps' in result:
             def hz(value):return 'N/A' if value is None else f'{value:.1f}'
-            text(canvas,f"CAM RGB/D {hz(result.get('camera_fps'))}/{hz(result.get('camera_depth_fps'))} | DET {hz(result.get('detection_fps'))} | CAD {hz(result.get('cad_fps'))} FPS",1020,30)
+            text(canvas,f"CAM {hz(result.get('camera_fps'))}/{hz(result.get('camera_depth_fps'))} | UI {hz(result.get('ui_fps'))} | DET {hz(result.get('detection_fps'))} | CAD {hz(result.get('cad_fps'))} FPS",1020,30,scale=.40)
             age=result.get('cad_result_age_ms')
             text(canvas,f"DET {result['processing_latency_ms']:.0f}ms | CAD age {'N/A' if age is None else f'{age:.0f}ms'}",1020,54)
         else:
@@ -132,8 +143,11 @@ class VisionUI:
             canvas[yy:yy+s.shape[0],xx:xx+s.shape[1]]=s
         stats=result.get('pipeline_diagnostics',{})
         dispatch=result.get('ros2_dispatch',{})
-        if stats:
+        if stats and 'annotation_is_current' not in result:
             text(canvas,f"CUM SDK drain {stats['sdk_queue_drained']} | Preview replace {stats['capture_latest_queue_replacements']} | SYNC reject {stats['sync_rejected']} | CAD replace {stats['cad_latest_queue_replacements']} | FRAME CAD stale {stats['historical_stale_cad_targets']} ROS targets {dispatch.get('published','OFF')}/{dispatch.get('candidates','N/A')} filtered {dispatch.get('filtered','N/A')} | USB loss unmeasured",12,74,(180,190,200),.36)
+        if 'annotation_is_current' in result:
+            age=result.get('annotation_age_ms')
+            text(canvas,f"PREVIEW {result['preview_source_frame_id']} | DET SRC {result.get('annotation_source_frame_id')} | age {'N/A' if age is None else f'{age:.0f}ms'} | {'CURRENT' if result['annotation_is_current'] else 'HISTORY/PENDING'} | RGBD {'QUALIFIED' if result['preview_rgbd_qualified'] else 'REJECTED - DISPLAY ONLY'}",12,74,(180,190,200),.38)
         place(main,12,80,780,439)
         place(depth,808,80,780,439)
         text(canvas,'RGB '+str(frame.color_bgr.shape[1])+'x'+str(frame.color_bgr.shape[0]),12,540)
@@ -152,6 +166,8 @@ class VisionUI:
             'depth_above_display_max_still_valid':True,'pose_label':'BODY/RING INVALID',
             'sync_diagnostics':result.get('sync_diagnostics'),
             'pipeline_diagnostics':stats,'ros2_dispatch':dispatch,
+            'annotation_source_frame_id':result.get('annotation_source_frame_id'),
+            'annotation_age_ms':result.get('annotation_age_ms'),'annotation_is_current':result.get('annotation_is_current'),
             'cad_overlay_object_ids':[o['object_id'] for o in result['objects'] if self.show_cad and o.get('body_pose_candidate') is not None and o.get('cad_fresh') is True and not o.get('cad_stale',False)]}
         for i,item in enumerate(result['objects'][:6]):
             text(canvas,f"{i+1}. {object_label(item)}",22,600+i*36,COLORS[item['color_label']],.40)

@@ -48,6 +48,7 @@ class RGBDVisionPipeline:
             confirmation_hits=self.config['tracker_confirmation_hits'],
             ambiguity_px=self.config['tracker_ambiguity_px'],allow_unknown=True)
         self.last_cad={};self.last_cad_timestamp={};self.rays_cache={}
+        self.on_table_plane=None
         self.cfg=OfflineConfig(min_depth_m=self.config['min_depth_m'],
             max_depth_m=self.config['max_depth_m'],single_red_object=False,fast_table_roi=True,
             max_cloud_points=6000,table_min_points=600,table_ransac_iterations=80,adaptive_table_roi=True,
@@ -119,6 +120,9 @@ class RGBDVisionPipeline:
         report,maps,cloud,rgb=analyze_frame(frame,detections,self.cfg,focus_color=focus,
             sdk_deproject=sdk_deproject,rays_xyz=rays,table_plane_override=plane_override)
         accepted=[]
+        report['plane_generated_host_s']=time() if report['table_plane'] is not None else None
+        if report['table_plane'] is not None and self.on_table_plane is not None:
+            self.on_table_plane(report['table_plane'],report['plane_generated_host_s'])
         if report['table_plane'] is not None:
             accepted=[(d,r) for d,r in zip(detections,report['candidates']) if r['accepted'] and d.detection_valid]
         if report['table_plane'] is None:
