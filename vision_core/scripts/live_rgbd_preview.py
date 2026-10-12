@@ -78,6 +78,8 @@ def main(argv=None):
     parser.add_argument('--scene', choices=('top', 'tilted', 'side'), default='top')
     parser.add_argument('--output', type=Path, default=ROOT/'data'/'rgbd')
     parser.add_argument('--tcp-send', action='store_true', help='Opt-in V1 loopback TCP diagnostics; requires dual-rate')
+    parser.add_argument('--ros-publish', action='store_true', help='Publish this same dual-rate result to existing native ROS2 topics; no second camera')
+    parser.add_argument('--ros-wait-subscriber-s', type=float, default=0.)
     parser.add_argument('--tcp-config', type=Path, default=ROOT/'config/tcp_sender.yaml')
     parser.add_argument('--dual-rate', action='store_true', help='Bounded capture, fast detection and slower CAD worker')
     parser.add_argument('--continuous-max-seconds', type=float, default=30.)
@@ -108,6 +110,10 @@ def main(argv=None):
         parser.error('No DISPLAY: run in Ubuntu graphical desktop Terminal, or use --headless for actual offline rendering')
     if args.tcp_send and not (args.dual_rate and args.full_vision):
         parser.error('--tcp-send requires --full-vision --dual-rate')
+    if args.ros_publish and not (args.dual_rate and args.full_vision):
+        parser.error('--ros-publish requires --full-vision --dual-rate (or --live)')
+    if args.ros_wait_subscriber_s < 0:
+        parser.error('--ros-wait-subscriber-s must be nonnegative')
     if args.ui_smoke and not args.replay:
         parser.error('--ui-smoke is offline only')
     if args.replay and not args.full_vision:

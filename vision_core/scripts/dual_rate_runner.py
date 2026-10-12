@@ -18,6 +18,24 @@ def _stats(values):
     return dict(mean_ms=float(np.mean(values)),p95_ms=float(np.percentile(values,95))) if values else None
 
 
+def pipeline_diagnostics(capture,cad,result):
+    sync=capture.pair_guard.snapshot() if capture else None
+    return dict(usb_packet_loss=None,usb_packet_loss_status='NOT_MEASURED',
+        sdk_observed_frames=capture.observed_frames if capture else 0,
+        sdk_observed_id_gaps=sync['observed_id_gaps'] if sync else {},
+        sdk_observed_repeats=sync['observed_repeats'] if sync else {},
+        sdk_queue_drained=capture.sdk_dropped if capture else 0,
+        capture_latest_queue_replacements=capture.slot.dropped if capture else 0,
+        sync_rejected=sync['rejected'] if sync else 0,
+        sync_rejection_reasons=sync['reasons'] if sync else {},
+        qualified_pairs=sync['accepted'] if sync else None,
+        cad_latest_queue_replacements=cad.slot.dropped,
+        cad_jobs_completed=cad.completed_jobs,cad_worker_error=cad.error,
+        historical_stale_cad_targets=sum(o.get('historical_cad',{}).get('status')=='STALE' for o in result['objects']),
+        cad_result_age_ms=result.get('cad_result_age_ms'),
+        note='SDK gaps/draining, processing queue replacement and sync rejection are distinct; none proves USB packet loss')
+
+
 def merge_cad_history(history, messages):
     """Late/out-of-order CAD jobs cannot replace a newer observation for one ID."""
     accepted=[];rejected=0
@@ -61,7 +79,7 @@ def run_dual_rate(args):
     observation=ObservationMonitor()
     fast=FastPerception();cad=CADWorker(RGBDVisionPipeline(args.vision_config));ui=VisionUI()
     source=None;capture=None;recorder=None;record_lock=Lock();record_index=0
-    tcp_sender=None
+    tcp_sender=None;ros_publisher=None
     if getattr(args,'tcp_send',False):
         import yaml
         from perception.tcp_vision_sender import TCPVisionSender
@@ -125,6 +143,9 @@ def run_dual_rate(args):
             print('Continuous recording:',old.folder,json.dumps(summary),flush=True)
             ui.recording=False
     try:
+        if getattr(args,'ros_publish',False):
+            from mtc_vision_adapter.native_result_publisher import NativeResultPublisher
+            ros_publisher=NativeResultPublisher(getattr(args,'ros_wait_subscriber_s',0.))
         if source:
             print('Actual streams:',json.dumps(source.start()),flush=True)
             capture=CaptureWorker(source,on_frame=record_frame)
@@ -159,6 +180,10 @@ def run_dual_rate(args):
             result['cad_result_age_ms']=max((o['historical_cad']['result_age_ms'] for o in result['objects']
                 if 'historical_cad' in o),default=None)
             result['result_age_ms']=None if args.replay else max(0,(time()-result['capture_timestamp'])*1000)
+            result['pipeline_diagnostics']=pipeline_diagnostics(capture,cad,result)
+            if ros_publisher:
+                result['ros2_dispatch']=ros_publisher.publish_result(result,
+                    mode='offline' if args.replay else 'live',pipeline_diagnostics=result['pipeline_diagnostics'])
             if tcp_sender:
                 tcp_sender.offer_vision(result,mode='test' if args.replay else 'live',timestamps=frame.timestamps)
                 result['tcp_sender']=tcp_sender.snapshot()
@@ -244,6 +269,8 @@ def run_dual_rate(args):
             yaw_accuracy='NOT_MEASURED',live_test='NOT RUN' if args.replay else 'LIVE_SESSION',
             raw_inputs_unchanged=True if args.replay else None,
             tcp_sender=tcp_sender.snapshot() if tcp_sender else None)
+        summary['ros2_dispatch']=ros_publisher.snapshot() if ros_publisher else None
+        summary['pipeline_diagnostics']=pipeline_diagnostics(capture,cad,rows[-1] if rows else {'objects':[]})
         with (output/'detections.jsonl').open('w',encoding='utf-8') as f:
             for row in rows:f.write(json.dumps(row,allow_nan=False,default=str)+'\n')
         with (output/'cad_results.jsonl').open('w',encoding='utf-8') as f:
@@ -256,6 +283,7 @@ def run_dual_rate(args):
         # Run every cleanup even if a recorder/source cleanup raises.
         from contextlib import ExitStack
         with ExitStack() as cleanup:
+            if ros_publisher:cleanup.callback(ros_publisher.close)
             if not args.headless:cleanup.callback(cv2.destroyAllWindows)
             if cad.thread and cad.thread.is_alive():cleanup.callback(cad.close)
             if capture:cleanup.callback(capture.close)

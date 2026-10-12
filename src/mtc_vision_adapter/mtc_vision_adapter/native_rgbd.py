@@ -16,6 +16,18 @@ def load_core(core_path=''):
     return importlib.import_module('perception.dual_rate_rgbd')
 
 
+def native_filter_reasons(obj):
+    """Existing detection admission policy, separate from CAD pose uncertainty."""
+    reasons=[]
+    if obj.get('detection_status')!='CONFIRMED_OBJECT':reasons.append('DETECTION_NOT_CONFIRMED')
+    if obj.get('color') not in COLORS or obj.get('color')=='unknown':reasons.append('COLOR_UNKNOWN')
+    if obj.get('detection_ambiguity') is True:reasons.append('DETECTION_AMBIGUOUS')
+    stale=(obj.get('detection_stale') is not False if 'detection_stale' in obj
+           else obj.get('stale_status')=='STALE')
+    if stale:reasons.append('DETECTION_STALE_OR_UNKNOWN')
+    return reasons
+
+
 def native_array(result):
     """Unknown camera/ROS mapping: zero stamp, NaN poses; never invent a map."""
     frame=result.get('coordinate_frame','camera_color_optical')
@@ -24,11 +36,7 @@ def native_array(result):
     h={'frame_id':frame,'stamp':{'sec':0,'nanosec':0}}
     detections=[];seen=set()
     for obj in result['objects']:
-        if (obj.get('detection_status')!='CONFIRMED_OBJECT' or
-                obj.get('color') not in COLORS or obj['color']=='unknown' or
-                obj.get('detection_ambiguity') is True or
-                (obj.get('detection_stale') is not False if 'detection_stale' in obj
-                 else obj.get('stale_status')=='STALE')):
+        if native_filter_reasons(obj):
             continue
         identity=obj['object_id']
         if not identity or identity in seen:

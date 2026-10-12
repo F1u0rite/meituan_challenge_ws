@@ -116,7 +116,7 @@ class VisionUI:
             def hz(value):return 'N/A' if value is None else f'{value:.1f}'
             text(canvas,f"CAM RGB/D {hz(result.get('camera_fps'))}/{hz(result.get('camera_depth_fps'))} | DET {hz(result.get('detection_fps'))} | CAD {hz(result.get('cad_fps'))} FPS",1020,30)
             age=result.get('cad_result_age_ms')
-            text(canvas,f"DET {result['processing_latency_ms']:.0f}ms | CAD age {'N/A' if age is None else f'{age:.0f}ms'} | DROP {result.get('capture_dropped_frames',0)} | SYNC rej {result.get('sync_diagnostics',{}).get('rejected',0)}",1020,54)
+            text(canvas,f"DET {result['processing_latency_ms']:.0f}ms | CAD age {'N/A' if age is None else f'{age:.0f}ms'}",1020,54)
         else:
             rate=f"{display_fps:.1f}" if display_fps is not None else 'N/A (offline)'
             capture=frame.stream_profiles.get("color",{}).get("fps","N/A")
@@ -130,6 +130,10 @@ class VisionUI:
             canvas[y:y+h,x:x+w]=(12,16,20)
             xx=x+(w-s.shape[1])//2;yy=y+(h-s.shape[0])//2
             canvas[yy:yy+s.shape[0],xx:xx+s.shape[1]]=s
+        stats=result.get('pipeline_diagnostics',{})
+        dispatch=result.get('ros2_dispatch',{})
+        if stats:
+            text(canvas,f"CUM SDK drain {stats['sdk_queue_drained']} | Preview replace {stats['capture_latest_queue_replacements']} | SYNC reject {stats['sync_rejected']} | CAD replace {stats['cad_latest_queue_replacements']} | FRAME CAD stale {stats['historical_stale_cad_targets']} ROS targets {dispatch.get('published','OFF')}/{dispatch.get('candidates','N/A')} filtered {dispatch.get('filtered','N/A')} | USB loss unmeasured",12,74,(180,190,200),.36)
         place(main,12,80,780,439)
         place(depth,808,80,780,439)
         text(canvas,'RGB '+str(frame.color_bgr.shape[1])+'x'+str(frame.color_bgr.shape[0]),12,540)
@@ -147,6 +151,7 @@ class VisionUI:
             'capture_timestamps':frame.timestamps,'depth_display_range_m':[0,1],
             'depth_above_display_max_still_valid':True,'pose_label':'BODY/RING INVALID',
             'sync_diagnostics':result.get('sync_diagnostics'),
+            'pipeline_diagnostics':stats,'ros2_dispatch':dispatch,
             'cad_overlay_object_ids':[o['object_id'] for o in result['objects'] if self.show_cad and o.get('body_pose_candidate') is not None and o.get('cad_fresh') is True and not o.get('cad_stale',False)]}
         for i,item in enumerate(result['objects'][:6]):
             text(canvas,f"{i+1}. {object_label(item)}",22,600+i*36,COLORS[item['color_label']],.40)
