@@ -18,3 +18,5 @@ max_plane_residual_m: 0.003
 min_hole_area_px: 100
 min_ring_points: 40
 min_hole_background_gap_m: 0.008
+body_mask_erode_px: 2
+body_min_face_support: 0.70

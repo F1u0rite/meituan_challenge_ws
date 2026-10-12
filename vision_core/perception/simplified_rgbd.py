@@ -12,7 +12,7 @@ import yaml
 from mtc_vision_adapter.core import Tracker
 from input.rgbd_pair_guard import RGBDPairGuard
 from .dual_rate_rgbd import RateMeter, capture_time
-from .rgbd_geometry import deproject_pixels, validate_frame, frame_capture_time
+from .rgbd_geometry import deproject_pixels, validate_frame, frame_capture_time, fit_plane_ransac
 from .unified_detector import UnifiedBatteryDetector
 from .battery_only import PixelBatteryDetector
 from .color_classifier import ColorClassifier
@@ -55,16 +55,22 @@ class BatteryDetection:
 class BodyPoseEstimation:
     def __init__(self,config,geometry):self.config=config;self.geometry=geometry
     def estimate(self,frame,mask,qualified):
-        out=dict(body_pose_valid=False,body_xyz_candidate=None,body_yaw_candidate=None,yaw_candidates=[],visible_surface_center_xyz=None,quality={},reasons=[])
+        out=dict(body_pose_valid=False,body_xyz_candidate=None,body_origin_candidates=[],body_xyz_definition=None,body_yaw_candidate=None,yaw_candidates=[],visible_surface_center_xyz=None,quality={},reasons=[])
         if not qualified:out['reasons']=['RGBD_PAIR_REJECTED'];return out,np.empty((0,3)),np.empty((0,2),int)
+        mask=np.asarray(mask,bool)
+        if mask.shape!=frame.aligned_depth.shape:raise ValueError('Body mask/depth shape mismatch')
+        edge=int(self.config.get('body_mask_erode_px',2))
+        interior=cv2.erode(np.uint8(mask),np.ones((edge*2+1,edge*2+1),np.uint8)).astype(bool) if edge else mask
         z=frame.aligned_depth*frame.depth_scale
-        selected=mask&(z>=self.config['min_depth_m'])&(z<=self.config['max_depth_m'])
-        ratio=float(selected.sum()/max(mask.sum(),1));out['quality']['valid_depth_ratio']=ratio
-        if selected.sum()<self.config['min_points'] or ratio<self.config['min_depth_ratio']:
+        in_range=(z>=self.config['min_depth_m'])&(z<=self.config['max_depth_m'])
+        original_valid=mask&in_range;selected=interior&in_range
+        ratio=float(selected.sum()/max(interior.sum(),1))
+        out['quality'].update(mask_pixels=int(mask.sum()),interior_mask_pixels=int(interior.sum()),edge_pixels_removed=int(mask.sum()-interior.sum()),original_valid_depth_pixels=int(original_valid.sum()),valid_depth_pixels=int(selected.sum()),valid_depth_ratio=ratio,original_valid_depth_ratio=float(original_valid.sum()/max(mask.sum(),1)),mask_erode_px=edge,position_reference='ROBUST_VISIBLE_SURFACE_SAMPLE_MEDIAN; NOT_BODY_ORIGIN')
+        if selected.sum()<self.config['min_points'] or ratio<self.config['min_depth_ratio'] or out['quality']['original_valid_depth_ratio']<self.config['min_depth_ratio']:
             out['reasons']=['INSUFFICIENT_CURRENT_DEPTH'];return out,np.empty((0,3)),np.empty((0,2),int)
         v,u=np.where(selected);depth=z[v,u];median=np.median(depth);mad=np.median(abs(depth-median))
         keep=abs(depth-median)<=max(self.config['depth_outlier_floor_m'],3*1.4826*mad)
-        out['quality'].update(raw_points=len(v),outlier_fraction=float(1-keep.mean()),depth_mad_m=float(mad))
+        out['quality'].update(raw_points=len(v),outlier_fraction=float(1-keep.mean()),depth_mad_m=float(mad),depth_quantiles_m=np.percentile(depth,[0,10,50,90,100]).tolist(),depth_filter_tolerance_m=float(max(self.config['depth_outlier_floor_m'],3*1.4826*mad)),filtered_depth_pixels=int(keep.sum()))
         uv=np.column_stack((u[keep],v[keep]));depth=depth[keep]
         if len(uv)<self.config['min_points']:out['reasons']=['DEPTH_OUTLIERS'];return out,np.empty((0,3)),uv
         pick=np.linspace(0,len(uv)-1,min(len(uv),self.config['max_points']),dtype=int);uv=uv[pick]
@@ -75,15 +81,45 @@ class BodyPoseEstimation:
         residual=np.abs(centered@normal);axis=axes[0];yaw=float(np.arctan2(axis[1],axis[0])%np.pi)
         extents=np.percentile(centered@axes[:2].T,95,axis=0)-np.percentile(centered@axes[:2].T,5,axis=0)
         out.update(body_yaw_candidate=yaw,yaw_candidates=[yaw,yaw+np.pi])
-        out['quality'].update(point_count=len(points),plane_residual_p95_m=float(np.percentile(residual,95)),visible_span_m=extents.tolist(),axis_ratio=float(values[0]/max(values[1],1e-9)))
+        out['quality'].update(point_count=len(points),plane_residual_p95_m=float(np.percentile(residual,95)),visible_span_m=extents.tolist(),axis_ratio=float(values[0]/max(values[1],1e-9)),yaw_definition='OPTICAL_XY_FULL_CLOUD_PCA_AZIMUTH_MOD_PI; NOT_UNIQUE_ORIENTATION',visible_surface_candidate=True)
+        # The battery and protruding ring expose multiple faces. Fit a supported
+        # current face rather than treating every mask point as one flat body top.
+        plane=fit_plane_ransac(points,threshold_m=self.config['max_plane_residual_m'],min_inliers=self.config['min_points'])
+        face_ok=False;face_center=None;face_normal=None;face_span=None
+        if plane is not None:
+            n=np.asarray(plane['normal_camera_xyz']);o=np.asarray(plane['point_camera_m'])
+            inliers=np.abs((points-o)@n)<=self.config['max_plane_residual_m']
+            part=points[inliers];support=float(inliers.mean())
+            face_origin=part.mean(axis=0);_,_,face_axes=np.linalg.svd(part-face_origin,full_matrices=False)
+            face_normal=face_axes[-1]
+            if np.dot(face_normal,face_origin)>0:face_normal=-face_normal
+            q=np.percentile((part-face_origin)@face_axes[:2].T,[5,95],axis=0)
+            face_span=np.sort(q[1]-q[0])[::-1]
+            face_center=face_origin+((q[0]+q[1])/2)@face_axes[:2]
+            face_residual=float(np.percentile(abs((part-face_origin)@face_normal),95))
+            face_ok=bool(len(part)>=self.config['min_points'] and support>=self.config.get('body_min_face_support',.70) and face_residual<=self.config['max_plane_residual_m'])
+            out['quality'].update(face_points=len(part),face_support_ratio=support,face_residual_p95_m=face_residual,face_span_m=face_span.tolist(),face_center_camera_m=face_center.tolist(),face_normal_camera_xyz=face_normal.tolist(),face_plane_point_camera_m=face_origin.tolist(),face_quality_pass=face_ok)
+        else:out['quality']['face_quality_pass']=False
         dims=(self.geometry or {}).get('battery',{}).get('body_dimensions_mm')
         if dims:
             nominal=np.sort([dims['long'],dims['width']])[::-1]/1000
-            match=np.all(np.sort(extents)[::-1]>=nominal*.70)&np.all(np.sort(extents)[::-1]<=nominal*1.25)
-            if match and np.percentile(residual,95)<=self.config['max_plane_residual_m']:
-                out['body_xyz_candidate']=(center-normal*dims['height']/2000).tolist()
-                out['quality']['center_method']='OBSERVED_PLANAR_FACE_PLUS_CAD_HALF_HEIGHT_UNVERIFIED_FACE_ID'
-            else:out['reasons'].append('OBSERVED_FACE_NOT_CAD_BODY_TOP')
+            match=face_span is not None and bool(np.all(face_span>=nominal*.70)&np.all(face_span<=nominal*1.25))
+            out['quality'].update(cad_top_span_pass=match,nominal_top_span_m=nominal.tolist())
+            if face_ok:
+                # Preserve all compatible face hypotheses; the top-face offset is
+                # a model-conditional candidate, never a uniquely observed origin.
+                for label,a,b,thickness in [('TOP','long','width','height'),('LONG_SIDE','long','height','width'),('SHORT_SIDE','width','height','long')]:
+                    pair=np.sort([dims[a],dims[b]])[::-1]/1000
+                    if np.all(face_span>=pair*.70)&np.all(face_span<=pair*1.25):
+                        out['body_origin_candidates'].append(dict(face_assumption=label,xyz_camera_m=(face_center-face_normal*dims[thickness]/2000).tolist(),definition='OBSERVED_FACE_BOUNDS_CENTER_PLUS_CAD_HALF_THICKNESS; FACE_ID_UNVERIFIED'))
+            if face_ok and match:
+                out['body_xyz_candidate']=(face_center-face_normal*dims['height']/2000).tolist()
+                out['body_xyz_definition']='MODEL_CONDITIONAL_TOP_FACE_ORIGIN; NOT_UNIQUE_OR_METROLOGY_VALIDATED'
+                out['quality']['center_method']='CURRENT_DOMINANT_FACE_QUANTILE_BOUNDS_PLUS_CAD_HALF_HEIGHT_UNVERIFIED_FACE_ID'
+            else:
+                if not face_ok:out['reasons'].append('INSUFFICIENT_SUPPORTED_CURRENT_FACE')
+                if not match:out['reasons'].append('CURRENT_FACE_NOT_CAD_TOP_SPAN')
+            if len(out['body_origin_candidates'])>1:out['reasons'].append('MULTIPLE_COMPATIBLE_CAD_FACE_ORIGINS')
         else:out['reasons'].append('CAD_DIMENSIONS_UNAVAILABLE')
         out['reasons']+=['YAW_180_DEG_SYMMETRY','FACE_ID_AND_XYZ_ACCURACY_UNVERIFIED']
         return out,points,uv
