@@ -21,6 +21,7 @@
 #include "mtc_manipulation_cpp/pick_place_types.hpp"
 #include "mtc_moveit_planner/planning_backend.hpp"
 #include "mtc_moveit_planner/pose_math.hpp"
+#include "mtc_moveit_planner/tool_model.hpp"
 
 namespace mtc
 {
@@ -125,9 +126,18 @@ struct PlannerConfig
   /// 提环 / TCP 局部坐标中的插入方向轴（TF_CONVENTIONS §2.1 提案：+Z）。
   int insertion_axis = 2;
 
-  /// ee_link -> hook_tcp。未标定时为单位变换。
+  /// ee_link -> hook_tcp。未标定时为单位变换；tool.enabled 时由工具模型计算。
   Transform ee_to_tcp;
   CalibrationStatus tcp_status = CalibrationStatus::PLACEHOLDER;
+
+  /// 末端工具模型（CAD 几何）：启用时决定 TCP，并把工具外形作为碰撞体随每次规划下发。
+  ToolModelSpec tool;
+  CalibrationStatus tool_status = CalibrationStatus::PLACEHOLDER;
+
+  /// 钩口朝上：RING_STANDOFF 目标只取提环的插入轴，绕插入轴的滚转改为 TCP x 指向世界 +Z。
+  /// 插入轴与竖直方向夹角小于 hook_up_min_tilt_rad（如 V2 竖直下插）时不调整。
+  bool hook_up_alignment = true;
+  double hook_up_min_tilt_rad = 0.5236;   ///< 30°
 
   std::map<std::string, SlotSpec> slots;
   std::map<std::string, PrimitiveSpec> primitives;
@@ -141,6 +151,12 @@ struct PlannerConfig
 
 /// 默认配置：原语表 + 工具原语清单 + 占位工位（仅仿真）。
 PlannerConfig default_planner_config();
+
+/// 按工具行程更新原语表：预对准退让 = 插入行程，快速接近再多退 approach_backoff，
+/// 试提前的插入假设 = 插入行程，撤离前的退钩假设 = 退钩行程。
+void apply_tool_travel(
+  PlannerConfig & config, double insert_travel_m, double withdraw_travel_m,
+  double approach_backoff_m);
 
 }  // namespace moveit_planner
 }  // namespace mtc

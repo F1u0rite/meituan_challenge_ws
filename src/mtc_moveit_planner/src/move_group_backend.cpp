@@ -285,6 +285,21 @@ struct MoveGroupBackend::Impl
     return time_scale(trajectory, request, start_state, sample_dt_s).duration;
   }
 
+  /// 把长方体 / 圆柱附着到 ee_link（只改这个 RobotState）。
+  void attach(moveit::core::RobotState & state, const AttachedPayload & body) const
+  {
+    shapes::ShapeConstPtr shape;
+    if (body.shape == BodyShape::CYLINDER) {
+      shape = std::make_shared<shapes::Cylinder>(0.5 * body.size_m.x, body.size_m.z);
+    } else {
+      shape = std::make_shared<shapes::Box>(body.size_m.x, body.size_m.y, body.size_m.z);
+    }
+    state.attachBody(body.id, to_eigen(body.ee_to_payload), {shape},
+      EigenSTL::vector_Isometry3d{Eigen::Isometry3d::Identity()},
+      std::set<std::string>(body.touch_links.begin(), body.touch_links.end()),
+      options.end_effector_link);
+  }
+
   /// 控制器限位中比 URDF 更窄的关节 -> MoveIt 关节约束。
   moveit_msgs::msg::Constraints joint_constraints(
     const std::map<std::string, std::pair<double, double>> & bounds) const
@@ -519,17 +534,15 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
     result.message = "start state has unknown joints or non-finite values";
     return result;
   }
-  if (request.payload) {
-    // 只附着在本次请求的起点状态上：MoveIt 以起点的 attached bodies 做碰撞检查，全局场景不变。
-    const auto & p = *request.payload;
-    std::vector<shapes::ShapeConstPtr> shapes{
-      std::make_shared<shapes::Box>(p.size_m.x, p.size_m.y, p.size_m.z)};
-    EigenSTL::vector_Isometry3d shape_poses{Eigen::Isometry3d::Identity()};
-    start->attachBody(p.id, to_eigen(p.ee_to_payload), shapes, shape_poses,
-      std::set<std::string>(p.touch_links.begin(), p.touch_links.end()),
-      impl_->options.end_effector_link);
-    start->update();
+  // 工具外形与电池载荷只附着在本次请求的起点状态上：MoveIt 以起点的 attached bodies
+  // 做碰撞检查（含关节插值逐点校验），全局场景不变。
+  for (const auto & body : request.tool_bodies) {
+    impl_->attach(*start, body);
   }
+  if (request.payload) {
+    impl_->attach(*start, *request.payload);
+  }
+  start->update();
   auto goal = transform_to_planning_frame(request.ee_goal);
   if (!goal) {
     result.reason = "TF_UNAVAILABLE";
@@ -826,13 +839,18 @@ BackendResult MoveGroupBackend::plan(const BackendRequest & request)
 
 std::optional<JointStateSnapshot> MoveGroupBackend::solve_ik_max_margin(
   const mtc::core::Pose6D & ee_goal, const JointStateSnapshot & seed,
-  const std::map<std::string, std::pair<double, double>> & joint_bounds, std::string & why)
+  const std::map<std::string, std::pair<double, double>> & joint_bounds, std::string & why,
+  const std::vector<AttachedPayload> & attached)
 {
   const auto start = impl_->state_from(seed);
   if (!start) {
     why = "seed state has unknown joints or non-finite values";
     return std::nullopt;
   }
+  for (const auto & body : attached) {
+    impl_->attach(*start, body);
+  }
+  start->update();
   const auto goal = transform_to_planning_frame(ee_goal);
   if (!goal) {
     why = "cannot transform goal from '" + ee_goal.frame_id + "'";

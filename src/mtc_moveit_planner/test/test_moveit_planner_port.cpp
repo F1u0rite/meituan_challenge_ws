@@ -446,6 +446,39 @@ TEST(MoveItPlannerPort, TighterControllerJointLimitsAreEnforced)
   EXPECT_EQ(result.message.rfind("[JOINT_LIMIT_VIOLATION] side_insert", 0), 0u) << result.message;
 }
 
+TEST(MoveItPlannerPort, ToolModelSetsTcpAndAttachesBodiesToEveryRequest)
+{
+  Fixture f;
+  auto & tool = f.config.tool;
+  tool.enabled = true;
+  tool.flange_axis_cad = {0.0, 1.0, 0.0};
+  tool.insertion_cad = {0.0, 0.0, 1.0};
+  tool.hook_up_cad = {0.0, -1.0, 0.0};
+  tool.tcp_cad_m = {0.0, 0.110, 0.045};
+  mtc::moveit_planner::ToolBodySpec tongue;
+  tongue.id = "tongue";
+  tongue.size_m = {0.044, 0.005, 0.085};
+  tool.bodies = {tongue};
+  f.config.tool_status = CalibrationStatus::ESTIMATED;
+  auto port = f.port();
+  EXPECT_NEAR(port->config().ee_to_tcp.translation.z, 0.110, kTol);
+  EXPECT_EQ(port->config().tcp_status, CalibrationStatus::ESTIMATED);
+  const auto result = port->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  ASSERT_TRUE(result.ok) << result.message;
+  EXPECT_NE(result.message.find("tool_geometry=ESTIMATED"), std::string::npos) << result.message;
+  ASSERT_FALSE(f.backend->requests.empty());
+  for (const auto & request : f.backend->requests) {
+    ASSERT_EQ(request.tool_bodies.size(), 1u) << request.label;
+    EXPECT_EQ(request.tool_bodies[0].id, "mtc_moveit_planner/tongue");
+  }
+
+  Fixture bad;
+  bad.config.tool = tool;
+  bad.config.tool.insertion_cad = {0.0, 1.0, 0.0};   // 与法兰轴平行：非法
+  const auto refused = bad.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  EXPECT_EQ(refused.message.rfind("[INVALID_CONFIG]", 0), 0u) << refused.message;
+}
+
 TEST(MoveItPlannerPort, ScalingAboveExecutorCapIsRefused)
 {
   Fixture f;

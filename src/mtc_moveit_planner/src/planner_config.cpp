@@ -164,3 +164,26 @@ PlannerConfig default_planner_config()
 
 }  // namespace moveit_planner
 }  // namespace mtc
+
+namespace mtc
+{
+namespace moveit_planner
+{
+
+void apply_tool_travel(
+  PlannerConfig & config, double insert_travel_m, double withdraw_travel_m,
+  double approach_backoff_m)
+{
+  auto & p = config.primitives;
+  for (const char * name : {"side_insert", "top_insert"}) {
+    if (p.count(name)) {p[name].distance_m = insert_travel_m;}
+  }
+  for (const char * name : {"side_approach", "top_approach"}) {
+    if (p.count(name)) {p[name].distance_m = insert_travel_m + approach_backoff_m;}
+  }
+  if (p.count("test_lift")) {p["test_lift"].gap_distance_m = insert_travel_m;}
+  if (p.count("retreat")) {p["retreat"].gap_distance_m = withdraw_travel_m;}
+}
+
+}  // namespace moveit_planner
+}  // namespace mtc

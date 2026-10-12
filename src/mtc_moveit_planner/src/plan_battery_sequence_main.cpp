@@ -153,13 +153,18 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
       RCLCPP_ERROR(logger, "cannot derive ready pose for primitive '%s'", first.c_str());
       return 2;
     }
+    auto ring_goal = *ring_in_frame;
+    if (port.config().hook_up_alignment && port.config().insertion_axis == 2) {
+      ring_goal.orientation = mtc::moveit_planner::align_roll_to_up(
+        ring_goal.orientation, mtc::core::Vector3{0.0, 0.0, 1.0}, port.config().hook_up_min_tilt_rad);
+    }
     const auto tcp_ready = mtc::moveit_planner::offset_along_local_axis(
-      *ring_in_frame, config.insertion_axis, -(spec->second.distance_m + ready_backoff_m));
+      ring_goal, port.config().insertion_axis, -(spec->second.distance_m + ready_backoff_m));
     const auto ee_ready = mtc::moveit_planner::apply(
-      tcp_ready, mtc::moveit_planner::inverse(config.ee_to_tcp));
+      tcp_ready, mtc::moveit_planner::inverse(port.config().ee_to_tcp));
     std::string info;
     const auto ready = backend->solve_ik_max_margin(
-      ee_ready, *acquire_start, config.joint_position_limits, info);
+      ee_ready, *acquire_start, config.joint_position_limits, info, port.tool_bodies());
     if (!ready) {
       RCLCPP_ERROR(logger, "ready pose: %s", info.c_str());
       return 1;
@@ -186,6 +191,7 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
     setup.cartesian_step_m = config.cartesian_step_m;
     setup.prefer_straight_line = true;
     setup.joint_bounds = config.joint_position_limits;
+    setup.tool_bodies = port.tool_bodies();
     const auto setup_result = backend->plan(setup);
     double setup_duration = 0.0;
     if (setup_result.ok && !setup_result.trajectory.points.empty()) {

@@ -149,6 +149,15 @@ if grep -q "PLAN FAILED" "$OUT/collision_probe.log"; then
 else
   note "FAIL collision_probe: goal inside table was NOT rejected"
 fi
+# 工具碰撞反证：法兰离桌面 9 cm、舌规会插入桌面；工具模型生效时必须失败（失败 = PASS）。
+ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/tool_collision_probe" program:=plan_fixed_pose \
+  extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/tool_collision_probe_override.yaml" \
+  > "$OUT/tool_collision_probe.log" 2>&1
+if grep -q "PLAN FAILED" "$OUT/tool_collision_probe.log"; then
+  note "PASS tool_collision_probe: hook tool would enter the table and the goal was rejected"
+else
+  note "FAIL tool_collision_probe: goal accepted although the hook tool would enter the table"
+fi
 run_tool plan_battery_sequence_v1 program:=plan_battery_sequence
 run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v2_override.yaml"

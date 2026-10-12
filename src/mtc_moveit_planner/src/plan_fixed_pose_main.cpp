@@ -109,6 +109,15 @@ int run(const std::shared_ptr<rclcpp::Node> & node)
   request.planning_time_s = planner_config.planning_time_s;
   request.joint_bounds = planner_config.joint_position_limits;
 
+  if (planner_config.tool.enabled) {
+    // 工具外形随规划一起做碰撞检查（与 MoveItPlannerPort 一致）。
+    const auto frames = mtc::moveit_planner::compute_tool_frames(planner_config.tool);
+    if (!frames.valid) {
+      RCLCPP_ERROR(logger, "tool model: %s", frames.message.c_str());
+      return 2;
+    }
+    request.tool_bodies = mtc::moveit_planner::tool_bodies_in_ee(planner_config.tool, frames);
+  }
   const auto result = backend->plan(request);
   const double stamp = node->now().seconds();
   mtc::moveit_planner::ConversionResult converted;

@@ -11,7 +11,7 @@
 //   * 所有结果最后都按 speed_sample_dt_s 密采样复核末端速度，超限则再均匀拉伸；
 //   * FREE_SPACE 依次尝试：末端直线 → IK 候选（位姿延拓 + 固定种子网格，按预计时长排序）
 //     + 关节空间插值（逐点 /check_state_validity）→ OMPL 到 IK 关节目标 → 位姿目标 OMPL；
-//   * 电池载荷附着在**起点 RobotState** 上随请求下发，不改 move_group 全局场景；
+//   * 工具外形与电池载荷附着在**起点 RobotState** 上随请求下发，不改 move_group 全局场景；
 //   * 静态障碍物（apply_scene）经 /apply_planning_scene 写入；所有对象 ID 加前缀
 //     "mtc_moveit_planner/"，只增删带该前缀的对象，不碰其他模块的碰撞体（scene_ids.hpp）；
 //   * 只规划、不执行：本类不调用 execute()/move()，不连接控制器 Action。
@@ -77,7 +77,8 @@ public:
   /// 成功时 info 写入解的数量与裕度；失败返回 nullopt 并在 info 写原因。
   std::optional<JointStateSnapshot> solve_ik_max_margin(
     const mtc::core::Pose6D & ee_goal, const JointStateSnapshot & seed,
-    const std::map<std::string, std::pair<double, double>> & joint_bounds, std::string & info);
+    const std::map<std::string, std::pair<double, double>> & joint_bounds, std::string & info,
+    const std::vector<AttachedPayload> & attached = {});
 
 private:
   struct Impl;

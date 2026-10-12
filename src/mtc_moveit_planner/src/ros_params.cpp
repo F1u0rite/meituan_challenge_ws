@@ -3,6 +3,7 @@
 #include "mtc_moveit_planner/ros_params.hpp"
 #include "mtc_moveit_planner/scene_ids.hpp"
 
+#include <cmath>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -87,6 +88,62 @@ PlannerConfig load_planner_config(rclcpp::Node & node)
   config.payload.hang_below_tcp_m =
     node.get_parameter_or("payload.hang_below_tcp_m", config.payload.hang_below_tcp_m);
   config.payload.status = status_param(node, "payload.status", config.payload.status);
+
+  // ---- 工具行程与"钩口朝上" ----
+  const double insert_travel = node.get_parameter_or("planner.insert_travel_m", 0.03);
+  const double withdraw_travel = node.get_parameter_or("planner.withdraw_travel_m", 0.03);
+  const double approach_backoff = node.get_parameter_or("planner.approach_backoff_m", 0.02);
+  if (!(insert_travel > 0.0) || !(withdraw_travel > 0.0) || !(approach_backoff >= 0.0)) {
+    throw std::runtime_error("planner.insert/withdraw_travel_m must be > 0, approach_backoff_m >= 0");
+  }
+  apply_tool_travel(config, insert_travel, withdraw_travel, approach_backoff);
+  config.hook_up_alignment =
+    node.get_parameter_or("planner.hook_up_alignment", config.hook_up_alignment);
+  config.hook_up_min_tilt_rad = node.get_parameter_or(
+    "planner.hook_up_min_tilt_deg", config.hook_up_min_tilt_rad * 180.0 / M_PI) * M_PI / 180.0;
+
+  // ---- 末端工具模型（CAD 几何，CAD 坐标系，米） ----
+  auto & tool = config.tool;
+  tool.enabled = node.get_parameter_or("tool.enabled", false);
+  if (tool.enabled) {
+    const auto vec3 = [&node](const std::string & name, const std::vector<double> & fallback) {
+        const auto v = vector_param(node, name, fallback, 3);
+        return mtc::core::Vector3{v[0], v[1], v[2]};
+      };
+    tool.name = node.get_parameter_or<std::string>("tool.name", "");
+    tool.source = node.get_parameter_or<std::string>("tool.source", "");
+    config.tool_status = status_param(node, "tool.status", CalibrationStatus::PLACEHOLDER);
+    tool.mount_yaw_rad = node.get_parameter_or("tool.mount_yaw_deg", 0.0) * M_PI / 180.0;
+    tool.mate_offset_m = node.get_parameter_or("tool.mate_offset_m", 0.0);
+    tool.flange_axis_cad = vec3("tool.flange_axis_cad", {0.0, 0.0, 1.0});
+    tool.insertion_cad = vec3("tool.insertion_cad", {1.0, 0.0, 0.0});
+    tool.hook_up_cad = vec3("tool.hook_up_cad", {0.0, 0.0, -1.0});
+    tool.tcp_cad_m = vec3("tool.tcp_cad_m", {0.0, 0.0, 0.0});
+    const auto body_names = node.get_parameter_or<std::vector<std::string>>(
+      "tool.bodies.names", std::vector<std::string>{});
+    const std::string id_error = validate_local_scene_ids(body_names);
+    if (!id_error.empty()) {
+      throw std::runtime_error("parameter tool.bodies.names: " + id_error);
+    }
+    for (const auto & name : body_names) {
+      ToolBodySpec body;
+      body.id = "tool_" + name;
+      const std::string base = "tool.bodies." + name + ".";
+      const auto shape = node.get_parameter_or<std::string>(base + "shape", "box");
+      if (shape != "box" && shape != "cylinder") {
+        throw std::runtime_error("parameter " + base + "shape must be box or cylinder");
+      }
+      body.shape = shape == "cylinder" ? BodyShape::CYLINDER : BodyShape::BOX;
+      body.size_m = vec3(base + "size_m", {});
+      body.cad_pose.translation = vec3(base + "xyz_m", {});
+      const auto q = vector_param(node, base + "quat_xyzw", {0.0, 0.0, 0.0, 1.0}, 4);
+      body.cad_pose.rotation = normalized(mtc::core::Quaternion{q[0], q[1], q[2], q[3]});
+      if (!(body.size_m.x > 0.0) || !(body.size_m.y > 0.0) || !(body.size_m.z > 0.0)) {
+        throw std::runtime_error("parameter " + base + "size_m must be positive");
+      }
+      tool.bodies.push_back(body);
+    }
+  }
 
   const auto box_names = node.get_parameter_or<std::vector<std::string>>(
     "scene.boxes.names", std::vector<std::string>{});
