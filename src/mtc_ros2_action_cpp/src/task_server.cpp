@@ -22,6 +22,16 @@ TaskServer::TaskServer(mtc::task::FsmsConfig config, const rclcpp::NodeOptions &
   slot_(std::make_shared<ActionSlot<Action>>()),
   clock_(std::make_shared<mtc::core::SteadyClock>()), fsm_(clock_, config)
 {
+  observation_ = create_publisher<std_msgs::msg::String>("~/integration_state", rclcpp::QoS(5).reliable());
+  observation_timer_ = create_wall_timer(std::chrono::milliseconds(100), [this]() {
+    const auto extra = ",\"initialized\":" + std::string(initialized_ ? "true" : "false") +
+      ",\"task_id\":" + json_string(fsm_.current_task ? fsm_.current_task->task_id : "") +
+      ",\"substate\":" + json_string(fsm_.substate) +
+      ",\"completed_count\":" + std::to_string(fsm_.completed_count) +
+      ",\"total_count\":" + std::to_string(fsm_.total_count()) +
+      ",\"last_error_code\":" + std::to_string(fsm_.last_error_code);
+    observation_->publish(integration_observation(*this, *slot_, fsm_.state_name(), extra));
+  }, group_);
   client_ = rclcpp_action::create_client<Child>(this, "/mtc/manipulation/pick_place", group_);
   server_ = make_server<Action>(this, "/mtc/task/execute", slot_, group_,
     [](const Action::Goal & g) {
@@ -30,7 +40,7 @@ TaskServer::TaskServer(mtc::task::FsmsConfig config, const rclcpp::NodeOptions &
     }, [](const Action::Goal & g) {return g.task_id;});
   timer_ = create_wall_timer(std::chrono::milliseconds(10), [this]() {tick();}, group_);
 }
-TaskServer::~TaskServer() {timer_->cancel();}
+TaskServer::~TaskServer() {observation_timer_->cancel(); timer_->cancel();}
 void TaskServer::apply(const mtc::task::StepResult & step)
 {
   for (const auto & action : step.actions) {
@@ -67,10 +77,18 @@ void TaskServer::send_child(const mtc::task::PickPlaceGoal & request)
   goal.expected_color = static_cast<uint8_t>(request.expected_color);
   goal.target_slot = request.target_slot;
   goal.placement_stability_sec = request.placement_stability_sec;
+  const auto parent_id = goal_hex(slot_->active->get_goal_id());
+  const auto request_id = json_string(goal.request_id);
+  const auto logger = get_logger();
+  RCLCPP_INFO(logger, "MTC_TRACE event=child_send parent=%s request=%s",
+    parent_id.c_str(), request_id.c_str());
   auto options = rclcpp_action::Client<Child>::SendGoalOptions();
-  options.goal_response_callback = [inbox](ChildHandle::SharedPtr handle) {
+  options.goal_response_callback = [inbox, logger, parent_id, request_id](ChildHandle::SharedPtr handle) {
       inbox->handle = handle;
       inbox->answered = true;
+      RCLCPP_INFO(logger, "MTC_TRACE event=child_response parent=%s child=%s accepted=%d request=%s",
+        parent_id.c_str(), handle ? goal_hex(handle->get_goal_id()).c_str() : "none",
+        bool(handle), request_id.c_str());
     };
   options.feedback_callback = [inbox](ChildHandle::SharedPtr handle,
       const Child::Feedback::ConstSharedPtr feedback) {
@@ -78,9 +96,12 @@ void TaskServer::send_child(const mtc::task::PickPlaceGoal & request)
         inbox->feedback = feedback;
       }
     };
-  options.result_callback = [inbox](const ChildHandle::WrappedResult & result) {
+  options.result_callback = [inbox, logger, parent_id](const ChildHandle::WrappedResult & result) {
       if (inbox->handle && inbox->handle->get_goal_id() == result.goal_id) {
         inbox->result = result;
+        RCLCPP_INFO(logger, "MTC_TRACE event=child_result parent=%s child=%s status=%d error=%d",
+          parent_id.c_str(), goal_hex(result.goal_id).c_str(), int(result.code),
+          result.result ? int(result.result->error_code) : -1);
       }
     };
   client_->async_send_goal(goal, options);
@@ -91,6 +112,8 @@ void TaskServer::poll_child()
   if (child_->cancel_wanted && child_->handle && !child_->cancel_sent && !child_->result) {
     child_->cancel_sent = true;
     // No ACK callback invokes confirm_child_stopped. Only a terminal result can.
+    RCLCPP_INFO(get_logger(), "MTC_TRACE event=child_cancel child=%s",
+      goal_hex(child_->handle->get_goal_id()).c_str());
     client_->async_cancel_goal(child_->handle);
   }
   if (!slot_->active) {
@@ -144,6 +167,8 @@ void TaskServer::tick()
   }
   if (slot_->pending) {
     slot_->active = std::move(slot_->pending);
+    RCLCPP_INFO(get_logger(), "MTC_TRACE event=task_start parent=%s task=%s",
+      goal_hex(slot_->active->get_goal_id()).c_str(), json_string(slot_->active->get_goal()->task_id).c_str());
     if (fsm_.action_finished() && !fsm_.fault_locked()) {fsm_.reset();}
     apply(fsm_.submit_goal(task_request(*slot_->active->get_goal())));
   }
@@ -202,6 +227,9 @@ void TaskServer::finish()
   result->completed_slots = outcome.completed_slots;
   result->error_code = outcome.error_code;
   result->message = outcome.message;
+  RCLCPP_INFO(get_logger(), "MTC_TRACE event=task_result parent=%s state=%s error=%d completed=%d",
+    goal_hex(slot_->active->get_goal_id()).c_str(), fsm_.state_name().c_str(),
+    int(result->error_code), int(result->completed_count));
   slot_->locked = slot_->locked || fsm_.fault_locked();
   if (outcome.success && !slot_->cancel) {slot_->active->succeed(result);}
   else if (fsm_.state() == TaskStateName::CANCELLED && slot_->active->is_canceling()) {

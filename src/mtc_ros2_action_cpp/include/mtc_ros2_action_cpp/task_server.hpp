@@ -4,6 +4,7 @@
 #include <mtc_interfaces/action/pick_place.hpp>
 #include <mtc_task_cpp/task_fsm.hpp>
 #include "mtc_ros2_action_cpp/action_slot.hpp"
+#include "mtc_ros2_action_cpp/integration_observation.hpp"
 #include "mtc_ros2_action_cpp/mock_ports.hpp"
 
 namespace mtc::ros2_action
@@ -40,6 +41,8 @@ private:
   rclcpp_action::Server<Action>::SharedPtr server_;
   rclcpp_action::Client<Child>::SharedPtr client_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr observation_timer_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr observation_;
   std::shared_ptr<mtc::core::SteadyClock> clock_;
   mtc::task::TaskFsm fsm_;
   bool initialized_ = false;

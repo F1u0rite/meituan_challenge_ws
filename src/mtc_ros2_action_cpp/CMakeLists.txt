@@ -8,6 +8,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(action_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(mtc_interfaces REQUIRED)
 find_package(mtc_core_cpp REQUIRED)
 find_package(mtc_task_cpp REQUIRED)
@@ -20,7 +21,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-ament_target_dependencies(${PROJECT_NAME} PUBLIC rclcpp rclcpp_action action_msgs mtc_interfaces)
+ament_target_dependencies(${PROJECT_NAME} PUBLIC rclcpp rclcpp_action action_msgs std_msgs mtc_interfaces)
 target_link_libraries(${PROJECT_NAME} PUBLIC
   mtc_task_cpp::mtc_task_cpp mtc_manipulation_cpp::mtc_manipulation_cpp
   mtc_motion_execution_cpp::mtc_motion_execution_cpp Threads::Threads)
@@ -46,6 +47,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_action_contracts ${PROJECT_NAME})
 endif()
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(Threads rclcpp rclcpp_action action_msgs mtc_interfaces mtc_task_cpp
+ament_export_dependencies(Threads rclcpp rclcpp_action action_msgs std_msgs mtc_interfaces mtc_task_cpp
   mtc_manipulation_cpp mtc_motion_execution_cpp)
 ament_package()

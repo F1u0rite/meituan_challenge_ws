@@ -9,6 +9,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>action_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>mtc_interfaces</depend>
   <depend>mtc_core_cpp</depend>
   <depend>mtc_task_cpp</depend>
