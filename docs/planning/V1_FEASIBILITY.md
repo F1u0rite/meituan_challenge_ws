@@ -1,80 +1,89 @@
-# V1（被动舌规）预对准超时：原因、规划侧能做的、需要 FSM 决定的
+# V1（被动舌规）预对准：按 CAD 重算后的结论
 
-> 常建烁，2026-10-12。全部结论来自 Mock / Fake 仿真与离线运动学计算，**未在真机运行**。
-> 提环位置、提环朝向、钩子 TCP 均为 PLACEHOLDER，结论中的具体秒数会随实测几何变化。
+> 常建烁，2026-10-12。全部结果来自 Mock / Fake 仿真，**未在真机运行**。工具几何来自 `舌规V1.STEP`（CAD 名义值，ESTIMATED）；
+> 提环位置、提环朝向仍为 PLACEHOLDER。
 
-## 1. 结论
+## 0. 更正
 
-1. **从 home 出发，单个 `side_insert`（0.02 m/s、0.1 rad/s）在物理上就放不进 MOVE_PRE_ALIGN 看门狗。**
-   当前占位几何下，home（工具朝下）到预对准位姿要转 **180°**；0.1 rad/s 下最少 **31.4 s**，比 30 s 看门狗本身还长。
-   这与规划算法无关，任何规划器都做不到。
-2. 规划侧已做到头：末端限速时间最优参数化把 V1 从 39.59 s 降到 **35.04 s**（上限不变），仍超时。
-3. **可行方案：把 V1 预对准拆成"快速接近 + 低速预对准"两段**。这正是 Python `mtc_tool` 原来的设计
-   （`side_insert_pre_align` 0.05 m/s / 0.2 rad/s + `side_insert`）；C++ 迁移时合并成了一段。
-   提案分支实测：V1 单块电池 8 段全部规划成功，MOVE_PRE_ALIGN 合计 **19.68 s < 24 s**，3/3 次结果相同。
-   **需要孙嘉明批准**（改动在 `mtc_manipulation_cpp`），本人未合并任何 FSM 改动。
+上一版结论"home 到 V1 预对准要转 180°、物理下限 31.4 s、必须改状态机"**是错的**。原因是当时没有工具图，我把 TCP 设成
+"插入方向 = 法兰轴线"。实际的舌规舌头**垂直于法兰轴线**伸出：法兰朝下时舌头本来就是水平的，不需要大角度转向。
 
-## 2. 为什么慢：先算物理下限
+## 1. 舌规几何（`舌规V1.STEP`，SolidWorks 2022，2026-09-29，单位 mm）
 
-`scripts/analysis/v1_reorientation_feasibility.py`（纯运动学，读展开后的 URDF）：
+![舌规 CAD 与规划碰撞体](img/hook_v1_cad.png)
 
-| 目标姿态 | 需要转动 | 0.1 rad/s 下最少 | 从 home 走"末端直线 + 匀速转动" |
-|---|---|---|---|
-| 当前占位（提环 quat (0,0.707,0,0.707)，TCP 单位变换） | 180.0° | 31.4 s | 走到 52% 被 foreArm 限位（±2.41）挡住 |
-| 钩子绕自身轴转 180° 安装 | 93.8° | 16.4 s | 走到 51% 被 foreArm 限位挡住 |
-
-再换 64 种几何（提环 x∈{0.40,0.50}、y∈{-0.15,0.05}、z∈{0.13,0.25}，插入方向 ±X/±Y，钩口朝上，滚转 0/180°）：
-**55 种从 home 根本走不通**（肘或腕关节限位），能走通的 9 种下限也有 16.4–21.8 s（不含加减速），
-离 24 s 几乎没有余量。原始输出见 [`evidence/20261012_022117/v1_reorientation_feasibility_grid.txt`](evidence/20261012_022117/v1_reorientation_feasibility_grid.txt)。
-
-结论：**问题出在"让慢速原语去完成大角度转向"这个动作设计**，不在规划算法。
-
-## 3. 规划侧已做的（`feature/planning-v1-feasibility`，只改 `mtc_moveit_planner`）
-
-| 改动 | 效果 |
-|---|---|
-| 末端限速时间最优参数化（`ee_limited_retiming`）：关节空间直线路径上逐段同时满足关节速度/加速度 × scaling 与末端线/角速度上限，替代"按峰值均匀拉伸" | V1 39.59 s → 35.04 s；上限不变，最终轨迹仍密采样复核（峰值角速度 0.098 ≤ 0.1） |
-| 就绪位求解 `solve_ik_max_margin()` + 序列工具 `start_mode: ready` | 能直接回答"如果从工具已对准的位置出发会怎样" |
-| `side_approach` / `top_approach` 规划规则（FSM 未发出时不起作用） | 为拆分方案准备 |
-| 同一 PickPlace 状态内多个原语**累计**对照看门狗 80% | 拆分后两段之和也受 24 s 约束，不会被分段"绕过" |
-
-从就绪位出发（`config/sequence_v1_ready_override.yaml`，就绪位 = 预对准位后方 2 cm）：
-V1 后续 7 段全部成功，`side_insert` 只需 1.95 s；home → 就绪位的参考准备动作按 0.05 m/s / 0.2 rad/s 需 17.74 s。
-就绪位关节值确定（3/3 次相同）：shoulder 0.391, upperArm −0.128, foreArm 2.303, wrist1 −0.711, wrist2 −1.180, wrist3 0.000（rad）。
-证据：[`evidence/20261012_022117/v1_ready_mode/`](evidence/20261012_022117/v1_ready_mode/)。
-
-## 4. FSM 提案（`proposal/v1-fast-approach`，需孙嘉明批准）
-
-| 改动 | 说明 |
-|---|---|
-| `ToolStrategy::FREE_APPROACH_LINEAR_SPEED = 0.05`、`FREE_APPROACH_ANGULAR_SPEED = 0.2` | 数值沿用 Python `PassiveHookParams.free_*`（未标定占位值），不改任何已有上限 |
-| V1 `make_acquire_plan` → `[side_approach, side_insert]` | `side_approach` 停在预对准位前 2 cm；`side_insert` 仍是 0.02 m/s / 0.1 rad/s |
-| `h_move_pre_align` 顺序执行全部接近原语 | 已有结果的原语直接取缓存、不再构造命令，避免替换在途命令或以新 command_id 重发；单原语（V2）行为完全不变 |
-| V2 | 不变（从 home 16.46 s 可行） |
-
-Fake MoveIt（V1，从 home，占位几何）：
-
-| 段 | 时长 | 末端峰值 / 上限 |
+| 部分 | 尺寸 | CAD 位置（+Y 为离开法兰方向） |
 |---|---|---|
-| side_approach | 17.74 s | 0.196 / 0.2 rad/s，0.033 / 0.05 m/s |
-| side_insert | 1.94 s | 0.0196 / 0.02 m/s |
-| **MOVE_PRE_ALIGN 合计** | **19.68 s** | 24 s（30 s × 80%） |
-| test_lift → retreat | 全部成功 | — |
+| 安装盘 | Ø75 × 15；背面 Ø63 × 7 凹槽套在 ISO 9409-1-50 法兰（外径 63）上；4 × Ø6.1 孔，孔距 Ø50（M6） | y −7.5 ~ 7.5 |
+| 立柱 | 30 × 20，倒角 R2 | y 7.5 ~ 107.5 |
+| 舌板 | 宽 44 × 厚 5，沿 +Z 伸到 75 | y 107.5 ~ 112.5，z −10 ~ 75 |
+| 倒钩 | 舌尖 5 mm 高的挡边，朝法兰（−Y）翘起 | z 70 ~ 75 |
 
-## 5. 仍需注意
+实体体积 122.9 cm³（铝约 0.33 kg，打印件约 0.15 kg，材料未知）。法兰朝下时：舌板水平、在法兰下方约 110 mm，倒钩朝上。
 
-- **关节裕度偏小**：占位提环离底座近（0.40 m、高 0.13 m），预对准时 foreArm 离控制器限位只有 0.107 rad（约 6°）。
-  真实提环位置确定后必须重跑；若裕度不足，优先调整电池摆放或插入方向，而不是放宽限位。
-- **钩子绕自身轴的朝向（TCP 滚转）未标定**：占位值使 home 到目标要转 180°。若钩子按"从朝下到水平只需俯仰 90°"安装，
-  所需转动降到约 94°；但在本占位位置下该朝向的各个解都会碰到桌面。需韩明赫给出 TCP 实测后重算。
-- 多块电池时，第二块的接近从上一工位出发，距离可能更远；拆分后的快速段同样适用。
-- `side_approach` 的速度是否可接受（离提环 5 cm 外以 0.05 m/s / 0.2 rad/s 运动）是安全参数决策，由孙嘉明确定。
+## 2. 规划器的修改（`feature/planning-v1-feasibility`，只改 `mtc_moveit_planner`）
 
-## 6. 复现
+| 项 | 取值 | 状态 |
+|---|---|---|
+| TCP（挂环点） | 舌板中线、厚度中面、舌尖后 30 mm：CAD (0, 110, 45) mm → ee_link (45, 0, 110.5) mm | ESTIMATED |
+| TCP 姿态 | z = 舌头伸出方向（插入方向），x = 倒钩方向（朝法兰） | ESTIMATED |
+| 安装角 | 舌头沿 ee_link +X（`tool.mount_yaw_deg: 0`）；孔位每 90° 对称，可装 0/90/180/270° | **PLACEHOLDER** |
+| 贴合面 | 凹槽底面（CAD y = −0.5 mm）贴法兰端面；若外缘贴合需改为 −7.5 mm | ESTIMATED |
+| 碰撞体 | 安装盘（圆柱）、立柱、舌板、倒钩（长方体），每次规划附着在 ee_link 上 | ESTIMATED |
+| 插入 / 退钩行程 | 60 mm：预对准时舌尖离提环中心 30 mm，插入后提环落在挂环点（倒钩内侧 25 mm） | 需与工具模块一致 |
+| 钩口朝上 | 侧插时只取提环的插入轴，绕轴滚转按"倒钩朝上"确定，不用感知给的滚转 | — |
+
+V2 没有 CAD：`sequence_v2_override.yaml` 关闭工具模型，TCP 仍为单位变换占位，行程 30 mm。
+
+## 3. 结果（Fake MoveIt，**状态机未改**）
+
+证据：[`evidence/20261012_032828/`](evidence/20261012_032828/)（提交 `0e0c0f4`）
+
+| 项 | 结果 |
+|---|---|
+| V1 单块电池（安装角 0°） | **7 段全部成功**；`side_insert` **13.31 s**（上限 24 s），几乎不用转（峰值角速度 0.0075 rad/s），规划 0.01 s |
+| V2 单块电池 | 7 段全部成功（不变） |
+| 工具碰撞反证 | 法兰离桌面 9 cm、舌规会插入桌面：带工具模型**被拒绝**；关掉工具模型同一目标可规划 → 舌规外形确实参与碰撞检查 |
+| 固定位姿、场景隔离、桌面碰撞反证 | 全部 PASS |
+| 测试 | 7 个 C++ 包 539 项，0 失败（新增工具模型 5 项、端口 1 项） |
+
+安装角的影响（同一占位提环，插入方向 = 世界 +X，`mount_yaw/`）：
+
+| 舌头装法 | 预对准 `side_insert` | 结论 |
+|---|---|---|
+| 0°：舌头朝插入方向 | 13.31 s | ✅ |
+| 90° / 270°：差 90° | 20.63 s / 19.53 s | ✅ 但余量小 |
+| 180°：舌头朝反方向 | 无可行解（最好的候选也需约 41 s） | ❌ |
+
+**结论：V1 不需要改状态机，前提是"机械臂在扫描 / 起始姿态时，舌头大致朝向要插入的方向"。**
+这是装配和场地布置的事：装舌规时选对 4 个孔位里的哪一个，以及电池提环朝哪边。
+
+## 4. 需要现场确认
+
+| 项 | 为什么 | 找谁 |
+|---|---|---|
+| 舌规装在法兰上的方向（0/90/180/270°） | 决定预对准是 13 s 还是不可行 | 现场装配 + 韩明赫 |
+| 法兰端面贴的是凹槽底面还是外缘 | TCP 沿法兰轴差 7 mm | 现场看 |
+| 挂环点与插入行程 60 mm | 规划假设的"插入后位置"要和真正执行插入的一方一致 | 孙嘉明 / 工具模块 |
+| 提环坐标定义（插入轴、从哪一侧插） | 感知只给 180° 周期的方向，分不清从哪侧插 | 孙浩然 + 韩明赫 |
+| **谁执行插入、退钩这 60 mm** | V1 舌规没有电机，插入 / 退钩其实是机械臂动作；目前 ToolPort 只有 Mock，规划模块又不为工具原语出轨迹 | 孙嘉明 |
+| 真实提环位置 | 本文所有秒数都基于占位提环 | 感知 / 现场 |
+
+## 5. 状态机拆分提案（PR #10）的定位
+
+拆分（快速接近 + 低速预对准）**在安装角 0/90/270° 时不需要**。它只在"舌头要掉头"（180°）或插入方向和舌头朝向差很多时有用，
+保留为备选草案，**不建议现在合并**。
+
+## 6. 旧分析（已被取代）
+
+`scripts/analysis/v1_reorientation_feasibility.py` 与 [`evidence/20261012_022117/`](evidence/20261012_022117/) 是在"插入方向 = 法兰轴线"的
+占位 TCP 下做的，结论（180°、64 种几何中 55 种不可达）**不适用于真实舌规**，只作为历史记录保留。
+末端限速时间最优参数化、就绪位求解、同状态看门狗累计这三项改进仍然有效。
+
+## 7. 复现
 
 ```bash
-python3 src/mtc_moveit_planner/scripts/analysis/v1_reorientation_feasibility.py <aubo_S3_fake_expanded.urdf> --grid
 MTC_RMW=rmw_cyclonedds_cpp bash src/mtc_moveit_planner/scripts/run_planning_evidence.sh
-ros2 launch mtc_moveit_planner plan_tool.launch.py program:=plan_battery_sequence \
-  extra_params_file:=$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v1_ready_override.yaml
+# 安装角敏感性：extra_params_file 里设 tool.mount_yaw_deg: 90.0 / 180.0 / 270.0
+ros2 launch mtc_moveit_planner plan_tool.launch.py program:=plan_battery_sequence extra_params_file:=<override.yaml>
 ```

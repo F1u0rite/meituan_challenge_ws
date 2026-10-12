@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """V1 预对准的离线可行性分析（纯 numpy/scipy，不连接 ROS，不移动机器人）。
 
+!! 已被取代：本脚本假设"插入方向 = 法兰轴线"（旧占位 TCP）。真实舌规（舌规V1.STEP）的舌头
+垂直于法兰轴线，结论不适用，见 docs/planning/V1_FEASIBILITY.md。仅作历史记录保留。
+
 从展开后的 URDF 计算 base_link -> ee_link 正运动学，回答两个问题：
   1. 从起点（默认 SRDF home）到预对准位姿，末端至少要转多少度？在 0.1 rad/s 角速度上限下
      物理下限是多少秒？（与规划算法无关）
