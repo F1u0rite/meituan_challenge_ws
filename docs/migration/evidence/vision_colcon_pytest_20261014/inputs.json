@@ -1,0 +1,43 @@
+{
+  "base_commit": "180acb8830106ac7a76ce63b844c579c8d919ee2",
+  "base_branch": "codex/yuze-parallel",
+  "upstream_feature_pr": 17,
+  "setup_before_sha256": "108290140f5d9352116d744915c999bd0cb30f23bd67d78e0be482d1c815909f",
+  "setup_after_sha256": "e6177e133ba3f091054bd7edd884b4f446e24606badf0b193310c7241c559fd3",
+  "change": "Register pytest with tests_require; no runtime/algorithm/IDL/FSM/Action changes",
+  "environment": {
+    "os": "Ubuntu24.04",
+    "ros": "Jazzy",
+    "python": "3.12.3",
+    "pytest": "8.3.5",
+    "setuptools": "68.1.2",
+    "image": "sha256:ca6640cf955bc599db4ef49daf1bb30a02bea62134a63ee250f9e4967e2c70be",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 4294967296,
+    "devices": [],
+    "mounts": [],
+    "published_ports": []
+  },
+  "original_baseline": {
+    "colcon_exit": 5,
+    "tests": 0,
+    "runner": "unittest",
+    "deps_available": true
+  },
+  "fixed": {
+    "colcon_exit": 0,
+    "tests": 159,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "runner": "pytest"
+  },
+  "installed_module_identity": "module-identity.json",
+  "cleanup": "Original and supplement stopped; no ROS process remained in supplement docker top before stop",
+  "not_validated": [
+    "Live camera/SAM inference/private CAD or recordings",
+    "C++ FSM consumption, robot motion or real hardware"
+  ],
+  "ai_assistance": "OpenAI Codex packaging diagnosis, one-line registration fix and evidence review; no test expectations altered"
+}

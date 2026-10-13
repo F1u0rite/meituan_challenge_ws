@@ -91,3 +91,35 @@ and [message contract](../../vision_core/docs/automatic_top_coordinates.md).
 Use MTC_VISION_INSTALL_BASE for an isolated/merged colcon install; process tests
 continue to execute actual installed binaries. This does not connect the C++
 FSM or authorize motion.
+
+## Running the package through colcon
+
+`setup.py` declares pytest in `tests_require`, so `colcon test` collects this
+package's pytest functions and runs its installed-process checks. The previous
+unittest fallback reported `Ran 0 tests` even when the package built successfully.
+A successful build or an aggregate report that omits this package is not a test pass.
+
+Use Jazzy's Python environment with the dependencies declared in
+`vision_core/pyproject.toml`, pytest and the package's ROS dependencies available to
+the interpreter used by colcon. Build the adapter and `mtc_interfaces` first. From
+the workspace root (replace the build/install paths for an isolated build):
+
+```sh
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+export MTC_VISION_INSTALL_BASE="$(realpath install)"
+export MTC_VISION_ROS_SETUP="$MTC_VISION_INSTALL_BASE/setup.bash"
+export PYTHONPATH="$PWD/vision_core${PYTHONPATH:+:$PYTHONPATH}"
+export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+colcon test --build-base build --install-base install \
+  --packages-select mtc_vision_adapter --executor sequential \
+  --return-code-on-test-failure
+colcon test-result --test-result-base build/mtc_vision_adapter --all
+```
+
+`MTC_VISION_INSTALL_BASE` selects the installed process executables;
+`MTC_VISION_ROS_SETUP` separately selects the launcher's sourced ROS overlay.
+The checks use synthetic data and local ROS/TCP processes, without camera access.
+They do not validate private recordings, SAM inference, physical coordinates or
+C++ FSM consumption. The separate `vision_core/tests` suite remains outside this
+ROS package's colcon test selection.

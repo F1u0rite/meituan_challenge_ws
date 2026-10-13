@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-13T19:27:02.138555+00:00",
+  "base_commit": "180acb8830106ac7a76ce63b844c579c8d919ee2",
+  "scope": "Only completed colcon pytest registration regression evidence; general monitor archive excluded",
+  "files": [
+    {
+      "path": "after-command.sh",
+      "bytes": 1565,
+      "sha256": "77d2d50e964f6db2eeedbe2d1a6145b3665d83abf074f267ee5e231badfb9701"
+    },
+    {
+      "path": "before-command.sh",
+      "bytes": 352,
+      "sha256": "209fbabeb1194aefb4ac9df8089331f9dabcbdbbd7069f78f214d21388607f6c"
+    },
+    {
+      "path": "build.log",
+      "bytes": 632,
+      "sha256": "e3b33cfdfc17b25d5666b24120f666e715b0565a37512edeed2fa9ba4043dbd9"
+    },
+    {
+      "path": "colcon-after.log",
+      "bytes": 1745,
+      "sha256": "ca59154647d1140e3b7dcf31fff26b19debc8f76279c7e67289d35cc604bb338"
+    },
+    {
+      "path": "colcon-before.log",
+      "bytes": 362,
+      "sha256": "e6cbea60e44bbc1bbc7a7ddde01bd305e06d5eb30d670ed1a7548298e9cd5bb2"
+    },
+    {
+      "path": "colcon-results.txt",
+      "bytes": 138,
+      "sha256": "4df777014544d76ff50dc27021bebb9f56bb909b3ee76d67e86c4f1f1d6c55b7"
+    },
+    {
+      "path": "inputs.json",
+      "bytes": 1473,
+      "sha256": "e49ec223eae3692049b515407374519bab47e53908c1c856bd3b0cb7d3ac97db"
+    },
+    {
+      "path": "module-identity.json",
+      "bytes": 1880,
+      "sha256": "cdb544dddb019df92ceed4892ff050001dcde00f98de583e981a6f60f832f0b1"
+    },
+    {
+      "path": "pytest.xml",
+      "bytes": 287970,
+      "sha256": "1e3d68404bcbeedc7e6ca023c85b79c08c3373b9aad51536499dbfeac3745458"
+    }
+  ]
+}
