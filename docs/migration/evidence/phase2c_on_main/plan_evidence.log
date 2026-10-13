@@ -1,0 +1,9 @@
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.35462 generation_steady=10093.4 ROS_now=1.7918e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] PASS plan Goals=0 Cancel=0

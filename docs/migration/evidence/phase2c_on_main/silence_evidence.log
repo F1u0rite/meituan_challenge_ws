@@ -1,0 +1,18 @@
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] PLAN_ONLY_OK points=18 duration=4.36493 generation_steady=10192.4 ROS_now=1.7918e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=phase2c-1791798284949376416/dispatch/1 UUID=6aa89437696b64b36ae3946eec609da3 Goals=1 Cancel=0 Feedback=261 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=45 StationarySeconds=0.219831
+[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=6aa89437696b64b36ae3946eec609da3 feedback=261 stationary_samples=45 stationary_seconds=0.219831 message=FJT successful; fresh post-terminal stationary interval and final joints verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=0.0198274/0.0198274 upperArm_joint=-0.0982617/-0.0982617 foreArm_joint=-0.0438302/-0.0438302 wrist1_joint=-0.108252/-0.108252 wrist2_joint=-0.000663505/-0.000663505 wrist3_joint=0.0323529/0.0323529
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=phase2c-1791798284949376416/dispatch/1 UUID=6aa89437696b64b36ae3946eec609da3 Goals=1 Cancel=0 Feedback=261 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=285 StationarySeconds=1.42004
+[single_owner-1] STATUS_SILENCE ready=1 status_messages=2 previous=2
+[single_owner-1] PASS silence

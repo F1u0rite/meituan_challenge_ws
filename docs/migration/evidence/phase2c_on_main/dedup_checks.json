@@ -1,0 +1,29 @@
+{
+  "scoped_cancel_queue": {
+    "identical": true,
+    "main_sha256": "3c797444a6f610b60e991f2069a887327e70d282b1a147aef306d76155e554fd",
+    "candidate_sha256": "3c797444a6f610b60e991f2069a887327e70d282b1a147aef306d76155e554fd"
+  },
+  "immutable_identity": {
+    "identical": true,
+    "main_sha256": "4194c080821e9120126dc450437b5d7f1604b669ee952d2b9bbb81c1027b9586",
+    "candidate_sha256": "4194c080821e9120126dc450437b5d7f1604b669ee952d2b9bbb81c1027b9586"
+  },
+  "scoped_stop_api": {
+    "identical": true,
+    "main_sha256": "de2e1a9a55521e3280d4a14907a0b88bd754c7a8280b2a1b01a9e342a50c3454",
+    "candidate_sha256": "de2e1a9a55521e3280d4a14907a0b88bd754c7a8280b2a1b01a9e342a50c3454"
+  },
+  "wire_start_recheck": {
+    "present": true
+  },
+  "response_callback_group_lifetime": {
+    "present": true
+  },
+  "main_fjt_action_tests_unchanged": {
+    "identical": true
+  },
+  "baseline_main": "b4185155383541e1a4161587c4049a162f74b36d",
+  "old_phase2c": "4a67503492e6bf0f678c6bbca04413e6c670ae30",
+  "implementation_commit": "ff3b5a97068f16b7534f815e71cb9fc485c87b69"
+}

@@ -1,0 +1,833 @@
+Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+
+Repeating all tests (iteration 1) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (184 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+[       OK ] FjtAction.DestroyDuringPendingAction (98 ms)
+[----------] 4 tests from FjtAction (866 ms total)
+
+[==========] 4 tests from 1 test suite ran. (866 ms total)
+[  PASSED  ] 4 tests.
+
+Repeating all tests (iteration 2) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (176 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (766 ms total)
+
+[==========] 4 tests from 1 test suite ran. (767 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 3) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (251 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (763 ms total)
+
+[==========] 4 tests from 1 test suite ran. (763 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 4) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (184 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (773 ms total)
+
+[==========] 4 tests from 1 test suite ran. (774 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 5) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (174 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (321 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (5 ms)
+[----------] 4 tests from FjtAction (761 ms total)
+
+[==========] 4 tests from 1 test suite ran. (761 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 6) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (172 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (762 ms total)
+
+[==========] 4 tests from 1 test suite ran. (762 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 7) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (173 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (261 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (765 ms total)
+
+[==========] 4 tests from 1 test suite ran. (765 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 8) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (173 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (262 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (765 ms total)
+
+[==========] 4 tests from 1 test suite ran. (766 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 9) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (172 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (262 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (324 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (7 ms)
+[----------] 4 tests from FjtAction (767 ms total)
+
+[==========] 4 tests from 1 test suite ran. (767 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 10) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (174 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (251 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (320 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (13 ms)
+[----------] 4 tests from FjtAction (760 ms total)
+
+[==========] 4 tests from 1 test suite ran. (761 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 11) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (313 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (763 ms total)
+
+[==========] 4 tests from 1 test suite ran. (763 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 12) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (183 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (253 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (313 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (756 ms total)
+
+[==========] 4 tests from 1 test suite ran. (757 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 13) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (183 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (321 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (772 ms total)
+
+[==========] 4 tests from 1 test suite ran. (772 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 14) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (325 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (774 ms total)
+
+[==========] 4 tests from 1 test suite ran. (774 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 15) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (171 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (249 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (325 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (7 ms)
+[----------] 4 tests from FjtAction (754 ms total)
+
+[==========] 4 tests from 1 test suite ran. (755 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 16) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (173 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (325 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (7 ms)
+[----------] 4 tests from FjtAction (767 ms total)
+
+[==========] 4 tests from 1 test suite ran. (768 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 17) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (171 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (321 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (8 ms)
+[----------] 4 tests from FjtAction (761 ms total)
+
+[==========] 4 tests from 1 test suite ran. (761 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 18) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (165 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (257 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (324 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (8 ms)
+[----------] 4 tests from FjtAction (756 ms total)
+
+[==========] 4 tests from 1 test suite ran. (756 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 19) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (184 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (257 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (312 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (761 ms total)
+
+[==========] 4 tests from 1 test suite ran. (761 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 20) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (177 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (248 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (9 ms)
+[----------] 4 tests from FjtAction (757 ms total)
+
+[==========] 4 tests from 1 test suite ran. (757 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 21) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (248 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (321 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (759 ms total)
+
+[==========] 4 tests from 1 test suite ran. (759 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 22) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (170 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (759 ms total)
+
+[==========] 4 tests from 1 test suite ran. (759 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 23) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (180 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (258 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (768 ms total)
+
+[==========] 4 tests from 1 test suite ran. (769 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 24) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (258 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (770 ms total)
+
+[==========] 4 tests from 1 test suite ran. (770 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 25) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (182 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (770 ms total)
+
+[==========] 4 tests from 1 test suite ran. (771 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 26) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (172 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (8 ms)
+[----------] 4 tests from FjtAction (763 ms total)
+
+[==========] 4 tests from 1 test suite ran. (764 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 27) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (183 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (314 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (764 ms total)
+
+[==========] 4 tests from 1 test suite ran. (765 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 28) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (186 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (260 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (322 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (775 ms total)
+
+[==========] 4 tests from 1 test suite ran. (776 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 29) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (181 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (259 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (324 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (772 ms total)
+
+[==========] 4 tests from 1 test suite ran. (772 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST
+
+Repeating all tests (iteration 30) . . .
+
+Note: Google Test filter = FjtAction.ConcurrentGoalsSingleOwner:FjtAction.ConcurrentPollingAndCancel:FjtAction.ConcurrentSnapshotPolling:FjtAction.DestroyDuringPendingAction
+[==========] Running 4 tests from 1 test suite.
+[----------] 4 tests from FjtAction
+[ RUN      ] FjtAction.ConcurrentGoalsSingleOwner
+[       OK ] FjtAction.ConcurrentGoalsSingleOwner (184 ms)
+[ RUN      ] FjtAction.ConcurrentPollingAndCancel
+[       OK ] FjtAction.ConcurrentPollingAndCancel (258 ms)
+[ RUN      ] FjtAction.ConcurrentSnapshotPolling
+[       OK ] FjtAction.ConcurrentSnapshotPolling (323 ms)
+[ RUN      ] FjtAction.DestroyDuringPendingAction
+unknown file: Failure
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+
+unknown file: Failure
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+
+[  FAILED  ] FjtAction.DestroyDuringPendingAction (6 ms)
+[----------] 4 tests from FjtAction (773 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (774 ms total)
+[  PASSED  ] 3 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] FjtAction.DestroyDuringPendingAction
+
+ 1 FAILED TEST

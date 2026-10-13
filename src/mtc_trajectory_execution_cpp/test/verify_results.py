@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""核对 Ownership Audit 基线478项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
+"""核对 Ownership Audit 基线486项身份与全部 C++（含 Planner）GTest 实际执行结果。"""
 import argparse
 from collections import Counter
 from pathlib import Path
@@ -17,7 +17,7 @@ def main():
     git = lambda *a: subprocess.check_output(['git', *a], cwd=root, text=True)
     baseline = set()
     pattern = re.compile(r'\bTEST(?:_F)?\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
-    base = '681bb64bfb8cd482d1e78950cef4cfe395b21bff'
+    base = 'b4185155383541e1a4161587c4049a162f74b36d'
     for name in git('ls-tree', '-r', '--name-only', base, 'src').splitlines():
         if re.fullmatch(r'src/(?:mtc_\w+_cpp|mtc_moveit_planner)/test/test_\w+\.cpp', name):
             source = git('show', f'{base}:{name}')
@@ -25,7 +25,19 @@ def main():
                             if (s, c) != ('TrajectoryValidator', 'Name'))
             baseline.update('TrajectoryValidator.' + c for c in
                             re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
-    assert len(baseline) == 478, len(baseline)
+    assert len(baseline) == 486, len(baseline)
+    original_phase2c = set()
+    phase2c_ref = '4a67503492e6bf0f678c6bbca04413e6c670ae30'
+    for name in git('ls-tree', '-r', '--name-only', phase2c_ref, 'src').splitlines():
+        if re.fullmatch(r'src/(?:mtc_\w+_cpp|mtc_moveit_planner)/test/test_\w+\.cpp', name):
+            source = git('show', f'{phase2c_ref}:{name}')
+            original_phase2c.update(f'{suite}.{case}' for suite, case in pattern.findall(source)
+                                   if (suite, case) != ('TrajectoryValidator', 'Name'))
+            original_phase2c.update('TrajectoryValidator.' + case for case in
+                                   re.findall(r'^INVALID_TEST\((\w+),', source, re.M))
+    phase2c_only = original_phase2c - baseline
+    assert len(phase2c_only) == 32, len(phase2c_only)
+
     actual = Counter()
     inventory = set()
     by_package = Counter()
@@ -68,9 +80,10 @@ def main():
     assert inventory == declared, (sorted(declared - inventory), sorted(inventory - declared))
     assert len(xmls) == expected_executables, (len(xmls), expected_executables)
     assert baseline <= actual.keys(), sorted(baseline - actual.keys())
+    assert phase2c_only <= actual.keys(), sorted(phase2c_only - actual.keys())
     assert inventory == actual.keys(), (sorted(inventory - actual.keys()), sorted(actual.keys() - inventory))
     assert all(v == 1 for v in actual.values()), actual
-    print(f'PASS: 原478项身份全部保留并执行；本轮新增{len(inventory - baseline)}项')
+    print(f'PASS: main 原486项 + 原Phase2C专有32项全部保留并执行；额外新增{len(inventory - baseline - phase2c_only)}项')
     print(f'PASS: {len(actual)}项独立GTest / {len(xmls)}个可执行文件；FAIL 0 / SKIP 0')
     for package, count in sorted(by_package.items()):
         print(f'  {package}: {count} PASS')

@@ -1,0 +1,46 @@
+{
+  "checked": 8,
+  "changed": [],
+  "public_files": [
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_ros2_driver/share/aubo_ros2_driver/launch/aubo_control.launch.py",
+      "before_sha256": "729a0af96b1149202c892680512f8874a264816e741cc20a3818640efff2f16f",
+      "after_sha256": "729a0af96b1149202c892680512f8874a264816e741cc20a3818640efff2f16f"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml",
+      "before_sha256": "2b95bc387fc67bb37d5c99d03afba5365204b86ff3ce9853ac2e313384041077",
+      "after_sha256": "2b95bc387fc67bb37d5c99d03afba5365204b86ff3ce9853ac2e313384041077"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_description/share/aubo_description/urdf/aubo_S3.urdf.xacro",
+      "before_sha256": "91b86466d1d7ded6a8e8b992e0bcc655a81bfbda0906aff5346668691774dd42",
+      "after_sha256": "91b86466d1d7ded6a8e8b992e0bcc655a81bfbda0906aff5346668691774dd42"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_description/share/aubo_description/urdf/xacro/inc/aubo_ros2.xacro",
+      "before_sha256": "3ba71e25fcbb206bfc4fa422d58ac5d544e570767e23974b0d528b2804b31554",
+      "after_sha256": "3ba71e25fcbb206bfc4fa422d58ac5d544e570767e23974b0d528b2804b31554"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_description/share/aubo_description/urdf/xacro/inc/aubo.ros2_control.xacro",
+      "before_sha256": "c0f6311bdb2bd347241266169970888c0e73d11b4c8052ac15ca57e22e9d52f6",
+      "after_sha256": "c0f6311bdb2bd347241266169970888c0e73d11b4c8052ac15ca57e22e9d52f6"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_moveit_config/share/aubo_moveit_config/config/aubo_robot.srdf",
+      "before_sha256": "926b1306a6817aa4f13aff016ebb1a4247fe689e2f68794bde0a6b69fd8b9471",
+      "after_sha256": "926b1306a6817aa4f13aff016ebb1a4247fe689e2f68794bde0a6b69fd8b9471"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_moveit_config/share/aubo_moveit_config/config/kinematics.yaml",
+      "before_sha256": "20873bdd01296eec98dc71618c273e3ea13aa13d6b602781f0ffe113b14eb2c1",
+      "after_sha256": "20873bdd01296eec98dc71618c273e3ea13aa13d6b602781f0ffe113b14eb2c1"
+    },
+    {
+      "path": "/home/aaet/aubo_driver_validation_ws/install_no_symlink/aubo_moveit_config/share/aubo_moveit_config/config/joint_limits.yaml",
+      "before_sha256": "d417f0f5ba4f1b0fbe4e79d367cda906e628924ef55c03ac58a39d50f0420bde",
+      "after_sha256": "d417f0f5ba4f1b0fbe4e79d367cda906e628924ef55c03ac58a39d50f0420bde"
+    }
+  ]
+}

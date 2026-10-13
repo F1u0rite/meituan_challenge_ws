@@ -1,0 +1,5 @@
+[move_group-1] [INFO] [1791798272.068259008] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[move_group-1] [INFO] [1791798272.071451291] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[ERROR] [move_group-1]: process[move_group-1] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'
+[INFO] [move_group-1]: sending signal 'SIGTERM' to process[move_group-1]
+[ERROR] [move_group-1]: process has died [pid 35853, exit code -15, cmd '/opt/ros/jazzy/lib/moveit_ros_move_group/move_group --ros-args --params-file /tmp/launch_params_bi6127q6 --params-file /tmp/launch_params_v7mrv0no'].

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="1" disabled="0" errors="0" time="0.774" timestamp="2026-10-12T17:47:18.995" name="AllTests">
+  <testsuite name="FjtAction" tests="4" failures="1" disabled="0" skipped="0" errors="0" time="0.773" timestamp="2026-10-12T17:47:41.296">
+    <testcase name="ConcurrentGoalsSingleOwner" file="/tmp/mtc_phase2c_on_main/src/mtc_trajectory_execution_cpp/test/test_fjt_action.cpp" line="233" status="run" result="completed" time="0.184" timestamp="2026-10-12T17:47:41.296" classname="FjtAction" />
+    <testcase name="ConcurrentPollingAndCancel" file="/tmp/mtc_phase2c_on_main/src/mtc_trajectory_execution_cpp/test/test_fjt_action.cpp" line="709" status="run" result="completed" time="0.258" timestamp="2026-10-12T17:47:41.481" classname="FjtAction" />
+    <testcase name="ConcurrentSnapshotPolling" file="/tmp/mtc_phase2c_on_main/src/mtc_trajectory_execution_cpp/test/test_fjt_action.cpp" line="732" status="run" result="completed" time="0.323" timestamp="2026-10-12T17:47:41.740" classname="FjtAction" />
+    <testcase name="DestroyDuringPendingAction" file="/tmp/mtc_phase2c_on_main/src/mtc_trajectory_execution_cpp/test/test_fjt_action.cpp" line="753" status="run" result="completed" time="0.006" timestamp="2026-10-12T17:47:42.063" classname="FjtAction">
+      <failure message="unknown file&#x0A;C++ exception with description &quot;endpoint already owned or quarantined&quot; thrown in SetUp().&#x0A;" type=""><![CDATA[unknown file
+C++ exception with description "endpoint already owned or quarantined" thrown in SetUp().
+]]></failure>
+      <failure message="unknown file&#x0A;C++ exception with description &quot;Node &apos;/fjt_client&apos; needs to be associated with an executor.&quot; thrown in TearDown().&#x0A;" type=""><![CDATA[unknown file
+C++ exception with description "Node '/fjt_client' needs to be associated with an executor." thrown in TearDown().
+]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

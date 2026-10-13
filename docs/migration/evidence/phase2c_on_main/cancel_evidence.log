@@ -1,0 +1,15 @@
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] PLAN_ONLY_OK points=15 duration=4.36114 generation_steady=10178.1 ROS_now=1.7918e+09 goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0
+[single_owner-1] MOVEIT_EXECUTION_DENIED controller_failed Goals=0
+[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1
+[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1
+[single_owner-1] EVIDENCE command_id=phase2c-1791798271547305557/dispatch/1 UUID=fb19abc7c67e1a0a70754e35312b1c54 Goals=1 Cancel=1 Feedback=1 Result=owned Goal terminal CANCELED; independent stationary interval verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=44 StationarySeconds=0.214958
+[single_owner-1] RESULT success=0 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=1 UUID=fb19abc7c67e1a0a70754e35312b1c54 feedback=1 stationary_samples=44 stationary_seconds=0.214958 message=owned Goal terminal CANCELED; independent stationary interval verified
+[single_owner-1] FINAL_NAMED_JOINTS actual/goal shoulder_joint=9.11989e-07/0.0190833 upperArm_joint=-2.44817e-06/-0.0512276 foreArm_joint=3.30917e-06/0.069244 wrist1_joint=-1.14419e-06/-0.0239419 wrist2_joint=8.44471e-08/0.00176704 wrist3_joint=7.30409e-07/0.0152837
+[single_owner-1] PASS cancel
+[single_owner-1] CANCEL_REQUEST initial_stop_confirmed=0 uuid=fb19abc7c67e1a0a70754e35312b1c54

@@ -1,0 +1,413 @@
+[
+  {
+    "mode": "plan",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_review/plan",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PASS plan Goals=0 Cancel=0"
+    ]
+  },
+  {
+    "mode": "execute",
+    "functional": "FAIL",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          1
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_review/execute",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=0 duration=70.4042 reason=retimed deadline exceeds capability Goals=0",
+      "[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=1 duration=70.8757 reason=retimed deadline exceeds capability Goals=0",
+      "[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=2 duration=70.3165 reason=retimed deadline exceeds capability Goals=0",
+      "[single_owner-1] BLOCKED/FAIL: BLOCKED: no plan within reviewed execution capability; no Goal dispatched"
+    ]
+  },
+  {
+    "mode": "mismatch",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/mismatch",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PASS mismatch Goals=0 Cancel=0 reason=planned start differs from current named state"
+    ]
+  },
+  {
+    "mode": "expired",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/expired",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PASS expired Goals=0 Cancel=0 reason=plan generation time is future or expired"
+    ]
+  },
+  {
+    "mode": "foreign",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/foreign",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=2 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=0 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PASS foreign Goals=0 Cancel=0"
+    ]
+  },
+  {
+    "mode": "cancel",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/cancel",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] PLAN_CAPABILITY_REJECTED attempt=0 duration=70.8635 reason=retimed deadline exceeds capability Goals=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] CANCEL_REQUEST initial_stop_confirmed=0 uuid=b2d3e8120b0cc66deb0055f5e85c1c73",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=phase2c-1791805301091118361/dispatch/1 UUID=b2d3e8120b0cc66deb0055f5e85c1c73 Goals=1 Cancel=1 Feedback=1 Result=owned Goal terminal CANCELED; independent stationary interval verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=45 StationarySeconds=0.21977",
+      "[single_owner-1] RESULT success=0 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=1 UUID=b2d3e8120b0cc66deb0055f5e85c1c73 feedback=1 stationary_samples=46 stationary_seconds=0.225763 message=owned Goal terminal CANCELED; independent stationary interval verified",
+      "[single_owner-1] PASS cancel"
+    ]
+  },
+  {
+    "mode": "silence",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/silence",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=phase2c-1791805315374491476/dispatch/1 UUID=d811108c03dba061743d77d1adf605a7 Goals=1 Cancel=0 Feedback=263 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=43 StationarySeconds=0.209938",
+      "[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=d811108c03dba061743d77d1adf605a7 feedback=263 stationary_samples=43 stationary_seconds=0.209938 message=FJT successful; fresh post-terminal stationary interval and final joints verified",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=phase2c-1791805315374491476/dispatch/1 UUID=d811108c03dba061743d77d1adf605a7 Goals=1 Cancel=0 Feedback=263 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=284 StationarySeconds=1.41496",
+      "[single_owner-1] PASS silence"
+    ]
+  },
+  {
+    "mode": "fault",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/fault",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=2 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=0 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=phase2c-1791805343901592726/dispatch/1 UUID=9f804a29f22343b2d6b903e55f0c5e11 Goals=1 Cancel=1 Feedback=1 Result=runtime Fake/controller/state/graph or live Status evidence lost StopConfirmed=false FaultLocked=1 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] RESULT success=0 stop_confirmed=0 status_unknown=1 fault_locked=1 Goals=1 Cancel=1 UUID=9f804a29f22343b2d6b903e55f0c5e11 feedback=1 stationary_samples=0 stationary_seconds=0 message=runtime Fake/controller/state/graph or live Status evidence lost",
+      "[single_owner-1] PASS fault"
+    ]
+  },
+  {
+    "mode": "execute",
+    "functional": "PASS",
+    "teardown": "FAIL",
+    "overall": "FAIL",
+    "exit": 1,
+    "children": [
+      {
+        "role": "planning_only",
+        "launcher": 0,
+        "exit_codes": [
+          -15
+        ]
+      },
+      {
+        "role": "control",
+        "launcher": 0,
+        "exit_codes": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "role": "owner",
+        "launcher": 0,
+        "exit_codes": [
+          0
+        ]
+      }
+    ],
+    "evidence_directory": "/tmp/pr13_native_remaining/execute",
+    "owner_evidence": [
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=0 status_fresh=0 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=NONE UUID=NONE Goals=0 Cancel=0 Feedback=0 Result=NONE StopConfirmed=UNKNOWN FaultLocked=0 TerminalReceived=0 StationarySamples=0 StationarySeconds=0",
+      "[single_owner-1] HARDWARE plugin=mock_components/GenericSystem verified=1 controllers_verified=1",
+      "[single_owner-1] GRAPH servers=1 clients=1 direct_publishers=0 foreign=0 status_received=1 status_fresh=1 ready=1 controlled=1",
+      "[single_owner-1] EVIDENCE command_id=phase2c-1791805358469382082/dispatch/1 UUID=67a27845d31946bbb4d84d1a89f8d2eb Goals=1 Cancel=0 Feedback=263 Result=FJT successful; fresh post-terminal stationary interval and final joints verified StopConfirmed=true FaultLocked=0 TerminalReceived=1 StationarySamples=43 StationarySeconds=0.209963",
+      "[single_owner-1] RESULT success=1 stop_confirmed=1 status_unknown=0 fault_locked=0 Goals=1 Cancel=0 UUID=67a27845d31946bbb4d84d1a89f8d2eb feedback=263 stationary_samples=43 stationary_seconds=0.209963 message=FJT successful; fresh post-terminal stationary interval and final joints verified",
+      "[single_owner-1] PASS execute"
+    ]
+  }
+]
