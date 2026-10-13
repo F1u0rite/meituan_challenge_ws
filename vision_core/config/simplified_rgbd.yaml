@@ -20,3 +20,6 @@ min_ring_points: 40
 min_hole_background_gap_m: 0.008
 body_mask_erode_px: 2
 body_min_face_support: 0.70
+
+# V4.5-D current-frame measured top cap route; false retains V4.5-B/C geometry.
+enable_top_cad: true

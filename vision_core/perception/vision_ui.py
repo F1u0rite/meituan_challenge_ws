@@ -88,6 +88,11 @@ class VisionUI:
             text(rgb,top_label,max(0,x+3),yy-17,color,.42)
             text(rgb,id_label,max(0,x+3),yy,color,.42)
             if item['visible_surface_center_xyz'] is not None:marker(item['visible_surface_center_xyz'],(255,150,30))
+            top=item.get('top_geometry')
+            if top and top.get('top_geometry_valid'):
+                cv2.polylines(rgb,[np.rint(top['top_polygon_px']).astype(np.int32)],True,(0,255,170),2)
+                marker(top['top_center_candidate'],(0,255,170))
+                text(rgb,'OBSERVED TOP | CAD RING +/- | POSE INVALID',x,max(12,y-40),(0,255,170),.35)
             if result.get('pipeline_version')=='V4.5':
                 if item.get('model_estimated_body_center_xyz') is not None:marker(item['model_estimated_body_center_xyz'],(220,70,220))
                 for hole in item.get('ring_geometry',{}).get('hole_candidates',[]):
@@ -219,6 +224,15 @@ class VisionUI:
                 ('RGB/Depth frame IDs',str(frame.timestamps.get('color_frame_number'))+'/'+str(frame.timestamps.get('depth_frame_number'))),
                 ('GEOMETRY ambiguity reasons',item.get('pose_ambiguity_reasons',[])),
                 ('REJECTION',item['rejection_reason'])]
+            top=item.get('top_geometry')
+            if top is not None:
+                replacements={
+                    'FIT median residual':('TOP local support/P95',str(top.get('quality',{}).get('local_support_ratio'))+' / '+mm(top.get('quality',{}).get('local_residual_p95_m'))),
+                    'CAD freshness':('HISTORY TOP XYZ' if result.get('annotation_is_current') is False else 'OBSERVED TOP XYZ',vec(top.get('top_center_candidate'))),
+                    'CAD SOURCE FRAME':('TOP / CENTER / ENTRY',str(top['top_geometry_valid'])+' / '+str(top['ring_center_geometry_valid'])+' / '+str(top['direction_unique']))}
+                failures=list(dict.fromkeys(reason for candidate in top.get('candidates',[]) if candidate.get('polygon_px') for reason in candidate['reasons']))
+                replacements['GEOMETRY ambiguity reasons']=('TOP GEOMETRY REASONS',top['reasons']+failures)
+                lines=[replacements.get(name,(name,value)) for name,value in lines]
             for i,(name,value) in enumerate(lines):
                 x=808+(i//14)*390;y=567+(i%14)*20
                 text(canvas,name,x,y,(120,155,175),.35)

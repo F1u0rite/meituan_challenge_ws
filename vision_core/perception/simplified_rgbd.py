@@ -17,6 +17,7 @@ from .unified_detector import UnifiedBatteryDetector
 from .battery_only import PixelBatteryDetector
 from .color_classifier import ColorClassifier
 from .vision_interface import finalize_interface
+from .top_bar_pose import TopBarPoseEstimation, observed_layout
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -98,6 +99,10 @@ class BodyPoseEstimation:
             face_center=face_origin+((q[0]+q[1])/2)@face_axes[:2]
             face_residual=float(np.percentile(abs((part-face_origin)@face_normal),95))
             face_ok=bool(len(part)>=self.config['min_points'] and support>=self.config.get('body_min_face_support',.70) and face_residual<=self.config['max_plane_residual_m'])
+            # This is whole-object dominant-face support, not local-face reliability.
+            # A local denominator requires an independently observed face mask.
+            out['quality'].update(face_support_scope='WHOLE_FILTERED_OBJECT_CLOUD',
+                face_support_numerator_points=len(part),face_support_denominator_points=len(points))
             out['quality'].update(face_points=len(part),face_support_ratio=support,face_residual_p95_m=face_residual,face_span_m=face_span.tolist(),face_center_camera_m=face_center.tolist(),face_normal_camera_xyz=face_normal.tolist(),face_plane_point_camera_m=face_origin.tolist(),face_quality_pass=face_ok)
         else:out['quality']['face_quality_pass']=False
         dims=(self.geometry or {}).get('battery',{}).get('body_dimensions_mm')
@@ -194,6 +199,7 @@ class SimplifiedPerception:
         file=ROOT/'outputs/cad_analysis/geometry.json';self.geometry=json.loads(file.read_text()) if file.exists() else None
         self.detection=BatteryDetection(self.config);self.body=BodyPoseEstimation(self.config,self.geometry)
         self.ring=RingPoseEstimation(self.config,self.geometry,self.detection.classifier.ranges)
+        self.top=TopBarPoseEstimation(self.config,self.geometry)
         self.guard=RGBDPairGuard();self.rate=RateMeter();self.last_timestamp=None;self.table_hint=None
     def set_table_hint(self,*args,**kwargs):pass  # Compatibility only: no identity/cache dependency.
     def process(self,frame,source_frame_id):
@@ -204,12 +210,35 @@ class SimplifiedPerception:
         pair['qualified']=pair['qualified'] and frame.alignment_metadata is not None and frame.alignment_metadata.get('method')=='SDK_DEPTH_TO_COLOR'
         if not pair['qualified'] and not pair['reasons']:pair['reasons'].append('ALIGNMENT_UNVERIFIED')
         proposals,tracking,hsv=self.detection.detect(frame.color_bgr,stamp);objects=[];views=[];diagnostics=[]
-        rgb_ms=(perf_counter()-start)*1000;body_ms=0.;ring_ms=0.
+        rgb_ms=(perf_counter()-start)*1000;body_ms=0.;ring_ms=0.;top_ms=0.
         for p in proposals:
             t=p.get('track');d=p['d'];diagnostics.append(dict(color=d.color,bbox=p['bbox'],state='RAW_CANDIDATE',reason=';'.join(p['reasons']),confidence=d.confidence))
             if t is None:continue
             stage=perf_counter();body,points,uv=self.body.estimate(frame,d.mask,pair['qualified']);body_ms+=(perf_counter()-stage)*1000
             stage=perf_counter();ring=self.ring.estimate(frame,d.mask,p['label']['color_label'],pair['qualified'],hsv);ring_ms+=(perf_counter()-stage)*1000
+            mask_depth_body=body
+            stage=perf_counter()
+            top=self.top.estimate(frame,d.mask,pair['qualified']) if self.config.get('enable_top_cad',False) else None
+            top_ms+=(perf_counter()-stage)*1000
+            if top is not None:
+                top.update(source_frame_id=source_frame_id,capture_timestamp=stamp,timestamps=frame.timestamps)
+            if top and top['top_geometry_valid']:
+                direction=np.asarray(top['insertion_direction_candidates'][0]);yaw=float(np.arctan2(direction[1],direction[0])%np.pi)
+                body=dict(body,body_xyz_candidate=top['body_center_candidate'],
+                    body_xyz_definition='OBSERVED_FULL_TOP_RECTANGLE_PLUS_MEASURED_CAD; NOT_METROLOGY_VALIDATED',
+                    body_yaw_candidate=yaw,yaw_candidates=[yaw,yaw+np.pi],
+                    quality=dict(body['quality'],origin_support='OBSERVED_TOP_CAD',top_quality=top['quality'],
+                        yaw_definition='OPTICAL_XY_AZIMUTH_OF_TOP_CAD_BODY_LONG_AXIS_MOD_PI; NOT_UNIQUE_ORIENTATION'),
+                    body_origin_candidates=[dict(face_assumption='MEASURED_TOP_CAP',xyz_camera_m=top['body_center_candidate'],
+                        definition='OBSERVED_TOP_CENTER_PLUS_MEASURED_CAD_OFFSET; NOT_METROLOGY_VALIDATED')],
+                    reasons=top['reasons'])
+                if ring['center_candidate'] is None:
+                    ring=dict(ring,center_candidate=top['ring_center_candidate'],
+                        direction_candidates=top['insertion_direction_candidates'],reasons=top['reasons'],
+                        source='CAD_OFFSET_FROM_OBSERVED_TOP; APERTURE_NOT_DIRECTLY_OBSERVED')
+                elif np.linalg.norm(np.asarray(ring['center_candidate'])-top['ring_center_candidate'])>.003:
+                    top['ring_center_geometry_valid']=False
+                    top['reasons']=top['reasons']+['INCONSISTENT_LOCAL_APERTURE_AND_TOP_CAD_CENTERS']
             accepted=not p['reasons'];state='CONFIRMED_OBJECT' if accepted else 'AMBIGUOUS';surface=body['visible_surface_center_xyz']
             obj=dict(object_id=t['object_id'],color=p['label']['color_label'],color_label=p['label']['color_label'],observed_color=d.color,
                 confidence=d.confidence,confidence_semantics='CONTOUR_AREA_OVER_MIN_AREA_RECT; NOT_CALIBRATED_PROBABILITY',color_confidence=p['label']['color_confidence'],
@@ -223,6 +252,7 @@ class SimplifiedPerception:
                 insertion_direction_candidates=ring['direction_candidates'],hook_insertion_yaw_candidates=None,body_pose_candidate=None,ring_pose_candidate=None,ring_axis_yaw_candidate=None,
                 ring_feature_status='OBSERVED_APERTURE_CANDIDATE' if ring['center_candidate'] is not None else ('UNVERIFIED_COLOR_HOLE_PROPOSAL' if ring['hole_candidates'] else 'NOT_OBSERVED'),ring_feature_observability='LOCAL_RGB_DEPTH',ring_observed=ring['center_candidate'] is not None,
                 body_pose_valid=False,ring_pose_valid=False,motion_usable=False,body_geometry=body,ring_geometry=ring,
+                mask_depth_body_geometry=mask_depth_body,top_geometry=top,
                 pose_quality=body['quality'],fit_status='SAME_FRAME_MASK_DEPTH_CANDIDATES',cad_fresh=False,cad_result_timestamp=None,cad_stale=False,
                 ambiguity=body['reasons']+ring['reasons'],capture_timestamp=stamp,source_frame_id=source_frame_id)
             objects.append(obj);views.append(dict(object_id=obj['object_id'],mask=d.mask,foreground=d.mask,points=points,rgb=frame.color_bgr[uv[:,1],uv[:,0],::-1] if len(uv)==len(points) else np.empty((0,3)),bbox=p['bbox']))
@@ -230,10 +260,21 @@ class SimplifiedPerception:
         result=dict(timestamp=stamp,capture_timestamp=stamp,capture_timestamp_source=frame_capture_time(frame)[1],result_timestamp=time(),source_frame_id=source_frame_id,
             timestamps=frame.timestamps,objects=objects,candidate_count=len(proposals),candidate_diagnostics=diagnostics,rejections=[],accepted_object_count=sum(o['detection_valid'] for o in objects),
             diagnostic_object_count=len(objects),camera_motion_proxy=dict(stable=None,reason='NOT_REQUIRED_FOR_RGB_IDENTITY'),background_filter_report=dict(table_failure='NOT_REQUIRED_V45',table_hint_used=False),
-            tracking_status={k:tracking[k] for k in ('missed','lost','ambiguous_candidate_indices')},processing_latency_ms=elapsed,timing_ms=dict(total=elapsed,detection=rgb_ms,body=body_ms,ring=ring_ms,cad_fit=0.,tracking=0.,render=0.),
+            tracking_status={k:tracking[k] for k in ('missed','lost','ambiguous_candidate_indices')},processing_latency_ms=elapsed,timing_ms=dict(total=elapsed,detection=rgb_ms,body=body_ms,ring=ring_ms,top_cad=top_ms,cad_fit=0.,tracking=0.,render=0.),
             detection_fps=self.rate.hz(),max_detection_age_s=2.5,coordinate_frame='camera_color_optical',body_pose_valid=False,ring_pose_valid=False,pipeline_version='V4.5',pair_diagnostics=pair)
+        result['layout_diagnostics']=observed_layout(objects)
         result=finalize_interface(result)
-        for obj in objects:obj['geometry_source']='CURRENT_MASK_DEPTH_LOCAL_APERTURE';obj['motion_usable']=False
+        for obj in result['objects']:
+            top=obj.get('top_geometry')
+            if top and top['top_geometry_valid']:
+                obj['fit_status']='OBSERVED_TOP_CAD_CENTER_CANDIDATES'
+                if obj['ring_geometry'].get('source')=='CAD_OFFSET_FROM_OBSERVED_TOP; APERTURE_NOT_DIRECTLY_OBSERVED':
+                    obj['ring_feature_status']='CAD_DERIVED_FROM_OBSERVED_TOP; NOT_DIRECT_APERTURE_OBSERVATION'
+                    obj['ring_observed']=False
+                    obj['geometry_source']='CURRENT_OBSERVED_TOP_PLUS_MEASURED_CAD'
+                else:obj['geometry_source']='CURRENT_LOCAL_APERTURE_WITH_TOP_CHECK'
+            else:obj['geometry_source']='CURRENT_MASK_DEPTH_LOCAL_APERTURE'
+            obj['motion_usable']=False
         return result,views
 
 class DisabledFullCAD:
