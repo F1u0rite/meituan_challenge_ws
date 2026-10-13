@@ -5,6 +5,9 @@ min_rgb_contour_fill: 0.70
 # H4 wood background often admitted by legacy S>=65; red plastic interior S~150-200.
 # Provisional, requires separate four-color lighting/negative-scene verification.
 min_chromatic_saturation: 100
+# Saved red plastic H=0..3; wood H=13..19 bridged the previous H<=18 mask.
+# V4.5-only segmentation calibration; the H=165..179 wrap band is unchanged.
+red_low_hue_max: 10
 min_rgb_area_px: 2000
 min_rgb_short_side_px: 32
 max_rgb_aspect: 2.5

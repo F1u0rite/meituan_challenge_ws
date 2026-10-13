@@ -27,6 +27,10 @@ class BatteryDetection:
         # Separate V4.5 chromatic support: the old permissive S ranges merged wood
         # into target contours in actual H4 frames. Do not alter V4.4 shared config.
         pixels.config['hsv_ranges']={color:[[h0,max(s0,config['min_chromatic_saturation']),v0,h1,s1,v1] for h0,s0,v0,h1,s1,v1 in ranges] for color,ranges in pixels.config['hsv_ranges'].items()}
+        # Wood H=13..19 can connect to red plastic H=0..3 in current captures.
+        # Narrow only V4.5's low red band; retain the upper wrap-around band.
+        for bounds in pixels.config['hsv_ranges']['red']:
+            if bounds[0]==0:bounds[3]=min(bounds[3],config.get('red_low_hue_max',bounds[3]))
         pixels.config['min_contour_area_px']=config['min_rgb_area_px']
         self.detector=UnifiedBatteryDetector(candidate_detector=pixels);self.classifier=ColorClassifier()
         self.tracker=Tracker(max_gap_s=1.,max_distance=80.,confirmation_hits=2,ambiguity_px=8.,allow_unknown=True)

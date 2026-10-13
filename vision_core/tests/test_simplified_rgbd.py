@@ -65,3 +65,25 @@ def test_weak_wood_chroma_is_not_a_battery_and_border_occlusion_is_ambiguous():
     f=frame(2);f.color_bgr[:]=0;cv2.rectangle(f.color_bgr,(0,250),(160,390),(0,0,255),-1)
     p.process(f,'edge');f=frame(3);f.color_bgr[:]=0;cv2.rectangle(f.color_bgr,(0,250),(160,390),(0,0,255),-1)
     r,_=p.process(f,'edge2');assert not r['confirmed_objects']
+
+
+@pytest.mark.parametrize('red_hue',[1,175])
+def test_red_wrap_and_blue_survive_touching_wood_without_valid_depth(red_hue):
+    p=SimplifiedPerception()
+    results=[]
+    for i in [1,2]:
+        f=frame(i,False)
+        hsv=np.zeros(f.color_bgr.shape,np.uint8)
+        # Measured wood H=17 attaches directly to both synthetic target bases.
+        hsv[390:720,:]=(17,150,180)
+        hsv[250:391,40:201]=(red_hue,220,220)
+        hsv[250:391,340:501]=(110,220,220)
+        f.color_bgr=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+        result,views=p.process(f,'wood-touch-'+str(i));results.append(result)
+    assert {o['color'] for o in results[-1]['confirmed_objects']}=={'red','blue'}
+    red=next(o for o in results[-1]['objects'] if o['color']=='red')
+    assert red['bbox']==[40,250,161,141]  # Wood must not extend the red contour.
+    assert not red['body_pose_valid'] and not red['ring_pose_valid']
+    from perception.battery_only import PixelBatteryDetector
+    # The shared Legacy HSV configuration remains available for rollback.
+    assert PixelBatteryDetector().config['hsv_ranges']['red'][0][3]==18
