@@ -1,0 +1,6 @@
+basic True SUCCEEDED None
+sequence True SUCCEEDED None
+cancel True CANCELED None
+planning_failure True ABORTED None
+cancel_unconfirmed True ABORTED None
+status_unknown True ABORTED None

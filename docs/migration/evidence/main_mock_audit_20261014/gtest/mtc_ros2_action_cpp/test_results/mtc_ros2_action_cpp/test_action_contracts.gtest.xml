@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="9" failures="0" disabled="0" errors="0" time="0.001" timestamp="2026-10-13T20:18:08.002" name="AllTests">
+  <testsuite name="ActionContracts" tests="9" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-10-13T20:18:08.002">
+    <testcase name="TaskConversionPreservesColorOrderIdentityAndDeadline" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="8" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.002" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="RosFloatBoundaryDoesNotRelaxCoreUpperLimit" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="19" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.002" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="MockPlannerPreservesSixDPoseFrameStampAndContactConstraints" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="36" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.002" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="MockLoadEvidenceRemainsHoldingUntilVerifiedRelease" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="53" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.002" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="MockFailedReleaseNeverReportsNoLoad" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="66" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.003" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="TestLiftRequiresPriorSimulatedAttachmentEvidence" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="74" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.003" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="TrajectoryBridgeRefusesAndNeverSplitsIntoJointMoves" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="81" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.003" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="UnsupportedTrajectoryAndCartesianCapabilitiesCannotBeEnabled" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="93" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.003" classname="mtc_ros2_action_cpp.ActionContracts" />
+    <testcase name="DelayedCancelSamplesKnownStationaryMockBeforeValidatingStop" file="/candidate/src/mtc_ros2_action_cpp/test/test_action_contracts.cpp" line="101" status="run" result="completed" time="0." timestamp="2026-10-13T20:18:08.003" classname="mtc_ros2_action_cpp.ActionContracts" />
+  </testsuite>
+</testsuites>

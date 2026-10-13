@@ -1,0 +1,3 @@
+[INFO] [1791923078.092887699] [cpp_accept_basic.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=5efa7c527bd7c34127ea7f845007fbc6 request="http_basic_d8d8418d#0/attempt-1"
+[INFO] [1791923082.262523825] [cpp_accept_basic.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=5efa7c527bd7c34127ea7f845007fbc6 state=SUCCESS error=0 executions=7 stops=0
+[INFO] [1791923082.660593054] [rclcpp]: signal_handler(SIGINT/SIGTERM)

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="6" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T20:17:33.987" name="AllTests">
+  <testsuite name="InFlightGuard" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:33.987">
+    <testcase name="AcquireSucceedsWhenFree" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="14" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+    <testcase name="SecondAcquireIsRejectedWithInFlightId" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="27" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+    <testcase name="EmptyCommandIdRejected" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="40" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+    <testcase name="ReleaseOnlyByOwner" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="49" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+    <testcase name="ForceReleaseIsAvailableForManualRecovery" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="65" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+    <testcase name="SequentialCommandsAreAllowed" file="/candidate/src/mtc_motion_execution_cpp/test/test_in_flight_guard.cpp" line="73" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:33.987" classname="mtc_motion_execution_cpp.InFlightGuard" />
+  </testsuite>
+</testsuites>

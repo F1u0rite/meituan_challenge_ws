@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="0" disabled="0" errors="0" time="0.361" timestamp="2026-10-13T20:17:37.715" name="AllTests">
+  <testsuite name="FsmAcceptsPlannerOutput" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0.361" timestamp="2026-10-13T20:17:37.715">
+    <testcase name="V1SingleBatteryToT0Synchronous" file="/candidate/src/mtc_moveit_planner/test/test_fsm_accepts_planner_output.cpp" line="140" status="run" result="completed" time="0.001" timestamp="2026-10-13T20:17:37.715" classname="mtc_moveit_planner.FsmAcceptsPlannerOutput" />
+    <testcase name="V2SingleBatteryToT0Synchronous" file="/candidate/src/mtc_moveit_planner/test/test_fsm_accepts_planner_output.cpp" line="147" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.716" classname="mtc_moveit_planner.FsmAcceptsPlannerOutput" />
+    <testcase name="V1AsynchronousPlanningWithinPlanAcquireWatchdog" file="/candidate/src/mtc_moveit_planner/test/test_fsm_accepts_planner_output.cpp" line="154" status="run" result="completed" time="0.358" timestamp="2026-10-13T20:17:37.717" classname="mtc_moveit_planner.FsmAcceptsPlannerOutput" />
+    <testcase name="PlanningFailureStopsBeforeAnyMotion" file="/candidate/src/mtc_moveit_planner/test/test_fsm_accepts_planner_output.cpp" line="160" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:38.076" classname="mtc_moveit_planner.FsmAcceptsPlannerOutput" />
+  </testsuite>
+</testsuites>

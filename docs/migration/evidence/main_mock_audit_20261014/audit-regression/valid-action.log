@@ -1,0 +1,8 @@
+PASS: 原有318项身份全部保留并执行；本轮新增147项
+PASS: 465项独立GTest / 22个可执行文件，FAIL 0 / SKIP 0
+  mtc_core_cpp: 23 PASS
+  mtc_manipulation_cpp: 120 PASS
+  mtc_motion_execution_cpp: 92 PASS
+  mtc_ros2_action_cpp: 44 PASS
+  mtc_task_cpp: 87 PASS
+  mtc_trajectory_execution_cpp: 99 PASS

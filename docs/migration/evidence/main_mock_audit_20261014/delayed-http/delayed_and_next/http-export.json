@@ -1,0 +1,1961 @@
+{
+  "snapshot": {
+    "schema_version": 1,
+    "mode": "cpp_mock",
+    "session_id": "f2758ac5-d0c1-439f-a755-0039360515f2",
+    "snapshot_seq": 349,
+    "event_seq": 47,
+    "generated_at": "2026-10-13T20:28:59.415+00:00",
+    "freshness_limit_ms": 3000,
+    "task": {
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66",
+      "mode": "cpp_mock",
+      "owned": true,
+      "goal": {
+        "task_id": "same_stack_next",
+        "mode": 1,
+        "ordered_colors": [
+          1
+        ],
+        "timeout_ms": 30000,
+        "placement_stability_sec": 3
+      },
+      "status": "SUCCEEDED",
+      "state": "FINISHED",
+      "substate": "FINISHED",
+      "detail": "task finished: T0",
+      "completed_count": 1,
+      "total_count": 1,
+      "completed_slots": [
+        "T0"
+      ],
+      "current_index": 1,
+      "current_slot": "",
+      "current_object_id": "",
+      "last_error_code": 0,
+      "created_at": "2026-10-13T20:28:52.730+00:00",
+      "finished_at": "2026-10-13T20:28:59.374+00:00",
+      "elapsed_ms": 6644,
+      "result": {
+        "success": true,
+        "completed_count": 1,
+        "completed_slots": [
+          "T0"
+        ],
+        "error_code": 0,
+        "message": "task finished: T0"
+      },
+      "cancel_ack": null,
+      "events": [
+        {
+          "seq": 21,
+          "at": "2026-10-13T20:28:52.730+00:00",
+          "kind": "GOAL_REQUESTED",
+          "message": "等待 ROS Goal 受理回执",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-13T20:28:52.742+00:00",
+          "kind": "GOAL_ACCEPTED",
+          "message": "ROS Action 服务端已受理",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-13T20:28:52.752+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-13T20:28:52.762+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-13T20:28:52.772+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-13T20:28:53.492+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / ENGAGE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-13T20:28:53.502+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_ENGAGEMENT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-13T20:28:53.513+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / TEST_LIFT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-13T20:28:54.222+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_ATTACHED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-13T20:28:54.232+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / LIFT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-13T20:28:54.952+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / TRANSPORT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-13T20:28:55.672+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / MOVE_PRE_SEAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-13T20:28:56.392+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / SEAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-13T20:28:57.112+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_SEATED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-13T20:28:57.122+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / UNLOAD",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-13T20:28:57.131+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / DISENGAGE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-13T20:28:57.142+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / RETREAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-13T20:28:57.862+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_PLACED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-13T20:28:59.372+00:00",
+          "kind": "FEEDBACK",
+          "message": "FINISHED / FINISHED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-13T20:28:59.374+00:00",
+          "kind": "RESULT",
+          "message": "task finished: T0",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        }
+      ],
+      "recordings": []
+    },
+    "task_state": {
+      "available": true,
+      "data": {
+        "task_id": "same_stack_next",
+        "state": "FINISHED",
+        "substate": "FINISHED",
+        "completed_count": 1,
+        "total_count": 1,
+        "last_error_code": 0,
+        "detail": "C++ Task 只读状态"
+      },
+      "source": "/monitor_main_mock/mtc_mock_task · /monitor_main_mock/mtc_mock_task/integration_state · 010f7f01",
+      "received_at": "2026-10-13T20:28:59.402+00:00",
+      "source_stamp_ns": 1791923339400818163,
+      "age_ms": 15,
+      "fresh": true
+    },
+    "external_task": null,
+    "robot": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "tool": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "joints": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "camera": {
+      "color": {
+        "available": false,
+        "data": null,
+        "source": null,
+        "received_at": null,
+        "age_ms": null
+      },
+      "depth": {
+        "available": false,
+        "data": null,
+        "source": null,
+        "received_at": null,
+        "age_ms": null
+      }
+    },
+    "connection": {
+      "connected": true,
+      "reason": "C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果",
+      "action_ready": true,
+      "stop_ready": false,
+      "publishers": {
+        "cpp_task": {
+          "topic": "/monitor_main_mock/mtc_mock_task/integration_state",
+          "expected_node": "/monitor_main_mock/mtc_mock_task",
+          "candidates": [
+            {
+              "node": "/monitor_main_mock/mtc_mock_task",
+              "gid": "010f7f01bf08a0220000000000001403"
+            }
+          ],
+          "selected": "/monitor_main_mock/mtc_mock_task · /monitor_main_mock/mtc_mock_task/integration_state · 010f7f01",
+          "attribution": "unique topic publisher; graph GID, not per-message GID"
+        },
+        "cpp_pick": {
+          "topic": "/monitor_main_mock/mtc_mock_pick_place/integration_state",
+          "expected_node": "/monitor_main_mock/mtc_mock_pick_place",
+          "candidates": [
+            {
+              "node": "/monitor_main_mock/mtc_mock_pick_place",
+              "gid": "010f7f01be08eeba0000000000001403"
+            }
+          ],
+          "selected": "/monitor_main_mock/mtc_mock_pick_place · /monitor_main_mock/mtc_mock_pick_place/integration_state · 010f7f01",
+          "attribution": "unique topic publisher; graph GID, not per-message GID"
+        }
+      },
+      "image_topics": [],
+      "child_ready": true,
+      "action_servers": [
+        "/monitor_main_mock/mtc_mock_task"
+      ],
+      "graph": {
+        "valid": true,
+        "issues": [],
+        "nodes": [
+          "/mtc_cpp_mock_observers/mtc_chain_recorder",
+          "/monitor_main_mock/mtc_mock_pick_place",
+          "/monitor_main_mock/mtc_mock_task",
+          "/monitor_main_mock/mtc_web_console_f2758ac5"
+        ],
+        "servers": [
+          {
+            "node": "/monitor_main_mock/mtc_mock_pick_place",
+            "action": "/monitor_main_mock/manipulation/pick_place",
+            "types": [
+              "mtc_interfaces/action/PickPlace"
+            ]
+          },
+          {
+            "node": "/monitor_main_mock/mtc_mock_task",
+            "action": "/monitor_main_mock/task/execute",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask"
+            ]
+          }
+        ],
+        "clients": [
+          {
+            "node": "/mtc_cpp_mock_observers/mtc_chain_recorder",
+            "action": "/monitor_main_mock/manipulation/pick_place",
+            "types": [
+              "mtc_interfaces/action/PickPlace"
+            ]
+          },
+          {
+            "node": "/mtc_cpp_mock_observers/mtc_chain_recorder",
+            "action": "/monitor_main_mock/task/execute",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask"
+            ]
+          },
+          {
+            "node": "/monitor_main_mock/mtc_mock_task",
+            "action": "/monitor_main_mock/manipulation/pick_place",
+            "types": [
+              "mtc_interfaces/action/PickPlace"
+            ]
+          },
+          {
+            "node": "/monitor_main_mock/mtc_web_console_f2758ac5",
+            "action": "/monitor_main_mock/task/execute",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask"
+            ]
+          }
+        ],
+        "topics": [
+          {
+            "name": "/monitor_main_mock/manipulation/pick_place/_action/feedback",
+            "types": [
+              "mtc_interfaces/action/PickPlace_FeedbackMessage"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_pick_place",
+                "gid": "010f7f01be08eeba0000000000001b03",
+                "type": "mtc_interfaces/action/PickPlace_FeedbackMessage",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "2",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "/monitor_main_mock/manipulation/pick_place/_action/status",
+            "types": [
+              "action_msgs/msg/GoalStatusArray"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_pick_place",
+                "gid": "010f7f01be08eeba0000000000001c03",
+                "type": "action_msgs/msg/GoalStatusArray",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "1",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "/monitor_main_mock/mtc_mock_pick_place/integration_state",
+            "types": [
+              "std_msgs/msg/String"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_pick_place",
+                "gid": "010f7f01be08eeba0000000000001403",
+                "type": "std_msgs/msg/String",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "2",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "/monitor_main_mock/mtc_mock_task/integration_state",
+            "types": [
+              "std_msgs/msg/String"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_task",
+                "gid": "010f7f01bf08a0220000000000001403",
+                "type": "std_msgs/msg/String",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "2",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "/monitor_main_mock/task/execute/_action/feedback",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask_FeedbackMessage"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_task",
+                "gid": "010f7f01bf08a0220000000000002303",
+                "type": "mtc_interfaces/action/ExecuteTask_FeedbackMessage",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "2",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "/monitor_main_mock/task/execute/_action/status",
+            "types": [
+              "action_msgs/msg/GoalStatusArray"
+            ],
+            "publishers": [
+              {
+                "node": "/monitor_main_mock/mtc_mock_task",
+                "gid": "010f7f01bf08a0220000000000002403",
+                "type": "action_msgs/msg/GoalStatusArray",
+                "qos": {
+                  "reliability": "1",
+                  "durability": "1",
+                  "history": "3",
+                  "depth": 0
+                }
+              }
+            ]
+          }
+        ],
+        "task_servers": [
+          "/monitor_main_mock/mtc_mock_task"
+        ]
+      }
+    },
+    "config": {
+      "domain_id": 219,
+      "read_only": false,
+      "task_action": "/monitor_main_mock/task/execute",
+      "task_topic": "/monitor_main_mock/task/state",
+      "task_publisher": "/monitor_main_mock/mtc_mock_task",
+      "robot_topic": "/mtc/robot/state",
+      "robot_publisher": "/mtc_aubo_bridge",
+      "tool_topic": "/mtc/tool/state",
+      "tool_publisher": "",
+      "joint_topic": "/joint_states",
+      "joint_publisher": "",
+      "stop_service": "/mtc/bridge/request_stop",
+      "color_topic": "",
+      "depth_topic": "",
+      "freshness_ms": 3000,
+      "cpp_namespace": "/monitor_main_mock"
+    },
+    "stop_request": null,
+    "operations": {
+      "submit": true,
+      "cancel": false,
+      "stop": false,
+      "confirm_mock_stop": false,
+      "reasons": []
+    },
+    "history": [
+      {
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66",
+        "status": "SUCCEEDED",
+        "created_at": "2026-10-13T20:28:52.730+00:00",
+        "completed_count": 1,
+        "total_count": 1,
+        "result": {
+          "success": true,
+          "completed_count": 1,
+          "completed_slots": [
+            "T0"
+          ],
+          "error_code": 0,
+          "message": "task finished: T0"
+        }
+      },
+      {
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb",
+        "status": "CANCELED",
+        "created_at": "2026-10-13T20:28:52.123+00:00",
+        "completed_count": 0,
+        "total_count": 1,
+        "result": {
+          "success": false,
+          "completed_count": 0,
+          "completed_slots": [],
+          "error_code": 0,
+          "message": "cancelled after stop confirmation (completed 0)"
+        }
+      }
+    ],
+    "events": [
+      {
+        "seq": 1,
+        "at": "2026-10-13T20:28:48.855+00:00",
+        "kind": "SESSION_STARTED",
+        "message": "C++ Mock ROS 操作台；软件 Mock，无硬件、MoveIt、独立停稳传感器",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 2,
+        "at": "2026-10-13T20:28:49.304+00:00",
+        "kind": "ROS_CONNECTION",
+        "message": "C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 3,
+        "at": "2026-10-13T20:28:52.123+00:00",
+        "kind": "GOAL_REQUESTED",
+        "message": "等待 ROS Goal 受理回执",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 4,
+        "at": "2026-10-13T20:28:52.144+00:00",
+        "kind": "GOAL_ACCEPTED",
+        "message": "ROS Action 服务端已受理",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 5,
+        "at": "2026-10-13T20:28:52.152+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_start parent=3135e3b430544d0d8a645fa952c763eb task=\"delayed_cancel\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 6,
+        "at": "2026-10-13T20:28:52.153+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_send parent=3135e3b430544d0d8a645fa952c763eb request=\"delayed_cancel#0/attempt-1\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 7,
+        "at": "2026-10-13T20:28:52.153+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 8,
+        "at": "2026-10-13T20:28:52.154+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_response parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 accepted=1 request=\"delayed_cancel#0/attempt-1\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 9,
+        "at": "2026-10-13T20:28:52.159+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_start child=17e684e21eab71dab4193d881907a726 request=\"delayed_cancel#0/attempt-1\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 10,
+        "at": "2026-10-13T20:28:52.161+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 11,
+        "at": "2026-10-13T20:28:52.172+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 12,
+        "at": "2026-10-13T20:28:52.594+00:00",
+        "kind": "CANCEL_REQUESTED",
+        "message": "取消已排队，等待 ROS Cancel 回执",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 13,
+        "at": "2026-10-13T20:28:52.603+00:00",
+        "kind": "CANCEL_REPLY",
+        "message": "ROS 已确认接受取消；完成以 C++ Action 最终结果为准",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 14,
+        "at": "2026-10-13T20:28:52.612+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_cancel child=17e684e21eab71dab4193d881907a726",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 15,
+        "at": "2026-10-13T20:28:52.612+00:00",
+        "kind": "FEEDBACK",
+        "message": "CANCEL_PENDING / MOVE_PRE_ALIGN",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 16,
+        "at": "2026-10-13T20:28:52.631+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_result child=17e684e21eab71dab4193d881907a726 state=CANCELLED error=0 executions=1 stops=1",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 17,
+        "at": "2026-10-13T20:28:52.631+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_result parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 status=5 error=0",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 18,
+        "at": "2026-10-13T20:28:52.632+00:00",
+        "kind": "FEEDBACK",
+        "message": "CANCELLED / CANCELLED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 19,
+        "at": "2026-10-13T20:28:52.632+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_result parent=3135e3b430544d0d8a645fa952c763eb state=CANCELLED error=0 completed=0",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 20,
+        "at": "2026-10-13T20:28:52.633+00:00",
+        "kind": "RESULT",
+        "message": "cancelled after stop confirmation (completed 0)",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 21,
+        "at": "2026-10-13T20:28:52.730+00:00",
+        "kind": "GOAL_REQUESTED",
+        "message": "等待 ROS Goal 受理回执",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 22,
+        "at": "2026-10-13T20:28:52.742+00:00",
+        "kind": "GOAL_ACCEPTED",
+        "message": "ROS Action 服务端已受理",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 23,
+        "at": "2026-10-13T20:28:52.752+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_start parent=a3189cf768aa4e24964c16f0d50e3e66 task=\"same_stack_next\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 24,
+        "at": "2026-10-13T20:28:52.752+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 25,
+        "at": "2026-10-13T20:28:52.753+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_send parent=a3189cf768aa4e24964c16f0d50e3e66 request=\"same_stack_next#0/attempt-2\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 26,
+        "at": "2026-10-13T20:28:52.754+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_response parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 accepted=1 request=\"same_stack_next#0/attempt-2\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 27,
+        "at": "2026-10-13T20:28:52.759+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_start child=76a38181a5a44644d3eec2514263bf12 request=\"same_stack_next#0/attempt-2\"",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 28,
+        "at": "2026-10-13T20:28:52.762+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 29,
+        "at": "2026-10-13T20:28:52.772+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 30,
+        "at": "2026-10-13T20:28:53.492+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / ENGAGE",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 31,
+        "at": "2026-10-13T20:28:53.502+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / VERIFY_ENGAGEMENT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 32,
+        "at": "2026-10-13T20:28:53.513+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / TEST_LIFT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 33,
+        "at": "2026-10-13T20:28:54.222+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / VERIFY_ATTACHED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 34,
+        "at": "2026-10-13T20:28:54.232+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / LIFT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 35,
+        "at": "2026-10-13T20:28:54.952+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / TRANSPORT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 36,
+        "at": "2026-10-13T20:28:55.672+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / MOVE_PRE_SEAT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 37,
+        "at": "2026-10-13T20:28:56.392+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / SEAT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 38,
+        "at": "2026-10-13T20:28:57.112+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / VERIFY_SEATED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 39,
+        "at": "2026-10-13T20:28:57.122+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / UNLOAD",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 40,
+        "at": "2026-10-13T20:28:57.131+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / DISENGAGE",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 41,
+        "at": "2026-10-13T20:28:57.142+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / RETREAT",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 42,
+        "at": "2026-10-13T20:28:57.862+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / VERIFY_PLACED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 43,
+        "at": "2026-10-13T20:28:59.370+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_result child=76a38181a5a44644d3eec2514263bf12 state=SUCCESS error=0 executions=8 stops=1",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 44,
+        "at": "2026-10-13T20:28:59.370+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_result parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 status=4 error=0",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 45,
+        "at": "2026-10-13T20:28:59.372+00:00",
+        "kind": "FEEDBACK",
+        "message": "FINISHED / FINISHED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      },
+      {
+        "seq": 46,
+        "at": "2026-10-13T20:28:59.374+00:00",
+        "kind": "ROS_LOG",
+        "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_result parent=a3189cf768aa4e24964c16f0d50e3e66 state=FINISHED error=0 completed=1",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 47,
+        "at": "2026-10-13T20:28:59.374+00:00",
+        "kind": "RESULT",
+        "message": "task finished: T0",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "same_stack_next",
+        "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+      }
+    ],
+    "cpp_task": {
+      "available": true,
+      "data": {
+        "scope": "cpp_mock",
+        "stamp_ns": 1791923339400818163,
+        "node": "/monitor_main_mock/mtc_mock_task",
+        "state": "FINISHED",
+        "admission_open": true,
+        "locked": false,
+        "cancel_requested": false,
+        "goal_id": "",
+        "initialized": true,
+        "task_id": "same_stack_next",
+        "substate": "FINISHED",
+        "completed_count": 1,
+        "total_count": 1,
+        "last_error_code": 0
+      },
+      "source": "/monitor_main_mock/mtc_mock_task · /monitor_main_mock/mtc_mock_task/integration_state · 010f7f01",
+      "received_at": "2026-10-13T20:28:59.402+00:00",
+      "source_stamp_ns": 1791923339400818163,
+      "age_ms": 16,
+      "fresh": true
+    },
+    "cpp_pick": {
+      "available": true,
+      "data": {
+        "scope": "cpp_mock",
+        "stamp_ns": 1791923339400797379,
+        "node": "/monitor_main_mock/mtc_mock_pick_place",
+        "state": "SUCCESS",
+        "admission_open": true,
+        "locked": false,
+        "cancel_requested": false,
+        "goal_id": "",
+        "executions": 8,
+        "stops": 1
+      },
+      "source": "/monitor_main_mock/mtc_mock_pick_place · /monitor_main_mock/mtc_mock_pick_place/integration_state · 010f7f01",
+      "received_at": "2026-10-13T20:28:59.401+00:00",
+      "source_stamp_ns": 1791923339400797379,
+      "age_ms": 16,
+      "fresh": true
+    },
+    "cpp_pick_action": "/monitor_main_mock/manipulation/pick_place"
+  },
+  "tasks": [
+    {
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb",
+      "mode": "cpp_mock",
+      "owned": true,
+      "goal": {
+        "task_id": "delayed_cancel",
+        "mode": 1,
+        "ordered_colors": [
+          1
+        ],
+        "timeout_ms": 30000,
+        "placement_stability_sec": 3
+      },
+      "status": "CANCELED",
+      "state": "CANCELLED",
+      "substate": "CANCELLED",
+      "detail": "cancelled after stop confirmation (completed 0)",
+      "completed_count": 0,
+      "total_count": 1,
+      "completed_slots": [],
+      "current_index": 0,
+      "current_slot": "T0",
+      "current_object_id": "mock_battery_color_1",
+      "last_error_code": 0,
+      "created_at": "2026-10-13T20:28:52.123+00:00",
+      "finished_at": "2026-10-13T20:28:52.633+00:00",
+      "elapsed_ms": 510,
+      "result": {
+        "success": false,
+        "completed_count": 0,
+        "completed_slots": [],
+        "error_code": 0,
+        "message": "cancelled after stop confirmation (completed 0)"
+      },
+      "cancel_ack": {
+        "request_delivered": true,
+        "message": "ROS 已确认接受取消"
+      },
+      "events": [
+        {
+          "seq": 3,
+          "at": "2026-10-13T20:28:52.123+00:00",
+          "kind": "GOAL_REQUESTED",
+          "message": "等待 ROS Goal 受理回执",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 4,
+          "at": "2026-10-13T20:28:52.144+00:00",
+          "kind": "GOAL_ACCEPTED",
+          "message": "ROS Action 服务端已受理",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 7,
+          "at": "2026-10-13T20:28:52.153+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 10,
+          "at": "2026-10-13T20:28:52.161+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 11,
+          "at": "2026-10-13T20:28:52.172+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 12,
+          "at": "2026-10-13T20:28:52.594+00:00",
+          "kind": "CANCEL_REQUESTED",
+          "message": "取消已排队，等待 ROS Cancel 回执",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 13,
+          "at": "2026-10-13T20:28:52.603+00:00",
+          "kind": "CANCEL_REPLY",
+          "message": "ROS 已确认接受取消；完成以 C++ Action 最终结果为准",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 15,
+          "at": "2026-10-13T20:28:52.612+00:00",
+          "kind": "FEEDBACK",
+          "message": "CANCEL_PENDING / MOVE_PRE_ALIGN",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 18,
+          "at": "2026-10-13T20:28:52.632+00:00",
+          "kind": "FEEDBACK",
+          "message": "CANCELLED / CANCELLED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        },
+        {
+          "seq": 20,
+          "at": "2026-10-13T20:28:52.633+00:00",
+          "kind": "RESULT",
+          "message": "cancelled after stop confirmation (completed 0)",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "delayed_cancel",
+          "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+        }
+      ],
+      "recordings": []
+    },
+    {
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66",
+      "mode": "cpp_mock",
+      "owned": true,
+      "goal": {
+        "task_id": "same_stack_next",
+        "mode": 1,
+        "ordered_colors": [
+          1
+        ],
+        "timeout_ms": 30000,
+        "placement_stability_sec": 3
+      },
+      "status": "SUCCEEDED",
+      "state": "FINISHED",
+      "substate": "FINISHED",
+      "detail": "task finished: T0",
+      "completed_count": 1,
+      "total_count": 1,
+      "completed_slots": [
+        "T0"
+      ],
+      "current_index": 1,
+      "current_slot": "",
+      "current_object_id": "",
+      "last_error_code": 0,
+      "created_at": "2026-10-13T20:28:52.730+00:00",
+      "finished_at": "2026-10-13T20:28:59.374+00:00",
+      "elapsed_ms": 6644,
+      "result": {
+        "success": true,
+        "completed_count": 1,
+        "completed_slots": [
+          "T0"
+        ],
+        "error_code": 0,
+        "message": "task finished: T0"
+      },
+      "cancel_ack": null,
+      "events": [
+        {
+          "seq": 21,
+          "at": "2026-10-13T20:28:52.730+00:00",
+          "kind": "GOAL_REQUESTED",
+          "message": "等待 ROS Goal 受理回执",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 22,
+          "at": "2026-10-13T20:28:52.742+00:00",
+          "kind": "GOAL_ACCEPTED",
+          "message": "ROS Action 服务端已受理",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 24,
+          "at": "2026-10-13T20:28:52.752+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 28,
+          "at": "2026-10-13T20:28:52.762+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 29,
+          "at": "2026-10-13T20:28:52.772+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 30,
+          "at": "2026-10-13T20:28:53.492+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / ENGAGE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 31,
+          "at": "2026-10-13T20:28:53.502+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_ENGAGEMENT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 32,
+          "at": "2026-10-13T20:28:53.513+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / TEST_LIFT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 33,
+          "at": "2026-10-13T20:28:54.222+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_ATTACHED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 34,
+          "at": "2026-10-13T20:28:54.232+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / LIFT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 35,
+          "at": "2026-10-13T20:28:54.952+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / TRANSPORT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 36,
+          "at": "2026-10-13T20:28:55.672+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / MOVE_PRE_SEAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 37,
+          "at": "2026-10-13T20:28:56.392+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / SEAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 38,
+          "at": "2026-10-13T20:28:57.112+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_SEATED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 39,
+          "at": "2026-10-13T20:28:57.122+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / UNLOAD",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 40,
+          "at": "2026-10-13T20:28:57.131+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / DISENGAGE",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 41,
+          "at": "2026-10-13T20:28:57.142+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / RETREAT",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 42,
+          "at": "2026-10-13T20:28:57.862+00:00",
+          "kind": "FEEDBACK",
+          "message": "EXECUTE_ITEM / VERIFY_PLACED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 45,
+          "at": "2026-10-13T20:28:59.372+00:00",
+          "kind": "FEEDBACK",
+          "message": "FINISHED / FINISHED",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        },
+        {
+          "seq": 47,
+          "at": "2026-10-13T20:28:59.374+00:00",
+          "kind": "RESULT",
+          "message": "task finished: T0",
+          "level": "info",
+          "mode": "cpp_mock",
+          "task_id": "same_stack_next",
+          "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+        }
+      ],
+      "recordings": []
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "at": "2026-10-13T20:28:48.855+00:00",
+      "kind": "SESSION_STARTED",
+      "message": "C++ Mock ROS 操作台；软件 Mock，无硬件、MoveIt、独立停稳传感器",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 2,
+      "at": "2026-10-13T20:28:49.304+00:00",
+      "kind": "ROS_CONNECTION",
+      "message": "C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 3,
+      "at": "2026-10-13T20:28:52.123+00:00",
+      "kind": "GOAL_REQUESTED",
+      "message": "等待 ROS Goal 受理回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-13T20:28:52.144+00:00",
+      "kind": "GOAL_ACCEPTED",
+      "message": "ROS Action 服务端已受理",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 5,
+      "at": "2026-10-13T20:28:52.152+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_start parent=3135e3b430544d0d8a645fa952c763eb task=\"delayed_cancel\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 6,
+      "at": "2026-10-13T20:28:52.153+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_send parent=3135e3b430544d0d8a645fa952c763eb request=\"delayed_cancel#0/attempt-1\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 7,
+      "at": "2026-10-13T20:28:52.153+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 8,
+      "at": "2026-10-13T20:28:52.154+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_response parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 accepted=1 request=\"delayed_cancel#0/attempt-1\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 9,
+      "at": "2026-10-13T20:28:52.159+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_start child=17e684e21eab71dab4193d881907a726 request=\"delayed_cancel#0/attempt-1\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 10,
+      "at": "2026-10-13T20:28:52.161+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 11,
+      "at": "2026-10-13T20:28:52.172+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 12,
+      "at": "2026-10-13T20:28:52.594+00:00",
+      "kind": "CANCEL_REQUESTED",
+      "message": "取消已排队，等待 ROS Cancel 回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 13,
+      "at": "2026-10-13T20:28:52.603+00:00",
+      "kind": "CANCEL_REPLY",
+      "message": "ROS 已确认接受取消；完成以 C++ Action 最终结果为准",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 14,
+      "at": "2026-10-13T20:28:52.612+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_cancel child=17e684e21eab71dab4193d881907a726",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 15,
+      "at": "2026-10-13T20:28:52.612+00:00",
+      "kind": "FEEDBACK",
+      "message": "CANCEL_PENDING / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 16,
+      "at": "2026-10-13T20:28:52.631+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_result child=17e684e21eab71dab4193d881907a726 state=CANCELLED error=0 executions=1 stops=1",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 17,
+      "at": "2026-10-13T20:28:52.631+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_result parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 status=5 error=0",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 18,
+      "at": "2026-10-13T20:28:52.632+00:00",
+      "kind": "FEEDBACK",
+      "message": "CANCELLED / CANCELLED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 19,
+      "at": "2026-10-13T20:28:52.632+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_result parent=3135e3b430544d0d8a645fa952c763eb state=CANCELLED error=0 completed=0",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 20,
+      "at": "2026-10-13T20:28:52.633+00:00",
+      "kind": "RESULT",
+      "message": "cancelled after stop confirmation (completed 0)",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 21,
+      "at": "2026-10-13T20:28:52.730+00:00",
+      "kind": "GOAL_REQUESTED",
+      "message": "等待 ROS Goal 受理回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 22,
+      "at": "2026-10-13T20:28:52.742+00:00",
+      "kind": "GOAL_ACCEPTED",
+      "message": "ROS Action 服务端已受理",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 23,
+      "at": "2026-10-13T20:28:52.752+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_start parent=a3189cf768aa4e24964c16f0d50e3e66 task=\"same_stack_next\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 24,
+      "at": "2026-10-13T20:28:52.752+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 25,
+      "at": "2026-10-13T20:28:52.753+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_send parent=a3189cf768aa4e24964c16f0d50e3e66 request=\"same_stack_next#0/attempt-2\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 26,
+      "at": "2026-10-13T20:28:52.754+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_response parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 accepted=1 request=\"same_stack_next#0/attempt-2\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 27,
+      "at": "2026-10-13T20:28:52.759+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_start child=76a38181a5a44644d3eec2514263bf12 request=\"same_stack_next#0/attempt-2\"",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 28,
+      "at": "2026-10-13T20:28:52.762+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 29,
+      "at": "2026-10-13T20:28:52.772+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 30,
+      "at": "2026-10-13T20:28:53.492+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / ENGAGE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 31,
+      "at": "2026-10-13T20:28:53.502+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_ENGAGEMENT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 32,
+      "at": "2026-10-13T20:28:53.513+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / TEST_LIFT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 33,
+      "at": "2026-10-13T20:28:54.222+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_ATTACHED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 34,
+      "at": "2026-10-13T20:28:54.232+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / LIFT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 35,
+      "at": "2026-10-13T20:28:54.952+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / TRANSPORT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 36,
+      "at": "2026-10-13T20:28:55.672+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_SEAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 37,
+      "at": "2026-10-13T20:28:56.392+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / SEAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 38,
+      "at": "2026-10-13T20:28:57.112+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_SEATED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 39,
+      "at": "2026-10-13T20:28:57.122+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / UNLOAD",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 40,
+      "at": "2026-10-13T20:28:57.131+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / DISENGAGE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 41,
+      "at": "2026-10-13T20:28:57.142+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / RETREAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 42,
+      "at": "2026-10-13T20:28:57.862+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_PLACED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 43,
+      "at": "2026-10-13T20:28:59.370+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_pick_place: MTC_TRACE event=pick_result child=76a38181a5a44644d3eec2514263bf12 state=SUCCESS error=0 executions=8 stops=1",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 44,
+      "at": "2026-10-13T20:28:59.370+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=child_result parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 status=4 error=0",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 45,
+      "at": "2026-10-13T20:28:59.372+00:00",
+      "kind": "FEEDBACK",
+      "message": "FINISHED / FINISHED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    },
+    {
+      "seq": 46,
+      "at": "2026-10-13T20:28:59.374+00:00",
+      "kind": "ROS_LOG",
+      "message": "monitor_main_mock.mtc_mock_task: MTC_TRACE event=task_result parent=a3189cf768aa4e24964c16f0d50e3e66 state=FINISHED error=0 completed=1",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": null,
+      "goal_id": null
+    },
+    {
+      "seq": 47,
+      "at": "2026-10-13T20:28:59.374+00:00",
+      "kind": "RESULT",
+      "message": "task finished: T0",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "same_stack_next",
+      "goal_id": "a3189cf7-68aa-4e24-964c-16f0d50e3e66"
+    }
+  ],
+  "note": "内存事件窗口 500 条；完整事件保存在 events.jsonl"
+}

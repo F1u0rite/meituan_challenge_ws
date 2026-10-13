@@ -1,0 +1,6 @@
+[INFO] [1791923137.151818069] [cpp_accept_status_unknown.mtc_mock_task]: MTC_TRACE event=task_start parent=eaa62999da454aaa8b8b4e6004430b2c task="http_status_unknown_aa781beb"
+[INFO] [1791923137.152302208] [cpp_accept_status_unknown.mtc_mock_task]: MTC_TRACE event=child_send parent=eaa62999da454aaa8b8b4e6004430b2c request="http_status_unknown_aa781beb#0/attempt-1"
+[INFO] [1791923137.153148171] [cpp_accept_status_unknown.mtc_mock_task]: MTC_TRACE event=child_response parent=eaa62999da454aaa8b8b4e6004430b2c child=9ce517af49cabeac6b15b9beea280857 accepted=1 request="http_status_unknown_aa781beb#0/attempt-1"
+[INFO] [1791923137.539998058] [cpp_accept_status_unknown.mtc_mock_task]: MTC_TRACE event=child_result parent=eaa62999da454aaa8b8b4e6004430b2c child=9ce517af49cabeac6b15b9beea280857 status=6 error=230
+[INFO] [1791923137.541404762] [cpp_accept_status_unknown.mtc_mock_task]: MTC_TRACE event=task_result parent=eaa62999da454aaa8b8b4e6004430b2c state=FAULT error=230 completed=0
+[INFO] [1791923137.993176929] [rclcpp]: signal_handler(SIGINT/SIGTERM)

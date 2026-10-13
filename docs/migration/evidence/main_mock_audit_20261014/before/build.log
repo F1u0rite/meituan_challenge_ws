@@ -1,0 +1,83 @@
+Starting >>> mtc_core_cpp
+Finished <<< mtc_core_cpp [7.63s]
+Starting >>> mtc_interfaces
+Finished <<< mtc_interfaces [34.1s]
+Starting >>> mtc_aubo_bridge
+--- stderr: mtc_aubo_bridge
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_aubo_bridge [0.92s]
+Starting >>> mtc_manipulation
+--- stderr: mtc_manipulation
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_manipulation [0.89s]
+Starting >>> mtc_motion_execution
+--- stderr: mtc_motion_execution
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_motion_execution [0.90s]
+Starting >>> mtc_motion_execution_cpp
+Finished <<< mtc_motion_execution_cpp [12.6s]
+Starting >>> mtc_safety
+--- stderr: mtc_safety
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_safety [0.85s]
+Starting >>> mtc_task
+--- stderr: mtc_task
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_task [0.86s]
+Starting >>> mtc_task_cpp
+Finished <<< mtc_task_cpp [8.00s]
+Starting >>> mtc_tool
+--- stderr: mtc_tool
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_tool [0.85s]
+Starting >>> mtc_bringup
+--- stderr: mtc_bringup
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_bringup [0.93s]
+Starting >>> mtc_manipulation_cpp
+Finished <<< mtc_manipulation_cpp [12.6s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [23.9s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [35.6s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_trajectory_execution_cpp [35.1s]
+Starting >>> mtc_cpp_mock_bringup
+--- stderr: mtc_cpp_mock_bringup
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_cpp_mock_bringup [1.01s]
+
+Summary: 16 packages finished [2min 57s]
+  8 packages had stderr output: mtc_aubo_bridge mtc_bringup mtc_cpp_mock_bringup mtc_manipulation mtc_motion_execution mtc_safety mtc_task mtc_tool

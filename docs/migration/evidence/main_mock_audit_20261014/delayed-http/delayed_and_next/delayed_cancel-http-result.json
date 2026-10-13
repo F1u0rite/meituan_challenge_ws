@@ -1,0 +1,143 @@
+{
+  "task_id": "delayed_cancel",
+  "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb",
+  "mode": "cpp_mock",
+  "owned": true,
+  "goal": {
+    "task_id": "delayed_cancel",
+    "mode": 1,
+    "ordered_colors": [
+      1
+    ],
+    "timeout_ms": 30000,
+    "placement_stability_sec": 3
+  },
+  "status": "CANCELED",
+  "state": "CANCELLED",
+  "substate": "CANCELLED",
+  "detail": "cancelled after stop confirmation (completed 0)",
+  "completed_count": 0,
+  "total_count": 1,
+  "completed_slots": [],
+  "current_index": 0,
+  "current_slot": "T0",
+  "current_object_id": "mock_battery_color_1",
+  "last_error_code": 0,
+  "created_at": "2026-10-13T20:28:52.123+00:00",
+  "finished_at": "2026-10-13T20:28:52.633+00:00",
+  "elapsed_ms": 510,
+  "result": {
+    "success": false,
+    "completed_count": 0,
+    "completed_slots": [],
+    "error_code": 0,
+    "message": "cancelled after stop confirmation (completed 0)"
+  },
+  "cancel_ack": {
+    "request_delivered": true,
+    "message": "ROS 已确认接受取消"
+  },
+  "events": [
+    {
+      "seq": 3,
+      "at": "2026-10-13T20:28:52.123+00:00",
+      "kind": "GOAL_REQUESTED",
+      "message": "等待 ROS Goal 受理回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-13T20:28:52.144+00:00",
+      "kind": "GOAL_ACCEPTED",
+      "message": "ROS Action 服务端已受理",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 7,
+      "at": "2026-10-13T20:28:52.153+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 10,
+      "at": "2026-10-13T20:28:52.161+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 11,
+      "at": "2026-10-13T20:28:52.172+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 12,
+      "at": "2026-10-13T20:28:52.594+00:00",
+      "kind": "CANCEL_REQUESTED",
+      "message": "取消已排队，等待 ROS Cancel 回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 13,
+      "at": "2026-10-13T20:28:52.603+00:00",
+      "kind": "CANCEL_REPLY",
+      "message": "ROS 已确认接受取消；完成以 C++ Action 最终结果为准",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 15,
+      "at": "2026-10-13T20:28:52.612+00:00",
+      "kind": "FEEDBACK",
+      "message": "CANCEL_PENDING / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 18,
+      "at": "2026-10-13T20:28:52.632+00:00",
+      "kind": "FEEDBACK",
+      "message": "CANCELLED / CANCELLED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    },
+    {
+      "seq": 20,
+      "at": "2026-10-13T20:28:52.633+00:00",
+      "kind": "RESULT",
+      "message": "cancelled after stop confirmation (completed 0)",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "delayed_cancel",
+      "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+    }
+  ],
+  "recordings": []
+}

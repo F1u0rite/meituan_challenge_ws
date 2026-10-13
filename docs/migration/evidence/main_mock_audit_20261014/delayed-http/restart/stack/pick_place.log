@@ -1,0 +1,3 @@
+[INFO] [1791923347.800548060] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=682a927735d7f161f660322f46169ea6 request="after_restart#0/attempt-1"
+[INFO] [1791923354.423968502] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=682a927735d7f161f660322f46169ea6 state=SUCCESS error=0 executions=7 stops=0
+[INFO] [1791923355.003002449] [rclcpp]: signal_handler(SIGINT/SIGTERM)

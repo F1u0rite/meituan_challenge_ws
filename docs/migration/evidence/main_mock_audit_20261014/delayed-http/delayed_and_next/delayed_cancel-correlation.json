@@ -1,0 +1,250 @@
+{
+  "task_id": "delayed_cancel",
+  "parent_uuid": "3135e3b430544d0d8a645fa952c763eb",
+  "sent": {
+    "kind": "http_goal_request",
+    "at": "2026-10-13T20:28:52.122294+00:00",
+    "monotonic_ns": 1096477140615138,
+    "goal": {
+      "task_id": "delayed_cancel",
+      "mode": 1,
+      "ordered_colors": [
+        1
+      ],
+      "timeout_ms": 30000,
+      "placement_stability_sec": 3
+    }
+  },
+  "cancel_delay_ms": 401.94789599627256,
+  "child_uuid": "17e684e21eab71dab4193d881907a726",
+  "child_result": {
+    "status": 5,
+    "result": {
+      "success": false,
+      "placement_verified": false,
+      "error_code": 0,
+      "message": ""
+    }
+  },
+  "http_result": {
+    "task_id": "delayed_cancel",
+    "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb",
+    "mode": "cpp_mock",
+    "owned": true,
+    "goal": {
+      "task_id": "delayed_cancel",
+      "mode": 1,
+      "ordered_colors": [
+        1
+      ],
+      "timeout_ms": 30000,
+      "placement_stability_sec": 3
+    },
+    "status": "CANCELED",
+    "state": "CANCELLED",
+    "substate": "CANCELLED",
+    "detail": "cancelled after stop confirmation (completed 0)",
+    "completed_count": 0,
+    "total_count": 1,
+    "completed_slots": [],
+    "current_index": 0,
+    "current_slot": "T0",
+    "current_object_id": "mock_battery_color_1",
+    "last_error_code": 0,
+    "created_at": "2026-10-13T20:28:52.123+00:00",
+    "finished_at": "2026-10-13T20:28:52.633+00:00",
+    "elapsed_ms": 510,
+    "result": {
+      "success": false,
+      "completed_count": 0,
+      "completed_slots": [],
+      "error_code": 0,
+      "message": "cancelled after stop confirmation (completed 0)"
+    },
+    "cancel_ack": {
+      "request_delivered": true,
+      "message": "ROS 已确认接受取消"
+    },
+    "events": [
+      {
+        "seq": 3,
+        "at": "2026-10-13T20:28:52.123+00:00",
+        "kind": "GOAL_REQUESTED",
+        "message": "等待 ROS Goal 受理回执",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 4,
+        "at": "2026-10-13T20:28:52.144+00:00",
+        "kind": "GOAL_ACCEPTED",
+        "message": "ROS Action 服务端已受理",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 7,
+        "at": "2026-10-13T20:28:52.153+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 10,
+        "at": "2026-10-13T20:28:52.161+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 11,
+        "at": "2026-10-13T20:28:52.172+00:00",
+        "kind": "FEEDBACK",
+        "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 12,
+        "at": "2026-10-13T20:28:52.594+00:00",
+        "kind": "CANCEL_REQUESTED",
+        "message": "取消已排队，等待 ROS Cancel 回执",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 13,
+        "at": "2026-10-13T20:28:52.603+00:00",
+        "kind": "CANCEL_REPLY",
+        "message": "ROS 已确认接受取消；完成以 C++ Action 最终结果为准",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 15,
+        "at": "2026-10-13T20:28:52.612+00:00",
+        "kind": "FEEDBACK",
+        "message": "CANCEL_PENDING / MOVE_PRE_ALIGN",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 18,
+        "at": "2026-10-13T20:28:52.632+00:00",
+        "kind": "FEEDBACK",
+        "message": "CANCELLED / CANCELLED",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      },
+      {
+        "seq": 20,
+        "at": "2026-10-13T20:28:52.633+00:00",
+        "kind": "RESULT",
+        "message": "cancelled after stop confirmation (completed 0)",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": "delayed_cancel",
+        "goal_id": "3135e3b4-3054-4d0d-8a64-5fa952c763eb"
+      }
+    ],
+    "recordings": []
+  },
+  "parent_status_changes": [
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.144612+00:00",
+      "monotonic_ns": 1096477162932896,
+      "endpoint": "/monitor_main_mock/task/execute",
+      "goal_id": "3135e3b430544d0d8a645fa952c763eb",
+      "status": 2,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 144087306
+      }
+    },
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.602577+00:00",
+      "monotonic_ns": 1096477620891711,
+      "endpoint": "/monitor_main_mock/task/execute",
+      "goal_id": "3135e3b430544d0d8a645fa952c763eb",
+      "status": 3,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 144087306
+      }
+    },
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.632208+00:00",
+      "monotonic_ns": 1096477650524026,
+      "endpoint": "/monitor_main_mock/task/execute",
+      "goal_id": "3135e3b430544d0d8a645fa952c763eb",
+      "status": 5,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 144087306
+      }
+    }
+  ],
+  "parent_feedback_count": 49,
+  "child_status_changes": [
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.154724+00:00",
+      "monotonic_ns": 1096477173042038,
+      "endpoint": "/monitor_main_mock/manipulation/pick_place",
+      "goal_id": "17e684e21eab71dab4193d881907a726",
+      "status": 2,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 154068221
+      }
+    },
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.612822+00:00",
+      "monotonic_ns": 1096477631139950,
+      "endpoint": "/monitor_main_mock/manipulation/pick_place",
+      "goal_id": "17e684e21eab71dab4193d881907a726",
+      "status": 3,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 154068221
+      }
+    },
+    {
+      "kind": "status",
+      "at": "2026-10-13T20:28:52.631331+00:00",
+      "monotonic_ns": 1096477649646675,
+      "endpoint": "/monitor_main_mock/manipulation/pick_place",
+      "goal_id": "17e684e21eab71dab4193d881907a726",
+      "status": 5,
+      "goal_stamp": {
+        "sec": 1791923332,
+        "nanosec": 154068221
+      }
+    }
+  ],
+  "child_feedback_count": 47
+}

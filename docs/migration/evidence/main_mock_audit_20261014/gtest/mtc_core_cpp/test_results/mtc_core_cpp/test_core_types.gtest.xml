@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="22" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111" name="AllTests">
+  <testsuite name="CoreErrorCodes" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="ValuesMatchFrozenInterfaceNumbers" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="60" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreErrorCodes" />
+    <testcase name="NameOfKnownAndUnknown" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="83" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreErrorCodes" />
+  </testsuite>
+  <testsuite name="CoreToolState" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="EvidenceLevelIsOrdered" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="99" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreToolState" />
+    <testcase name="NamesAreStable" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="115" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreToolState" />
+  </testsuite>
+  <testsuite name="CorePose" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="FullSixDofIsPreserved" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="126" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CorePose" />
+    <testcase name="MissingFrameIdIsNotUsable" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="143" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CorePose" />
+    <testcase name="UnnormalizedQuaternionIsNotUsable" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="150" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CorePose" />
+    <testcase name="InvalidFlagBlocksUsability" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="158" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CorePose" />
+    <testcase name="PoseEstimateRequiresBothFlagAndUsablePose" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="165" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CorePose" />
+  </testsuite>
+  <testsuite name="CoreResults" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="DetectionOkRequiresAllConditions" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="189" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreResults" />
+    <testcase name="MotionResultRequiresBothSuccessAndArrived" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="212" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreResults" />
+    <testcase name="StopResultSeparatesDeliveryFromConfirmation" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="223" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreResults" />
+  </testsuite>
+  <testsuite name="CoreMotionCommand" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="ShapeValidation" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="237" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreMotionCommand" />
+  </testsuite>
+  <testsuite name="CoreMotionPrimitive" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="EqualityIncludesContactFlag" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="261" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreMotionPrimitive" />
+  </testsuite>
+  <testsuite name="CoreTimedTrajectory" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="ShapeValidationAndDuration" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="276" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreTimedTrajectory" />
+    <testcase name="RejectsNonMonotonicTime" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="296" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreTimedTrajectory" />
+    <testcase name="RejectsDimensionMismatch" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="310" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreTimedTrajectory" />
+    <testcase name="RejectsEmptyOrDuplicateJointNames" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="321" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreTimedTrajectory" />
+  </testsuite>
+  <testsuite name="CoreClock" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="ManualClockIsDeterministic" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="342" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreClock" />
+  </testsuite>
+  <testsuite name="CoreExecState" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="StringMappingIsStable" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="353" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreExecState" />
+  </testsuite>
+  <testsuite name="CoreAudit" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:31.111">
+    <testcase name="PoseRejectsNonFinitePositionStampAndQuaternion" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="367" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreAudit" />
+    <testcase name="TrajectoryRejectsNonFiniteFieldsAndNegativeTimes" file="/candidate/src/mtc_core_cpp/test/test_core_types.cpp" line="391" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:31.111" classname="mtc_core_cpp.CoreAudit" />
+  </testsuite>
+</testsuites>

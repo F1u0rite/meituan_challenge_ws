@@ -12,6 +12,26 @@ import subprocess
 import xml.etree.ElementTree as ET
 
 
+
+def declared_cases(source):
+    """Expand the existing trajectory validation macro into registered identities."""
+    pattern = re.compile(r"\bTEST(?:_F)?\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)")
+    cases = {f"{suite}.{case}" for suite, case in pattern.findall(source)
+             if (suite, case) != ("TrajectoryValidator", "Name")}
+    cases.update("TrajectoryValidator." + case for case in
+                 re.findall(r"^INVALID_TEST\((\w+),", source, re.M))
+    return cases
+
+
+def expected_results(root):
+    """Use the package's registered GTests, retaining the mtc_*_cpp audit scope."""
+    return {
+        f"{cmake.parent.name}/test_results/{cmake.parent.name}/{name}.gtest.xml"
+        for cmake in (root / "src").glob("mtc_*_cpp/CMakeLists.txt")
+        for name in re.findall(r"ament_add_gtest\(\s*(test_\w+)", cmake.read_text())
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-base", type=Path, default=Path("build"))
@@ -22,13 +42,12 @@ def main() -> None:
     files = subprocess.check_output(
         ["git", "ls-tree", "-r", "--name-only", args.baseline, "src"], text=True
     ).splitlines()
-    pattern = re.compile(r"\bTEST(?:_F)?\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)")
     baseline = set()
     for filename in files:
         if not re.fullmatch(r"src/mtc_\w+_cpp/test/test_\w+\.cpp", filename):
             continue
         source = subprocess.check_output(["git", "show", f"{args.baseline}:{filename}"], text=True)
-        baseline.update(f"{suite}.{case}" for suite, case in pattern.findall(source))
+        baseline.update(declared_cases(source))
     if len(baseline) != args.baseline_count:
         raise SystemExit(f"FAIL: unexpected baseline inventory: {len(baseline)}")
     actual = Counter()
@@ -49,13 +68,17 @@ def main() -> None:
                 bad.append(identity)
     current = set()
     for filename in Path("src").glob("mtc_*_cpp/test/test_*.cpp"):
-        current.update(f"{suite}.{case}" for suite, case in pattern.findall(filename.read_text()))
+        current.update(declared_cases(filename.read_text()))
     missing = sorted((baseline | current) - actual.keys())
     unexpected = sorted(actual.keys() - current)
     duplicate = sorted(k for k, count in actual.items() if count != 1)
-    if missing or unexpected or duplicate or bad or len(xmls) != 16:
+    expected_xml = expected_results(Path.cwd())
+    actual_xml = {str(path.relative_to(args.build_base)) for path in xmls}
+    missing_xml = sorted(expected_xml - actual_xml)
+    unexpected_xml = sorted(actual_xml - expected_xml)
+    if missing or unexpected or duplicate or bad or missing_xml or unexpected_xml or not expected_xml:
         raise SystemExit(f"FAIL: missing={missing}; unexpected={unexpected}; duplicates={duplicate}; "
-                         f"bad={bad}; executables={len(xmls)}")
+                         f"bad={bad}; executables={len(xmls)}; missing_xml={missing_xml}; unexpected_xml={unexpected_xml}")
     print(f"PASS: original {len(baseline)}/{args.baseline_count} executed; "
           f"{len(actual) - len(baseline)} new cases executed")
     print(f"PASS: {len(actual)} distinct cases in {len(xmls)} GTest executables; no failure/error/skip")

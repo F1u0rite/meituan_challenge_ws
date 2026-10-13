@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/candidate/src/mtc_ros2_action_cpp/test/verify_results.py", line 50, in <module>
+    main()
+  File "/candidate/src/mtc_ros2_action_cpp/test/verify_results.py", line 40, in main
+    assert current == actual.keys(), (sorted(current - actual.keys()), sorted(actual.keys() - current))
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (['TrajectoryValidator.Name'], ['TrajectoryValidator.AccelerationLimitRejected', 'TrajectoryValidator.ContactRequestRejected', 'TrajectoryValidator.DimensionMismatchRejected', 'TrajectoryValidator.DuplicateJointRejected', 'TrajectoryValidator.EmptyTrajectoryRejected', 'TrajectoryValidator.FirstPointNotZeroRejected', 'TrajectoryValidator.InfAccelerationRejected', 'TrajectoryValidator.InfVelocityRejected', 'TrajectoryValidator.InsufficientTimeoutRejected', 'TrajectoryValidator.MissingJointRejected', 'TrajectoryValidator.MixedRepresentationsRejected', 'TrajectoryValidator.NanPositionRejected', 'TrajectoryValidator.NanStampRejected', 'TrajectoryValidator.NanTimeRejected', 'TrajectoryValidator.NanosecondTimeCollisionRejected', 'TrajectoryValidator.NegativeStampRejected', 'TrajectoryValidator.NonIncreasingTimeRejected', 'TrajectoryValidator.PositionLimitRejected', 'TrajectoryValidator.RealCommandRejected', 'TrajectoryValidator.SinglePointRejected', 'TrajectoryValidator.TimeoutZeroRejected', 'TrajectoryValidator.VelocityLimitRejected'])

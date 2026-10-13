@@ -1,0 +1,9 @@
+[INFO] [1791923118.972173567] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=task_start parent=d786c539436c4a188919f8e854a8861e task="http_planning_failure_190c5334"
+[INFO] [1791923118.973407008] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_send parent=d786c539436c4a188919f8e854a8861e request="http_planning_failure_190c5334#0/attempt-1"
+[INFO] [1791923118.974762448] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_response parent=d786c539436c4a188919f8e854a8861e child=30de6c8a51b0069728d40ba6e0997f10 accepted=1 request="http_planning_failure_190c5334#0/attempt-1"
+[INFO] [1791923119.030741907] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_result parent=d786c539436c4a188919f8e854a8861e child=30de6c8a51b0069728d40ba6e0997f10 status=6 error=200
+[INFO] [1791923119.042335252] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_send parent=d786c539436c4a188919f8e854a8861e request="http_planning_failure_190c5334#0/attempt-2"
+[INFO] [1791923119.043158296] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_response parent=d786c539436c4a188919f8e854a8861e child=2818e8ca1a5dc8220b3ca081ff92e21b accepted=1 request="http_planning_failure_190c5334#0/attempt-2"
+[INFO] [1791923119.100897690] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=child_result parent=d786c539436c4a188919f8e854a8861e child=2818e8ca1a5dc8220b3ca081ff92e21b status=6 error=200
+[INFO] [1791923119.102540993] [cpp_accept_planning_failure.mtc_mock_task]: MTC_TRACE event=task_result parent=d786c539436c4a188919f8e854a8861e state=TASK_FAILED error=200 completed=0
+[INFO] [1791923119.532077105] [rclcpp]: signal_handler(SIGINT/SIGTERM)

@@ -1,0 +1,110 @@
+{
+  "task_id": "http_status_unknown_aa781beb",
+  "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c",
+  "mode": "cpp_mock",
+  "owned": true,
+  "goal": {
+    "task_id": "http_status_unknown_aa781beb",
+    "mode": 1,
+    "ordered_colors": [
+      1
+    ],
+    "timeout_ms": 30000,
+    "placement_stability_sec": 3
+  },
+  "status": "ABORTED",
+  "state": "FAULT",
+  "substate": "FAULT",
+  "detail": "反馈断流，运动状态不确定；已锁定新的运动请求，禁止自动重发",
+  "completed_count": 0,
+  "total_count": 1,
+  "completed_slots": [],
+  "current_index": 0,
+  "current_slot": "T0",
+  "current_object_id": "mock_battery_color_1",
+  "last_error_code": 230,
+  "created_at": "2026-10-13T20:25:37.147+00:00",
+  "finished_at": "2026-10-13T20:25:37.542+00:00",
+  "elapsed_ms": 396,
+  "result": {
+    "success": false,
+    "completed_count": 0,
+    "completed_slots": [],
+    "error_code": 230,
+    "message": "反馈断流，运动状态不确定；已锁定新的运动请求，禁止自动重发"
+  },
+  "cancel_ack": null,
+  "events": [
+    {
+      "seq": 3,
+      "at": "2026-10-13T20:25:37.147+00:00",
+      "kind": "GOAL_REQUESTED",
+      "message": "等待 ROS Goal 受理回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-13T20:25:37.151+00:00",
+      "kind": "GOAL_ACCEPTED",
+      "message": "ROS Action 服务端已受理",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 6,
+      "at": "2026-10-13T20:25:37.153+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 10,
+      "at": "2026-10-13T20:25:37.161+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 11,
+      "at": "2026-10-13T20:25:37.171+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 14,
+      "at": "2026-10-13T20:25:37.541+00:00",
+      "kind": "FEEDBACK",
+      "message": "FAULT / FAULT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    },
+    {
+      "seq": 16,
+      "at": "2026-10-13T20:25:37.542+00:00",
+      "kind": "RESULT",
+      "message": "反馈断流，运动状态不确定；已锁定新的运动请求，禁止自动重发",
+      "level": "error",
+      "mode": "cpp_mock",
+      "task_id": "http_status_unknown_aa781beb",
+      "goal_id": "eaa62999-da45-4aaa-8b8b-4e6004430b2c"
+    }
+  ],
+  "recordings": []
+}

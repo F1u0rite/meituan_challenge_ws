@@ -1,0 +1,244 @@
+{
+  "task_id": "http_basic_d8d8418d",
+  "goal_id": "4aafaa44-271d-49ff-b956-3db130209024",
+  "mode": "cpp_mock",
+  "owned": true,
+  "goal": {
+    "task_id": "http_basic_d8d8418d",
+    "mode": 1,
+    "ordered_colors": [
+      1
+    ],
+    "timeout_ms": 30000,
+    "placement_stability_sec": 3
+  },
+  "status": "SUCCEEDED",
+  "state": "FINISHED",
+  "substate": "FINISHED",
+  "detail": "task finished: T0",
+  "completed_count": 1,
+  "total_count": 1,
+  "completed_slots": [
+    "T0"
+  ],
+  "current_index": 1,
+  "current_slot": "",
+  "current_object_id": "",
+  "last_error_code": 0,
+  "created_at": "2026-10-13T20:24:38.063+00:00",
+  "finished_at": "2026-10-13T20:24:42.265+00:00",
+  "elapsed_ms": 4203,
+  "result": {
+    "success": true,
+    "completed_count": 1,
+    "completed_slots": [
+      "T0"
+    ],
+    "error_code": 0,
+    "message": "task finished: T0"
+  },
+  "cancel_ack": null,
+  "events": [
+    {
+      "seq": 3,
+      "at": "2026-10-13T20:24:38.063+00:00",
+      "kind": "GOAL_REQUESTED",
+      "message": "等待 ROS Goal 受理回执",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 4,
+      "at": "2026-10-13T20:24:38.077+00:00",
+      "kind": "GOAL_ACCEPTED",
+      "message": "ROS Action 服务端已受理",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 7,
+      "at": "2026-10-13T20:24:38.087+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / EXECUTE_ITEM",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 10,
+      "at": "2026-10-13T20:24:38.095+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / PLAN_ACQUIRE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 11,
+      "at": "2026-10-13T20:24:38.105+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_ALIGN",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 12,
+      "at": "2026-10-13T20:24:38.474+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / ENGAGE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 13,
+      "at": "2026-10-13T20:24:38.484+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_ENGAGEMENT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 14,
+      "at": "2026-10-13T20:24:38.494+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / TEST_LIFT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 15,
+      "at": "2026-10-13T20:24:38.864+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_ATTACHED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 16,
+      "at": "2026-10-13T20:24:38.874+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / LIFT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 17,
+      "at": "2026-10-13T20:24:39.244+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / TRANSPORT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 18,
+      "at": "2026-10-13T20:24:39.614+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / MOVE_PRE_SEAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 19,
+      "at": "2026-10-13T20:24:39.985+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / SEAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 20,
+      "at": "2026-10-13T20:24:40.354+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_SEATED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 21,
+      "at": "2026-10-13T20:24:40.364+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / UNLOAD",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 22,
+      "at": "2026-10-13T20:24:40.374+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / DISENGAGE",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 23,
+      "at": "2026-10-13T20:24:40.384+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / RETREAT",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 24,
+      "at": "2026-10-13T20:24:40.754+00:00",
+      "kind": "FEEDBACK",
+      "message": "EXECUTE_ITEM / VERIFY_PLACED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 27,
+      "at": "2026-10-13T20:24:42.264+00:00",
+      "kind": "FEEDBACK",
+      "message": "FINISHED / FINISHED",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    },
+    {
+      "seq": 29,
+      "at": "2026-10-13T20:24:42.265+00:00",
+      "kind": "RESULT",
+      "message": "task finished: T0",
+      "level": "info",
+      "mode": "cpp_mock",
+      "task_id": "http_basic_d8d8418d",
+      "goal_id": "4aafaa44-271d-49ff-b956-3db130209024"
+    }
+  ],
+  "recordings": []
+}

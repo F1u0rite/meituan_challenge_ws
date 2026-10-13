@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/home/afonso/meituan-robotics-challenge-2026/outputs/vision-adapter-acceptance-20261012-0e329f1/wheels/pip-25.0.1-py3-none-any.whl",
+    "sha256": "c46efd13b6aa8279f33f2864459c8ce587ea6a1a59ee20de055868d8f7688f7f",
+    "size": 1841526
+  },
+  {
+    "path": "/home/afonso/meituan-robotics-challenge-2026/outputs/vision-adapter-acceptance-20261012-0e329f1/wheels/numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "675d61ffbfa78604709862923189bad94014bef562cc35cf61d3a07bba02a7ed",
+    "size": 17950613
+  },
+  {
+    "path": "/home/afonso/meituan-robotics-challenge-2026/outputs/vision-adapter-acceptance-20261012-0e329f1/wheels/opencv_python-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "c4c406bdb41eb21ea51b4e90dfbc989c002786c3f601c236a99c59a54670a394",
+    "size": 61712178
+  },
+  {
+    "path": "/home/afonso/meituan-robotics-challenge-2026/outputs/webui-observability-monitor-20261013-89bb7f7/container/node",
+    "sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+    "size": 124836408
+  }
+]

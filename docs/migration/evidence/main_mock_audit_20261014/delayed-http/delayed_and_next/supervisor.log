@@ -1,0 +1,1 @@
+READY {"namespace": "/monitor_main_mock", "domain": 219, "logs": "/review-evidence/delayed-http/delayed_and_next/stack", "url": "http://127.0.0.1:8768/"}

@@ -1,0 +1,7 @@
+[INFO] [1791923091.543367416] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=0b5ed87196b3d6b3367d284b94952ea1 request="http_sequence_4410a1d0#0/attempt-1"
+[INFO] [1791923095.704112297] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=0b5ed87196b3d6b3367d284b94952ea1 state=SUCCESS error=0 executions=7 stops=0
+[INFO] [1791923095.723296486] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=d01d1af0d0fe17a3bf4fb68561be11d3 request="http_sequence_4410a1d0#1/attempt-2"
+[INFO] [1791923099.893754933] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=d01d1af0d0fe17a3bf4fb68561be11d3 state=SUCCESS error=0 executions=14 stops=0
+[INFO] [1791923099.913369233] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=eb6ec38c8938880b690d479367213042 request="http_sequence_4410a1d0#2/attempt-3"
+[INFO] [1791923104.043927334] [cpp_accept_sequence.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=eb6ec38c8938880b690d479367213042 state=SUCCESS error=0 executions=21 stops=0
+[INFO] [1791923104.422707827] [rclcpp]: signal_handler(SIGINT/SIGTERM)

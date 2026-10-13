@@ -1,0 +1,76 @@
+{
+  "supervisor_pid": 1739,
+  "started_at": "2026-10-13T20:25:30.835201+00:00",
+  "namespace": "/cpp_accept_status_unknown",
+  "domain_id": 219,
+  "profile": "status_unknown",
+  "result_delay_ms": 350,
+  "scope": "cpp_mock; real ROS Actions, software-only ports; no hardware/MoveIt",
+  "processes": [
+    {
+      "label": "pick_place",
+      "pid": 1763,
+      "argv": [
+        "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_pick_place_server",
+        "--ros-args",
+        "-r",
+        "__ns:=/cpp_accept_status_unknown",
+        "-r",
+        "/mtc/task/execute:=/cpp_accept_status_unknown/task/execute",
+        "-r",
+        "/mtc/manipulation/pick_place:=/cpp_accept_status_unknown/manipulation/pick_place",
+        "-p",
+        "mock.result_delay_ms:=350",
+        "-p",
+        "mock.plan_available:=true",
+        "-p",
+        "mock.stop_evidence_available:=true",
+        "-p",
+        "mock.status_unknown:=true"
+      ],
+      "executable": "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_pick_place_server"
+    },
+    {
+      "label": "task",
+      "pid": 1764,
+      "argv": [
+        "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_task_server",
+        "--ros-args",
+        "-r",
+        "__ns:=/cpp_accept_status_unknown",
+        "-r",
+        "/mtc/task/execute:=/cpp_accept_status_unknown/task/execute",
+        "-r",
+        "/mtc/manipulation/pick_place:=/cpp_accept_status_unknown/manipulation/pick_place"
+      ],
+      "executable": "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_task_server"
+    },
+    {
+      "label": "web",
+      "pid": 1801,
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "mtc_webui.server",
+        "--cpp-mock",
+        "--cpp-namespace",
+        "/cpp_accept_status_unknown",
+        "--ros-domain-id",
+        "219",
+        "--port",
+        "8767",
+        "--output-dir",
+        "/review-evidence/native-http/status_unknown/stack/web-session"
+      ],
+      "executable": "/usr/bin/python3.12"
+    }
+  ],
+  "returncodes": {
+    "pick_place": 0,
+    "task": 0,
+    "web": 0
+  },
+  "ended_at": "2026-10-13T20:25:40.195959+00:00",
+  "cleanup_ok": true,
+  "exit_code": 0
+}
