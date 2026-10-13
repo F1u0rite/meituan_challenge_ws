@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="4" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T21:16:56.897" name="AllTests">
+  <testsuite name="EeLimitedRetiming" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T21:16:56.897">
+    <testcase name="JointLimitedTrapezoidMatchesClosedForm" file="/repair-source/src/mtc_moveit_planner/test/test_ee_limited_retiming.cpp" line="32" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.897" classname="mtc_moveit_planner.EeLimitedRetiming" />
+    <testcase name="AngularCapHoldsPerSegmentAndBeatsUniformStretch" file="/repair-source/src/mtc_moveit_planner/test/test_ee_limited_retiming.cpp" line="48" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.897" classname="mtc_moveit_planner.EeLimitedRetiming" />
+    <testcase name="ShortPathIsTriangularAndLinearCapApplies" file="/repair-source/src/mtc_moveit_planner/test/test_ee_limited_retiming.cpp" line="75" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.897" classname="mtc_moveit_planner.EeLimitedRetiming" />
+    <testcase name="InvalidInputsAreRejected" file="/repair-source/src/mtc_moveit_planner/test/test_ee_limited_retiming.cpp" line="97" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.897" classname="mtc_moveit_planner.EeLimitedRetiming" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,35 @@
+== mtc_moveit_planner evidence 2026-10-13 21:17:17 UTC ==
+ROS_DISTRO=jazzy ROS_DOMAIN_ID=221 RMW=rmw_fastrtps_cpp
+aubo_ros2_driver prefix: /driver_ws/install_no_symlink/aubo_ros2_driver
+mtc_moveit_planner prefix: /repair-install/mtc_moveit_planner
+driver commit: 53aab83735236f0c262ecb11e04ef2600241d9d9
+aubo_description commit: 47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1
+fake patch sha256: c0f6311bdb2bd347241266169970888c0e73d11b4c8052ac15ca57e22e9d52f6
+team repo: HEAD @ b07ccc701eb451d3851c282096ce49ef8bd1eca0
+PASS static xacro: plugin=mock_components/GenericSystem
+links: ['base_link', 'shoulder_Link', 'upperArm_Link', 'foreArm_Link', 'wrist1_Link', 'wrist2_Link', 'wrist3_Link', 'world', 'ee_link']
+joint: shoulder_joint (revolute) base_link -> shoulder_Link
+joint: upperArm_joint (revolute) shoulder_Link -> upperArm_Link
+joint: foreArm_joint (revolute) upperArm_Link -> foreArm_Link
+joint: wrist1_joint (revolute) foreArm_Link -> wrist1_Link
+joint: wrist2_joint (revolute) wrist1_Link -> wrist2_Link
+joint: wrist3_joint (revolute) wrist2_Link -> wrist3_Link
+joint: world_joint (fixed) world -> base_link
+joint: ee_fixed_joint (fixed) wrist3_Link -> ee_link
+srdf sha256: 926b1306a6817aa4f13aff016ebb1a4247fe689e2f68794bde0a6b69fd8b9471
+PASS controllers active
+WARN: diagnostic plugin-retention workaround enabled for move_group launch only; upstream shutdown defect remains
+PASS move_group ready
+PASS runtime hardware component: mock_components/GenericSystem (active)
+PASS joint_trajectory_controller active
+PASS TF graph exported: frames_2026-10-13_21.17.57.pdf
+FAIL plan_fixed_pose: NO_PLANNING_RESULT: planning scene initialization failed (see plan_fixed_pose.log)
+FAIL scene_isolation (see scene_isolation.log)
+FAIL collision_probe: NO_PLANNING_RESULT: planning scene initialization failed (see collision_probe.log)
+FAIL tool_collision_probe: planning rejection observed [NO_PLAN]; collision cause UNVERIFIED (requires independent collision evidence) (see tool_collision_probe.log)
+FAIL plan_battery_sequence_v1: NO_PLANNING_RESULT: planning scene initialization failed (see plan_battery_sequence_v1.log)
+FAIL plan_battery_sequence_v2: NO_PLANNING_RESULT: planning scene initialization failed (see plan_battery_sequence_v2.log)
+PASS move_group_launch clean shutdown
+PASS control_launch clean shutdown
+PASS ROS domain empty after cleanup
+evidence directory: /review-evidence/planning-repaired

@@ -1,0 +1,152 @@
+{
+  "source_sha": "b07ccc701eb451d3851c282096ce49ef8bd1eca0",
+  "base_branch": "feature/planning-scene-start-v1",
+  "tested_repair_sha256": {
+    "src/mtc_moveit_planner/CMakeLists.txt": "6a6ecae08753a7f55d598c7b58f5107794afbaa2c3b2a8f7645956ead9ff084f",
+    "src/mtc_moveit_planner/README.md": "6702fe19779070ea99732d4ebd193aa947be7d3b833d44eea09a95269f363757",
+    "src/mtc_moveit_planner/scripts/run_planning_evidence.sh": "f248ddf5ffd1bb33e9fd84fa9e8217004ad09697be2107f0e4b1bb5e4d8dd668",
+    "src/mtc_moveit_planner/scripts/check_planning_evidence.py": "54e17c8d6f378b985b0d60824344b25c195b6ee8055136f28ae16962d4bf4796",
+    "src/mtc_moveit_planner/test/test_planning_evidence.py": "e737558e5802acf0f097f6a8c9a8da9f3d4f14b6f7c69828564b0e7659fcd350"
+  },
+  "code_built_and_tested": {
+    "src/mtc_moveit_planner/CMakeLists.txt": "6a6ecae08753a7f55d598c7b58f5107794afbaa2c3b2a8f7645956ead9ff084f",
+    "src/mtc_moveit_planner/scripts/run_planning_evidence.sh": "f248ddf5ffd1bb33e9fd84fa9e8217004ad09697be2107f0e4b1bb5e4d8dd668",
+    "src/mtc_moveit_planner/scripts/check_planning_evidence.py": "54e17c8d6f378b985b0d60824344b25c195b6ee8055136f28ae16962d4bf4796",
+    "src/mtc_moveit_planner/test/test_planning_evidence.py": "e737558e5802acf0f097f6a8c9a8da9f3d4f14b6f7c69828564b0e7659fcd350"
+  },
+  "environment": {
+    "ubuntu": "24.04",
+    "ros": "Jazzy",
+    "moveit": "2.12.4",
+    "rclcpp": "28.1.22",
+    "rmw": "rmw_fastrtps_cpp 8.4.4",
+    "driver": "53aab83735236f0c262ecb11e04ef2600241d9d9",
+    "model": "47fa5e02fa873f27f7e812d31f31e3f4cf5e56b1",
+    "image": "sha256:adc29a31c2d739b332a1e675121e1f07afd53abbbf01a5152457773071be0a91",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 4294967296,
+    "devices": [],
+    "mounts": [],
+    "ports": [],
+    "domains": [
+      221,
+      222
+    ]
+  },
+  "results": {
+    "cpp": 53,
+    "existing_python": 5,
+    "new_python": 12,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "actual_log_regressions": 10,
+    "overwrite_before": "old summary overwritten (disposable fixture)",
+    "overwrite_after": "exit 2, bytes preserved",
+    "repaired_sop": "exit 1, accurately reports unresolved planning failures"
+  },
+  "cleanup": {
+    "checked_at": "2026-10-13T21:20:23.108919+00:00",
+    "container_names": [
+      "mtc-repro-5c8f61d8af9f-b07ccc701eb4",
+      "mtc-planner-shutdown-review-b07ccc7",
+      "mtc-repro-5c8f61d8af9f-0825d1b08842"
+    ],
+    "containers": [
+      {
+        "name": "mtc-repro-5c8f61d8af9f-b07ccc701eb4",
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 137,
+          "Error": "",
+          "StartedAt": "2026-10-13T21:01:19.1599599Z",
+          "FinishedAt": "2026-10-13T21:06:53.793270775Z"
+        },
+        "ExecIDs": null
+      },
+      {
+        "name": "mtc-planner-shutdown-review-b07ccc7",
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 137,
+          "Error": "",
+          "StartedAt": "2026-10-13T21:10:01.819730826Z",
+          "FinishedAt": "2026-10-13T21:20:22.431351987Z"
+        },
+        "ExecIDs": null
+      },
+      {
+        "name": "mtc-repro-5c8f61d8af9f-0825d1b08842",
+        "state": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 137,
+          "Error": "",
+          "StartedAt": "2026-10-13T20:40:54.852844779Z",
+          "FinishedAt": "2026-10-13T20:44:58.122623798Z"
+        },
+        "ExecIDs": null
+      }
+    ],
+    "absent_runner_pids": [
+      76401,
+      78945,
+      79450,
+      79354,
+      80142,
+      79691,
+      80166,
+      79990,
+      79565,
+      79147,
+      79738,
+      80073,
+      79762
+    ],
+    "domains_empty": [
+      221,
+      222
+    ],
+    "running_unrelated": [
+      "docker-nginx-1",
+      "docker-plugin_daemon-1",
+      "docker-api_websocket-1",
+      "docker-worker_beat-1",
+      "docker-worker-1",
+      "docker-api-1",
+      "docker-web-1",
+      "docker-sandbox-1",
+      "docker-redis-1",
+      "docker-db_postgres-1",
+      "docker-weaviate-1",
+      "docker-ssrf_proxy-1"
+    ],
+    "no_mtc_containers_running": true
+  },
+  "unresolved": [
+    "Planning scene initialization instability",
+    "Collision-specific causal evidence",
+    "Native MoveIt -11 shutdown",
+    "Full Task/Action/FSM/real hardware acceptance"
+  ],
+  "scope": "Evidence classification/output protection only; no planner, FSM, Action, Cancel, or Motion core changes",
+  "ai_assistance": "OpenAI Codex assisted the minimal integration repair and isolated regression; existing MIT license retained"
+}

@@ -1,0 +1,10 @@
+== mtc_moveit_planner evidence 2026-10-13 21:17:09 UTC ==
+ROS_DISTRO=jazzy ROS_DOMAIN_ID=221 RMW=fixture
+aubo_ros2_driver prefix: /unused
+mtc_moveit_planner prefix: /unused
+driver commit: 
+aubo_description commit: 
+fake patch sha256: 
+team repo:  @ 
+ABORT: ROS domain 221 is not empty:
+/fixture_occupied

@@ -1,0 +1,16 @@
+{
+  "name": "repair-build",
+  "started_at": "2026-10-13T21:15:54.167405+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-planner-shutdown-review-b07ccc7",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=221 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; export CMAKE_BUILD_PARALLEL_LEVEL=2 MAKEFLAGS=-j2\ncolcon --log-base /review-evidence/repair-build-log build --base-paths /repair-source/src/mtc_moveit_planner --packages-select mtc_moveit_planner --build-base /repair-build --install-base /repair-install --executor sequential --cmake-args -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=17\n"
+  ],
+  "timeout_seconds": 300,
+  "pid": 79565,
+  "exit_code": 0,
+  "ended_at": "2026-10-13T21:16:31.222472+00:00"
+}

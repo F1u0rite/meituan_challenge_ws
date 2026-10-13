@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "actual_logs": [
+    {
+      "run": "planning-default",
+      "label": "plan_fixed_pose",
+      "sha256": "4b2229357f74cf7bdd544124dde6712125c555bbceca8ec37033724093469273",
+      "passed": true,
+      "detail": "planning success and clean tool completion"
+    },
+    {
+      "run": "planning-default",
+      "label": "collision_probe",
+      "sha256": "4f9de83c8d8e7ae6317d80f9c84537c32e0098c6cd3bc39da750726fb25656f3",
+      "passed": false,
+      "detail": "planning rejection observed [NO_PLAN]; collision cause UNVERIFIED (requires independent collision evidence)"
+    },
+    {
+      "run": "planning-default",
+      "label": "tool_collision_probe",
+      "sha256": "fd3855f77a1c9ce856b879d234cfb084c02bf8a7461c570323622132072dd071",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-default",
+      "label": "plan_battery_sequence_v1",
+      "sha256": "c465a612610f59457a9272e4b0f5044140381ce94e634d2fa30e55803f6b3277",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-default",
+      "label": "plan_battery_sequence_v2",
+      "sha256": "1b4034b692c2ef3ac71f872a21252790b370d39c45a797d954ef4af27da2a20d",
+      "passed": true,
+      "detail": "planning success and clean tool completion"
+    },
+    {
+      "run": "planning-retained",
+      "label": "plan_fixed_pose",
+      "sha256": "bbf03ae83a987ab5030759f883e91314229af4c0e35a9ade61ee15c3d8790089",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-retained",
+      "label": "collision_probe",
+      "sha256": "2bb4201ba70e8477147370819dc07eb42561d44a7f8942955bad33fb360abcd8",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-retained",
+      "label": "tool_collision_probe",
+      "sha256": "6bca6aec15b47bc354321db49fb1ed2abbe3a225f54dd1a0740910c011d57d81",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-retained",
+      "label": "plan_battery_sequence_v1",
+      "sha256": "e510b96f1c6763474301f27a5817a2eb1f01f2872d00296ab595ec8649847e58",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    },
+    {
+      "run": "planning-retained",
+      "label": "plan_battery_sequence_v2",
+      "sha256": "f665a9c163faa44f1abdcbc40387eb5c96f41d064f5d9b3fe9bc9c02c0451612",
+      "passed": false,
+      "detail": "NO_PLANNING_RESULT: planning scene initialization failed"
+    }
+  ],
+  "overwrite": [
+    {
+      "case": "before",
+      "exit_code": 1,
+      "evidence_preserved": false,
+      "after_sha256": "745433fdd9fb9544956c73326fbd65700920de9a8f35b99b23e996ec0bd21936"
+    },
+    {
+      "case": "after",
+      "exit_code": 2,
+      "evidence_preserved": true,
+      "after_sha256": "15bca2464637b3b63bf80694fd66b00e9ed43d617a12b6d2611dfa7b88d490aa"
+    }
+  ]
+}

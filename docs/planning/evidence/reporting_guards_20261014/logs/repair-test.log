@@ -1,0 +1,17 @@
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [2.48s]
+
+Summary: 1 package finished [2.66s]
+/repair-build/mtc_moveit_planner/Testing/20261013-2116/Test.xml: 10 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_ee_limited_retiming.gtest.xml: 4 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_fsm_accepts_planner_output.gtest.xml: 4 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_moveit_planner_port.gtest.xml: 23 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_planning_evidence.xunit.xml: 12 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_pose_math.gtest.xml: 5 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_scene_ids.gtest.xml: 3 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_shutdown_evidence.xunit.xml: 5 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_start_consistency.gtest.xml: 5 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_tool_model.gtest.xml: 5 tests, 0 errors, 0 failures, 0 skipped
+/repair-build/mtc_moveit_planner/test_results/mtc_moveit_planner/test_trajectory_conversion.gtest.xml: 4 tests, 0 errors, 0 failures, 0 skipped
+
+Summary: 80 tests, 0 errors, 0 failures, 0 skipped
