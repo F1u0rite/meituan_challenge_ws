@@ -28,6 +28,10 @@ def launch_setup(context, *args, **kwargs):
     extra_params_file = LaunchConfiguration("extra_params_file").perform(context)
     if program not in ("plan_fixed_pose", "plan_battery_sequence"):
         raise RuntimeError(f"unknown program: {program}")
+    for path in [params_file] + ([extra_params_file] if extra_params_file else []):
+        if not os.path.isfile(path):
+            # launch_ros 对缺失的参数文件只告警并继续，会让证据静默失真，这里直接拒绝。
+            raise RuntimeError(f"parameter file not found: {path}")
 
     description_share = get_package_share_directory("aubo_description")
     moveit_share = get_package_share_directory("aubo_moveit_config")

@@ -127,6 +127,8 @@ std::string plan_to_yaml(
     os << indent << "    message: " << quoted(p.message) << '\n';
     os << indent << "    mode: " << quoted(p.mode) << '\n';
     os << indent << "    method: " << quoted(p.method) << '\n';
+    os << indent << "    backend_message: " << quoted(p.backend_message) << '\n';
+    os << indent << "    payload_attached: " << (p.payload_attached ? "true" : "false") << '\n';
     os << indent << "    goal_kind: " << quoted(p.goal_kind) << '\n';
     os << indent << "    start_assumption: " << quoted(p.start_assumption) << '\n';
     os << indent << "    contact_intent_only: " << (p.contact_intent_only ? "true" : "false") <<

@@ -201,11 +201,11 @@ TEST(MoveItPlannerPort, TransportPhaseUsesSlotAndChainsStates)
   EXPECT_NEAR(z_of(end(0)), 0.31, kTol);                       // lift +0.05
   EXPECT_NEAR(x_of(end(1)), 0.35, kTol);                       // transport -> T0 上方
   EXPECT_NEAR(y_of(end(1)), -0.20, kTol);
-  EXPECT_NEAR(z_of(end(1)), 0.20, kTol);                       // 0.10 + 0.10
-  EXPECT_NEAR(z_of(end(2)), 0.12, kTol);                       // pre_seat 余量 0.02
-  EXPECT_NEAR(z_of(end(3)), 0.10, kTol);                       // seat_contact 到工位面
-  EXPECT_NEAR(z_of(begin(4)), 0.07, kTol);                     // 假设退钩 0.03
-  EXPECT_NEAR(z_of(end(4)), 0.17, kTol);                       // retreat +0.10
+  EXPECT_NEAR(z_of(end(1)), 0.23, kTol);                       // 0.13 + 0.10
+  EXPECT_NEAR(z_of(end(2)), 0.15, kTol);                       // pre_seat 余量 0.02
+  EXPECT_NEAR(z_of(end(3)), 0.13, kTol);                       // seat_contact 到工位高度
+  EXPECT_NEAR(z_of(begin(4)), 0.10, kTol);                     // 假设退钩 0.03
+  EXPECT_NEAR(z_of(end(4)), 0.20, kTol);                       // retreat +0.10
   for (size_t i = 1; i < 4; ++i) {
     EXPECT_EQ(begin(i).positions_rad, end(i - 1).positions_rad) << "primitive " << i;
   }
@@ -215,6 +215,87 @@ TEST(MoveItPlannerPort, TransportPhaseUsesSlotAndChainsStates)
   EXPECT_NE(report.primitives[4].start_assumption.find("WITHDRAW"), std::string::npos);
   EXPECT_NE(std::find(report.uncalibrated_inputs.begin(), report.uncalibrated_inputs.end(),
     "slot T0=PLACEHOLDER"), report.uncalibrated_inputs.end());
+}
+
+TEST(MoveItPlannerPort, PayloadAttachedFromTestLiftUntilRelease)
+{
+  Fixture f;
+  auto acquire = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  ASSERT_TRUE(acquire.ok) << acquire.message;
+  // side_insert / 插入假设：无载荷；test_lift：挂上电池。
+  ASSERT_EQ(f.backend->requests.size(), 3u);
+  EXPECT_FALSE(f.backend->requests[0].payload.has_value());
+  EXPECT_FALSE(f.backend->requests[1].payload.has_value());
+  ASSERT_TRUE(f.backend->requests[2].payload.has_value());
+  // 载荷中心在 TCP（单位 TCP 时即 ee_link）正下方 hang_below_tcp_m。
+  const auto & payload = *f.backend->requests[2].payload;
+  EXPECT_NEAR(payload.ee_to_payload.translation.x, 0.0, kTol);
+  EXPECT_NEAR(payload.ee_to_payload.translation.y, 0.0, kTol);
+  EXPECT_NEAR(payload.ee_to_payload.translation.z, -f.config.payload.hang_below_tcp_m, kTol);
+
+  f.backend->requests.clear();
+  f.backend->start_xyz = mtc::core::Vector3{0.4, -0.1, 0.26};
+  auto transport = f.port()->plan_blocking(transport_target(TOOL_PASSIVE_HOOK_V1, "T0"));
+  ASSERT_TRUE(transport.ok) << transport.message;
+  // lift, transport, pre_seat, seat_contact 带载荷；退钩假设与 retreat 不带。
+  ASSERT_EQ(f.backend->requests.size(), 6u);
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_TRUE(f.backend->requests[i].payload.has_value()) << f.backend->requests[i].label;
+  }
+  EXPECT_EQ(f.backend->requests[4].label, "simulated_WITHDRAW");
+  EXPECT_FALSE(f.backend->requests[4].payload.has_value());
+  EXPECT_EQ(f.backend->requests[5].label, "retreat");
+  EXPECT_FALSE(f.backend->requests[5].payload.has_value());
+}
+
+TEST(MoveItPlannerPort, PayloadCanBeDisabledButUnknownGeometryIsRefused)
+{
+  Fixture off;
+  off.config.payload.enabled = false;
+  ASSERT_TRUE(off.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate())).ok);
+  for (const auto & r : off.backend->requests) {
+    EXPECT_FALSE(r.payload.has_value());
+  }
+  Fixture unknown;
+  unknown.config.payload.status = CalibrationStatus::UNKNOWN;
+  const auto result = unknown.port()->plan_blocking(
+    acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  EXPECT_EQ(result.message.rfind("[PAYLOAD_UNKNOWN] test_lift", 0), 0u) << result.message;
+}
+
+TEST(MoveItPlannerPort, ReplanPrimitiveStartsAtMeasuredStateWithoutToolGapAssumption)
+{
+  Fixture f;
+  const auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
+  // 实测：ToolPort 接合后末端停在 (0.4, -0.1, 0.247)，而非假设的 0.25。
+  const auto measured = f.backend->state_at(mtc::core::Vector3{0.4, -0.1, 0.247});
+  const auto result = f.port()->replan_primitive(target, "test_lift", measured);
+  ASSERT_TRUE(result.ok) << result.message;
+  ASSERT_EQ(result.commands.size(), 1u);
+  EXPECT_EQ(result.commands[0].primitive_name, "test_lift");
+  const auto & points = result.commands[0].trajectory->points;
+  EXPECT_NEAR(z_of(points.front()), 0.247, kTol);
+  EXPECT_NEAR(z_of(points.back()), 0.257, kTol);
+  ASSERT_EQ(f.backend->requests.size(), 1u);  // 没有再做插入假设
+  EXPECT_EQ(f.backend->requests[0].label, "test_lift");
+
+  const auto missing = f.port()->replan_primitive(target, "no_such_primitive", measured);
+  EXPECT_FALSE(missing.ok);
+  EXPECT_EQ(missing.message.rfind("[EMPTY_TARGET]", 0), 0u) << missing.message;
+}
+
+TEST(MoveItPlannerPort, ReplanFromStateWithDuplicateJointNamesIsRefused)
+{
+  Fixture f;
+  const auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
+  auto measured = f.backend->state_at(mtc::core::Vector3{0.4, -0.1, 0.247});
+  measured.names.push_back(measured.names.front());
+  measured.positions.push_back(measured.positions.front() + 0.5);
+  const auto result = f.port()->replan_primitive(target, "test_lift", measured);
+  EXPECT_FALSE(result.ok);
+  EXPECT_EQ(result.error_code, ErrorCodes::PLANNING_FAILED);
+  EXPECT_EQ(result.message.rfind("[INVALID_START_STATE]", 0), 0u) << result.message;
+  EXPECT_EQ(f.backend->plan_calls.load(), 0);
 }
 
 TEST(MoveItPlannerPort, AnyPrimitiveFailureFailsWholePlan)
@@ -331,12 +412,23 @@ TEST(MoveItPlannerPort, CalibrationGate)
 
   Fixture measured;
   measured.config.tcp_status = CalibrationStatus::MEASURED;
+  measured.config.payload.status = CalibrationStatus::MEASURED;
   measured.config.force_simulation_only = false;
   result = measured.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   ASSERT_TRUE(result.ok) << result.message;
   for (const auto & c : result.commands) {
     EXPECT_FALSE(c.simulation_only);
   }
+
+  // 只要载荷尺寸仍是占位值，输出就必须保持 simulation_only。
+  Fixture payload_placeholder;
+  payload_placeholder.config.tcp_status = CalibrationStatus::MEASURED;
+  payload_placeholder.config.force_simulation_only = false;
+  result = payload_placeholder.port()->plan_blocking(
+    acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  ASSERT_TRUE(result.ok) << result.message;
+  EXPECT_TRUE(result.commands.back().simulation_only);
+  EXPECT_NE(result.message.find("payload=PLACEHOLDER"), std::string::npos) << result.message;
 }
 
 TEST(MoveItPlannerPort, AsyncReturnsNulloptUntilDoneAndNeverDuplicatesWork)

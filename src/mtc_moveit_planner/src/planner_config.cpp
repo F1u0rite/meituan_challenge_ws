@@ -125,6 +125,10 @@ PlannerConfig default_planner_config()
       PickPlaceState::MOVE_PRE_SEAT);
   p["seat_contact"] = spec(MotionMode::CARTESIAN, GoalKind::SLOT_OFFSET, 0.0,
       PickPlaceState::SEAT, ToolGapBefore::NONE, 0.0, true);
+  // 试提之后、释放之前，末端挂着电池。
+  for (const char * name : {"test_lift", "lift", "transport", "pre_seat", "seat_contact"}) {
+    p[name].carries_payload = true;
+  }
   p["retreat"] = spec(MotionMode::CARTESIAN, GoalKind::RELATIVE_UP, kRetreat,
       PickPlaceState::RETREAT, ToolGapBefore::WITHDRAW, kWithdrawTravel);
 
@@ -143,10 +147,10 @@ PlannerConfig default_planner_config()
   };
 
   // 占位工位（base_link，单位 m）：只为 Mock 规划可达，非实测，禁止用于真实运动。
-  config.slots["T0"] = placeholder_slot(0.35, -0.20, 0.10);
-  config.slots["P1"] = placeholder_slot(0.35, -0.05, 0.10);
-  config.slots["P2"] = placeholder_slot(0.35, 0.10, 0.10);
-  config.slots["P3"] = placeholder_slot(0.35, 0.25, 0.10);
+  config.slots["T0"] = placeholder_slot(0.35, -0.20, 0.13);
+  config.slots["P1"] = placeholder_slot(0.35, -0.05, 0.13);
+  config.slots["P2"] = placeholder_slot(0.35, 0.10, 0.13);
+  config.slots["P3"] = placeholder_slot(0.35, 0.25, 0.13);
   return config;
 }
 

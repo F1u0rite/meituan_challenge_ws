@@ -71,6 +71,19 @@ struct PrimitiveSpec
   mtc::manipulation::PickPlaceState executing_state = mtc::manipulation::PickPlaceState::LIFT;
   /// 接触类：只作为规划意图 / 仿真验证，不代表可安全执行。
   bool contact_intent_only = false;
+  /// 规划该原语时末端挂着电池（试提之后、释放之前）。
+  bool carries_payload = false;
+};
+
+/// 电池载荷的规划几何（PLACEHOLDER，待实物尺寸）。
+struct PayloadSpec
+{
+  bool enabled = true;
+  mtc::core::Vector3 size_m{0.06, 0.06, 0.10};
+  /// 载荷中心位于钩尖（TCP）正下方（planning frame -Z）的距离：电池靠重力挂在提环下方。
+  double hang_below_tcp_m = 0.07;
+  std::vector<std::string> touch_links{"ee_link", "wrist3_Link"};
+  CalibrationStatus status = CalibrationStatus::PLACEHOLDER;
 };
 
 struct SlotSpec
@@ -101,6 +114,10 @@ struct PlannerConfig
   /// 额外关节位置限位（rad，[min, max]）。MoveIt 只用 URDF 限位；
   /// aubo.ros2_control.xacro 中 foreArm/wrist1/wrist3 的指令限位更窄，在此复核。
   std::map<std::string, std::pair<double, double>> joint_position_limits;
+
+  PayloadSpec payload;
+  /// 静态场景障碍物（桌面等），由工具在规划前写入 move_group。
+  std::vector<SceneBox> scene_boxes;
 
   /// FREE_SPACE 原语先试末端直线（最短、可预测），不可行再用 OMPL。
   bool prefer_straight_line_free_space = true;

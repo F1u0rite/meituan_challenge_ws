@@ -3,7 +3,7 @@
 #   1) 空 ROS 域检查 + 静态 Xacro 核验（只允许 mock_components/GenericSystem）
 #   2) 启动 Fake 控制 launch 与 move_group（无 RViz），各自独立进程组
 #   3) 只读采集：hardware/controllers/nodes/topics/actions/joint_states/TF 图/URDF/SRDF
-#   4) 运行 plan_fixed_pose 与 plan_battery_sequence（V1、V2）
+#   4) 运行 plan_fixed_pose（含场景 ID 隔离反证、碰撞反证）与 plan_battery_sequence（V1、V2）
 #   5) 只结束本脚本启动的进程组；不使用全局 pkill/killall
 # 不发送任何 FollowJointTrajectory goal，不连接真实设备。
 #
@@ -131,7 +131,24 @@ run_tool() {
     note "FAIL $name: $(grep -oE "PLAN FAILED.*|SEQUENCE PLAN FAILED.*|\[(ACQUIRE|TRANSPORT)\] ok=false.*" "$OUT/$name.log" | head -2 | tr '\n' ' ')"
   fi
 }
+# 场景 ID 隔离反证：先写入其他模块的同名对象与本模块遗留对象，再由规划工具 apply_scene。
+timeout 60 python3 "$SCRIPT_DIR/scene_isolation_probe.py" seed > "$OUT/scene_isolation.log" 2>&1
 run_tool plan_fixed_pose program:=plan_fixed_pose
+if timeout 60 python3 "$SCRIPT_DIR/scene_isolation_probe.py" check >> "$OUT/scene_isolation.log" 2>&1; then
+  note "PASS scene_isolation: foreign objects kept, stale mtc_moveit_planner/* removed (see scene_isolation.log)"
+else
+  note "FAIL scene_isolation (see scene_isolation.log)"
+fi
+timeout 60 python3 "$SCRIPT_DIR/scene_isolation_probe.py" cleanup >> "$OUT/scene_isolation.log" 2>&1
+# 碰撞反证：目标在桌面内部，必须失败（失败 = PASS）。
+ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/collision_probe" program:=plan_fixed_pose \
+  extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/collision_probe_override.yaml" \
+  > "$OUT/collision_probe.log" 2>&1
+if grep -q "PLAN FAILED" "$OUT/collision_probe.log"; then
+  note "PASS collision_probe: goal inside table rejected ($(grep -oE 'PLAN FAILED \[[A-Z_]*\][^>]*' "$OUT/collision_probe.log" | head -1 | cut -c1-160))"
+else
+  note "FAIL collision_probe: goal inside table was NOT rejected"
+fi
 run_tool plan_battery_sequence_v1 program:=plan_battery_sequence
 run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v2_override.yaml"

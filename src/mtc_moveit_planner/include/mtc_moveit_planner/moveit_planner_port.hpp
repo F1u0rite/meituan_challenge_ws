@@ -43,7 +43,8 @@ struct PrimitivePlanReport
 {
   std::string primitive_name;
   std::string mode;
-  std::string method;             ///< 后端实际使用的方法（ompl / cartesian / cartesian_preferred）
+  std::string method;             ///< 后端实际使用的方法
+  std::string backend_message;    ///< 后端诊断（被拒的直线、IK 失败等），不随失败原因被覆盖
   std::string goal_kind;
   std::string start_assumption;   ///< "current_state" / "previous_primitive_end" / "simulated ENGAGE_INSERT ..."
   bool ok = false;
@@ -60,6 +61,7 @@ struct PrimitivePlanReport
   uint32_t timeout_ms = 0;
   double state_watchdog_s = 0.0;
   bool contact_intent_only = false;
+  bool payload_attached = false;  ///< 规划时末端挂着电池碰撞体
 };
 
 struct PlanReport
@@ -71,6 +73,15 @@ struct PlanReport
   std::vector<std::string> uncalibrated_inputs;  ///< 例如 "TCP=PLACEHOLDER"、"slot T0=PLACEHOLDER"
   std::vector<PrimitivePlanReport> primitives;
   JointStateSnapshot start_state;
+};
+
+/// plan_blocking 的可选项。
+struct PlanOptions
+{
+  /// 显式起点；为空则取后端当前状态（/joint_states）。
+  std::optional<JointStateSnapshot> start;
+  /// 不再假设 ToolPort 行程：起点已是工具动作完成后的**实测**状态（重规划时使用）。
+  bool skip_tool_gaps = false;
 };
 
 class MoveItPlannerPort : public mtc::manipulation::PlannerPort
@@ -94,6 +105,17 @@ public:
   mtc::core::PlanResult plan_blocking(
     const mtc::manipulation::PlanTarget & target,
     const std::optional<JointStateSnapshot> & start_override = std::nullopt);
+
+  mtc::core::PlanResult plan_blocking(
+    const mtc::manipulation::PlanTarget & target, const PlanOptions & options);
+
+  /// 起点过期时的重规划：只规划 original 中名为 primitive_name 的那一段，
+  /// 起点为实测 current（不再假设 ToolPort 行程）。供执行侧在
+  /// check_trajectory_start() 不通过时调用；结果仍需经 FSM/执行侧同样的校验。
+  mtc::core::PlanResult replan_primitive(
+    const mtc::manipulation::PlanTarget & original,
+    const std::string & primitive_name,
+    const JointStateSnapshot & current);
 
   /// 最近一次完成的规划报告。
   PlanReport last_report() const;

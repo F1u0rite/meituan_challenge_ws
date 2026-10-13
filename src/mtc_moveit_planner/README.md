@@ -47,6 +47,22 @@ OMPL 行的原语（FREE_SPACE）**先尝试末端直线**（完整、无碰撞�
 末端线/角速度上限取原语自身的 `max_linear_speed` / `max_angular_speed`，
 在 TOTG 时间参数化后按需**均匀拉伸**时间（路径不变）。
 
+## 2A. 规划场景与起点一致性
+
+- **静态障碍物**：`scene.boxes`（默认占位桌面），工具启动时经 `/apply_planning_scene` 写入。
+- **对象 ID 隔离**：本包写入场景的对象一律带前缀 `mtc_moveit_planner/`（如 `mtc_moveit_planner/table`、
+  `mtc_moveit_planner/battery_payload`）；`apply_scene` 只增删带该前缀的对象，不会覆盖或删除其他模块的同名对象，
+  并会清掉本包上次进程遗留的对象。配置里写本地 ID（`[A-Za-z0-9_.-]`，不得重复、不得自带前缀）。
+- **电池载荷**：`carries_payload` 原语（test_lift → seat_contact）在起点 RobotState 上附着长方体，不改全局场景。
+- **起点检查**：执行侧发送前调用
+  ```cpp
+  #include "mtc_moveit_planner/start_consistency.hpp"
+  auto check = mtc::moveit_planner::check_trajectory_start(*cmd.trajectory, names, positions);  // 0.01 rad
+  if (!check.ok) { /* 拒绝；用 MoveItPlannerPort::replan_primitive(target, cmd.primitive_name, measured) 重规划 */ }
+  ```
+  轨迹或实测状态中出现**重复 / 空关节名**一律判不通过（不会"取第一个"）；`replan_primitive()` 收到重名的实测状态
+  返回 `[INVALID_START_STATE]`。
+
 ## 3. 构建与测试
 
 ```bash
@@ -72,7 +88,7 @@ bash src/mtc_moveit_planner/scripts/run_planning_evidence.sh
 
 ## 5. 已知限制（详见 docs/planning/PLANNING_HANDOFF.md）
 
-1. 碰撞场景只有机器人自身；无桌面、电池、工具、相机模型。
+1. 碰撞场景只有占位桌面与电池载荷；无工具、相机、工位支架模型，取货电池本体未作为障碍物。
 2. TCP = 单位变换（PLACEHOLDER），轨迹实际把 `ee_link` 送到提环位置。
 3. `test_lift` / `retreat` 起点依赖对 ToolPort 动作的假设；执行端必须核对起点偏差。
 4. 只读 Fake 环境中验证；不调用 execute()，不发送 FollowJointTrajectory。
