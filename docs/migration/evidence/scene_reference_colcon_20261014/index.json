@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "registration-before.log",
+      "bytes": 994,
+      "sha256": "6cc021dc1768cfa74cdb8d256f93426f457854607bc574673d913aee9b52f520"
+    },
+    {
+      "path": "registration-before-command.json",
+      "bytes": 1649,
+      "sha256": "73102715c43aa7b0ad716c00cb3afec58897d2612c94fea770832799595a9842"
+    },
+    {
+      "path": "registration-after.log",
+      "bytes": 994,
+      "sha256": "66f7953ee4bfc67a645710d31810588c94409fba616eeb08b718a7124aad1380"
+    },
+    {
+      "path": "registration-after-command.json",
+      "bytes": 2173,
+      "sha256": "50ac7732b30b1971f6063bd7552d00ac8cfe44e4daee63ce26d3938cf2e3145e"
+    },
+    {
+      "path": "registration-before-v2.log",
+      "bytes": 675,
+      "sha256": "ef81417ec2a075224d1b4a0c0a7749d13b26cf70f8d97b9397fe9eae662fd055"
+    },
+    {
+      "path": "registration-before-v2-command.json",
+      "bytes": 1674,
+      "sha256": "69532ee8957a9ab8862e91eac7c7973779620d6a57566fc40ebfcc8184d9eb9e"
+    },
+    {
+      "path": "registration-after-v2.log",
+      "bytes": 458,
+      "sha256": "6939d9dff14f05d35c7d41de54762ffbd45bb72ba80402943634800bfb05c1a1"
+    },
+    {
+      "path": "registration-after-v2-command.json",
+      "bytes": 2198,
+      "sha256": "fd8ea1b79d486ad97765c1da0ba956925b7b806fc8450fe04d142725fab6d52f"
+    },
+    {
+      "path": "registration-boundary.log",
+      "bytes": 33,
+      "sha256": "0f2f7f1d6ae49d46035182ae9ac35f3ae1e951af917513107717b0736da2ff89"
+    },
+    {
+      "path": "registration-boundary-command.json",
+      "bytes": 1278,
+      "sha256": "a35a548043c6be1b3ca431ee6673765e0d8bbd7a7c5df7e1deb9dd49de6e9750"
+    },
+    {
+      "path": "registration-before-v2.sh",
+      "bytes": 738,
+      "sha256": "11838c58b8a6cbe94610de4d8fda5de87a3d5c9e24c413efa85d30d1e72b7b6d"
+    },
+    {
+      "path": "registration-after-v2.sh",
+      "bytes": 1259,
+      "sha256": "22a7506fa0753331de5472181b47235b4f418e1a4485a30e0dc28d27f7307eb4"
+    },
+    {
+      "path": "registration_identity.py",
+      "bytes": 1121,
+      "sha256": "a49168e436e5a9bd5d1f8e67a2db05a29e200f6d20b11982a3088de4c9c75a52"
+    },
+    {
+      "path": "scene_boundary_audit.py",
+      "bytes": 6152,
+      "sha256": "e36b1784a1f9a120d6f87513900fe8c6f1ceaaf745ccdd152af6e70e2a7d38c7"
+    },
+    {
+      "path": "registration-after.xml",
+      "bytes": 289493,
+      "sha256": "8b3644c00fb947fd6e2d8126557ece6f60c0d4f3ca6124e1a97adba702492127"
+    },
+    {
+      "path": "registration-results.txt",
+      "bytes": 147,
+      "sha256": "0923e94abed0468e8efba09838d882a7f0a20abdebbee9c5873ceb65b7c9addd"
+    },
+    {
+      "path": "registration-module-identity.json",
+      "bytes": 5503,
+      "sha256": "82b5540b4154543bb5b0f73f4d61d0c15ba786204ef4062598470089e8bf128b"
+    },
+    {
+      "path": "vision-python-freeze.txt",
+      "bytes": 4912,
+      "sha256": "cf4526a4ec0b920dfe7343e5439b6c986b47416027bea4768163e04636f14e12"
+    },
+    {
+      "path": "vision-python-versions.json",
+      "bytes": 196,
+      "sha256": "5e57ad5771b32a83a432df9cd0bafd9c24ea5ab34bf1a920f010e0723fba9a38"
+    },
+    {
+      "path": "empty-domain.json",
+      "bytes": 35,
+      "sha256": "88f032df2dca4face14948b7401cf50acbd4b9a4a338e0ff13e380de8be67810"
+    },
+    {
+      "path": "registration-working-directory-error.json",
+      "bytes": 484,
+      "sha256": "75d99364bd31b54f7f0d6e6cff9555843fe8f60693030c026cd58feca2e760d9"
+    },
+    {
+      "path": "pr19-registration-change.json",
+      "bytes": 525,
+      "sha256": "ed6a4ed797789a086b91cbea8b8b187fe76950322b65ff8bf68ed57ca0e2d4d6"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 2483,
+      "sha256": "79e30515d39399ce0883a0c319d21cdd84df11c84dd2e0980ac8132ddc0b0c35"
+    },
+    {
+      "path": "boundary/base-input.json",
+      "bytes": 2406,
+      "sha256": "7f096a6e126f358f7ab3b82cde2ad59e3f060826fa94255db133c2a15af9eb58"
+    },
+    {
+      "path": "boundary/base.log",
+      "bytes": 895,
+      "sha256": "37aee02928a7fb0617a5fa03fb88bfae6bd3ef6d89639b25ee28c4013137ef13"
+    },
+    {
+      "path": "boundary/camera-input.json",
+      "bytes": 2417,
+      "sha256": "e5d4a63e8b04b18f4d12a17d366f1180bce0ed9f7b7f5a92bd1b1c80812e4e69"
+    },
+    {
+      "path": "boundary/camera.log",
+      "bytes": 895,
+      "sha256": "37aee02928a7fb0617a5fa03fb88bfae6bd3ef6d89639b25ee28c4013137ef13"
+    },
+    {
+      "path": "boundary/empty-input.json",
+      "bytes": 2397,
+      "sha256": "2c13d5695e11a8c7d9319fcb47968d6a0139f374c7c4f29887bb6b2368e795cc"
+    },
+    {
+      "path": "boundary/empty.log",
+      "bytes": 895,
+      "sha256": "37aee02928a7fb0617a5fa03fb88bfae6bd3ef6d89639b25ee28c4013137ef13"
+    },
+    {
+      "path": "boundary/legacy-input.json",
+      "bytes": 1478,
+      "sha256": "8751d82fffb6d5f00199bfc373b49e047eeca23d58749e9dc2ffc7bd1987eda3"
+    },
+    {
+      "path": "boundary/legacy.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "boundary/missing-input.json",
+      "bytes": 2367,
+      "sha256": "74b57c47b6734e3fc6c43e71a9c99fc5863c6946f780bd5f354a58fa05db8bc8"
+    },
+    {
+      "path": "boundary/missing.log",
+      "bytes": 895,
+      "sha256": "37aee02928a7fb0617a5fa03fb88bfae6bd3ef6d89639b25ee28c4013137ef13"
+    },
+    {
+      "path": "boundary/not-ready-input.json",
+      "bytes": 2125,
+      "sha256": "f2b6f8c33496bffcdd11f43a7e6be1aa3bc45def0e27eaf1b822552f40584d7d"
+    },
+    {
+      "path": "boundary/not-ready.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "boundary/result.json",
+      "bytes": 28169,
+      "sha256": "292925410f80a830ccd38e2a967bb49802fb1e67f6f11518f61d2cf3d65e002a"
+    },
+    {
+      "path": "boundary/valid-input.json",
+      "bytes": 2405,
+      "sha256": "b284bb073f4b727a275aeae6ada5cb86bbe1ff719aeb490557646f66e374a734"
+    },
+    {
+      "path": "boundary/valid.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "inputs.json",
+      "bytes": 3458,
+      "sha256": "121a05dce85588e4b5e67bd8ec68a58004dde74616929eb53afed3a50ee2de56"
+    }
+  ],
+  "scope": "Completed adapter colcon test registration on existing PR19; synthetic ROS replay only"
+}

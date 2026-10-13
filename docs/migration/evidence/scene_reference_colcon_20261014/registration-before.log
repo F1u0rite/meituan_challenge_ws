@@ -1,0 +1,30 @@
+Starting >>> mtc_vision_adapter
+Finished <<< mtc_vision_adapter [1.22s]
+--- stderr: mtc_vision_adapter
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+
+Summary: 1 package finished [1.35s]
+  1 package had stderr output: mtc_vision_adapter
+Starting >>> mtc_vision_adapter
+[0.483s] WARNING:colcon.colcon_core.shell:The following packages are in the workspace but haven't been built:
+- mtc_interfaces
+They are being used from the following locations instead:
+- /candidate-install/mtc_interfaces
+To suppress this warning ignore these packages in the workspace:
+--packages-ignore mtc_interfaces
+--- stderr: mtc_vision_adapter
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+NO TESTS RAN
+---
+Failed   <<< mtc_vision_adapter [0.28s, exited with code 5]
+
+Summary: 0 packages finished [0.62s]
+  1 package failed: mtc_vision_adapter
+  1 package had stderr output: mtc_vision_adapter

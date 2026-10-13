@@ -1,0 +1,11 @@
+{
+  "module": "/fix-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py",
+  "installed_sha256": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c",
+  "baseline_sha256": "269030a25b46933c59a5803fe8b826ca49640b463398fe9dcb3eea10d4783a81",
+  "patched_sha256": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c",
+  "unchanged_vision_core_python_files": 132,
+  "test_file_sha256": "2f4e826bb68b2a8511156c8c666ffc6a93271d0a31fa33dcd89ca9009cbaffeb",
+  "public_baseline": "5efbd2d4f9e7d7d3a47ce91f199cbd1520f95c4c",
+  "repair_base": "4e7ddd4794c28fdd423aaf67477fee5b8f40d2a0",
+  "validation_layout": "Full source tree /fix-review; patched adapter install /fix-install; unchanged interfaces /candidate-install"
+}

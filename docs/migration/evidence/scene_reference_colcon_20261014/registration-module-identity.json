@@ -1,0 +1,66 @@
+{
+  "mtc_vision_adapter.automatic_top_result_publisher": {
+    "path": "/registration-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py",
+    "sha256": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c"
+  },
+  "mtc_vision_adapter.rgb_image_publisher": {
+    "path": "/registration-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/rgb_image_publisher.py",
+    "sha256": "0447bdf314bfdaee4f8110354bf5e30ed9d82ee12ff18e2255c0bbced5653340"
+  },
+  "mtc_interfaces": {
+    "path": "/candidate-install/mtc_interfaces/lib/python3.12/site-packages/mtc_interfaces/__init__.py",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "perception.height_constraint": {
+    "path": "/fix-review/vision_core/perception/height_constraint.py",
+    "sha256": "d9aa181a68f835a0c8cdf175f1f7f9e7ee168f315b3df70aa5b7446c830e4f4c"
+  },
+  "rclpy": {
+    "path": "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py",
+    "sha256": "15b5665a97a688645545e704a6111a5be5f5b2d147cfcf099e2f92aabcbdf00f"
+  },
+  "pytest": {
+    "path": "/review-venv/lib/python3.12/site-packages/pytest/__init__.py",
+    "sha256": "8e6ea1d1910225d0d7957d22e45db498ddf2a55fbe4fba2c9ad307cf3cd8f2e8"
+  },
+  "cv2": {
+    "path": "/review-venv/lib/python3.12/site-packages/cv2/__init__.py",
+    "sha256": "d6d44be0f0f981cc057abc0c152377b496edb478d1fa6355ce035f711dc94b25"
+  },
+  "numpy": {
+    "path": "/usr/lib/python3/dist-packages/numpy/__init__.py",
+    "sha256": "22cd1535fa14d74ef6f457cca149ffdc80875f460be313b8f895273f78bc402e"
+  },
+  "source_sha256": {
+    "src/mtc_vision_adapter/setup.cfg": "14e0e0c0a733f5639b280443b7611b886476ec73e981419db17bc77073705383",
+    "src/mtc_vision_adapter/README.md": "25597a7483e56b6c217014a556a1ec56bb480a084235e5c60c7565e32d890215",
+    "src/mtc_vision_adapter/package.xml": "86b5a8fcdc958be27f5feac067647723f8b907ee22de346ad8dd3688a72cb819",
+    "src/mtc_vision_adapter/setup.py": "e6177e133ba3f091054bd7edd884b4f446e24606badf0b193310c7241c559fd3",
+    "src/mtc_vision_adapter/mtc_vision_adapter/native_rgbd.py": "0de5bcb7e07d81c4a82fcf4b6e66b29fb32bcc13e72c70ec701199568b0d219d",
+    "src/mtc_vision_adapter/mtc_vision_adapter/rgb_image_publisher.py": "0447bdf314bfdaee4f8110354bf5e30ed9d82ee12ff18e2255c0bbced5653340",
+    "src/mtc_vision_adapter/mtc_vision_adapter/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "src/mtc_vision_adapter/mtc_vision_adapter/publisher.py": "c9a07cf41726ca20526368a040cee8cf7f27dc279da008056b4b8ce12c846dc1",
+    "src/mtc_vision_adapter/mtc_vision_adapter/live_protocol.py": "4f61992e348b12b990233a13fc32d17c13f8b3c07130cb75635360cc745f8efa",
+    "src/mtc_vision_adapter/mtc_vision_adapter/live_transport.py": "d0c2579c0b7fb3c11d65db24a443030000c9ab455da257716645f583b02e39ed",
+    "src/mtc_vision_adapter/mtc_vision_adapter/live_tcp_bridge.py": "9bac7255b0be750568bc48eb378b3f8ed5aff139a0fe31563f5d20a6b583a0c9",
+    "src/mtc_vision_adapter/mtc_vision_adapter/native_result_publisher.py": "9a78ad72239484a6b6e1f1bc8250c8521f1c37e552ea11277a33758b2a7a58b1",
+    "src/mtc_vision_adapter/mtc_vision_adapter/automatic_top_result_publisher.py": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c",
+    "src/mtc_vision_adapter/mtc_vision_adapter/core.py": "517093c885d164ccb600cdc523f665ca962458b3306601dc60de237dd5205e6c",
+    "src/mtc_vision_adapter/test/test_motion_tf_buffer.py": "e366960610dec517fa5ff831348a82186ebe1346303457d7671da2fde986fd11",
+    "src/mtc_vision_adapter/test/test_native_rgbd.py": "585c6035ffa2d043f98c1a9ff1c3f8bee87be6b730a3d853019c612ecf90f6af",
+    "src/mtc_vision_adapter/test/test_publisher_cleanup.py": "c05f00ad425290d97665dd64d55e03a20a2517638b545eda20884673558c457e",
+    "src/mtc_vision_adapter/test/test_live_protocol.py": "41792f7ab592d8a9ea90ccf857b3ec838cfbf7098c89c93e917918c35a8068d9",
+    "src/mtc_vision_adapter/test/test_motion_safety.py": "b454afb2107ea9a3d58e06a9b28767e3e9c48c8e45c855c3f3b35133211f56ca",
+    "src/mtc_vision_adapter/test/test_live_transport.py": "cd246389b44ce25344275e950a9d383e1abd03a225128f54626238c45654d6c0",
+    "src/mtc_vision_adapter/test/live_test_support.py": "651e54115317b819613368f7fb48286cbfcc727ec3b6c0f5edf0a3760f6f42dd",
+    "src/mtc_vision_adapter/test/test_native_detection_semantics.py": "1145028839ed8d2c0b43b869a67bec37de3922aac3ff7aec88379f7d6b6f1b00",
+    "src/mtc_vision_adapter/test/test_rgb_image_publisher.py": "f54a853730f3955f9fbb0507ff06152e20735c7a4f9913a01ff70de3150bdb0f",
+    "src/mtc_vision_adapter/test/test_native_result_publisher.py": "705915d599797f073b02300caf37f1f24749bca7400589435055f892d892ec7c",
+    "src/mtc_vision_adapter/test/test_automatic_top_coordinates.py": "2f4e826bb68b2a8511156c8c666ffc6a93271d0a31fa33dcd89ca9009cbaffeb",
+    "src/mtc_vision_adapter/test/test_replay_process.py": "c683d640031476f2ff1b45df3fc87bf0702926f583be0c2880a46bc7fc061057",
+    "src/mtc_vision_adapter/test/test_live_bridge_process.py": "18928dec523fe0dfa09dca6b2a109ea430c9b24a2b94125276da3a2823adeb71",
+    "src/mtc_vision_adapter/test/ros_replay_validation.py": "c8d29fc034443a865063b20bf5c17661ce55195c6aeefb991a7e65ff79d538c1",
+    "src/mtc_vision_adapter/examples/synthetic.jsonl": "14eb81f46759d7621ec5233507fb55af531dcd328dc3bee30e1ff9199214b980",
+    "src/mtc_vision_adapter/resource/mtc_vision_adapter": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  }
+}

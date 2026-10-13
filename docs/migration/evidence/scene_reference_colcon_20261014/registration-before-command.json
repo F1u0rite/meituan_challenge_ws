@@ -1,0 +1,16 @@
+{
+  "name": "registration-before",
+  "started_at": "2026-10-13T21:59:42.933256+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-perception-merge-review-4e7ddd4",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=224 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; export PYTHONPATH=/review-venv/lib/python3.12/site-packages:/fix-review/vision_core:$PYTHONPATH\nexport MTC_VISION_INSTALL_BASE=/registration-install MTC_VISION_ROS_SETUP=/registration-install/setup.bash\ncolcon --log-base /review-evidence/registration-before-build-log build --base-paths /fix-review/src/mtc_vision_adapter --build-base /registration-build --install-base /registration-install --packages-select mtc_vision_adapter --executor sequential\nsource /registration-install/setup.bash\ncolcon --log-base /review-evidence/registration-before-colcon test --build-base /registration-build --install-base /registration-install --packages-select mtc_vision_adapter --executor sequential --return-code-on-test-failure\n"
+  ],
+  "timeout_seconds": 120,
+  "pid": 87406,
+  "exit_code": 5,
+  "ended_at": "2026-10-13T21:59:46.711981+00:00"
+}

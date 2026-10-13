@@ -1,0 +1,7 @@
+{
+  "parent": "182386a2e896f8b85570b73619b7ec4788a64a4c",
+  "changed": "src/mtc_vision_adapter/setup.py",
+  "before_sha256": "108290140f5d9352116d744915c999bd0cb30f23bd67d78e0be482d1c815909f",
+  "after_sha256": "e6177e133ba3f091054bd7edd884b4f446e24606badf0b193310c7241c559fd3",
+  "rationale": "Existing PR19 target feature/perception-adapter lacks tests_require. PR18 already merged into different branch codex/yuze-parallel; preserve one existing PR19 and ensure its eight frame regressions actually run through colcon."
+}

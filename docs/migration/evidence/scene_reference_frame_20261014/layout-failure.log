@@ -1,0 +1,64 @@
+........................................................................ [ 42%]
+.....................................................................F.. [ 85%]
+.......F................                                                 [100%]
+=================================== FAILURES ===================================
+_______________ test_h2_manual_launcher_contract_without_camera ________________
+
+tmp_path = PosixPath('/review-evidence/fix-pytest-temp/test_h2_manual_launcher_contra0')
+
+    def test_h2_manual_launcher_contract_without_camera(tmp_path):
+        import os,sys,subprocess
+        from pathlib import Path
+        repo=Path(__file__).resolve().parents[3]
+        script=repo/'vision_core/scripts/start_native_live_ros_ui.sh'
+        env=dict(os.environ);env.pop('DISPLAY',None)
+>       assert subprocess.run(['bash','-n',str(script)],check=False).returncode==0
+E       AssertionError: assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', '/vision_core/scripts/start_native_live_ros_ui.sh'], returncode=127).returncode
+E        +    where CompletedProcess(args=['bash', '-n', '/vision_core/scripts/start_native_live_ros_ui.sh'], returncode=127) = <function run at 0x7b361fae9800>(['bash', '-n', '/vision_core/scripts/start_native_live_ros_ui.sh'], check=False)
+E        +      where <function run at 0x7b361fae9800> = <module 'subprocess' from '/usr/lib/python3.12/subprocess.py'>.run
+
+/fix-src/mtc_vision_adapter/test/test_native_result_publisher.py:32: AssertionError
+----------------------------- Captured stderr call -----------------------------
+bash: /vision_core/scripts/start_native_live_ros_ui.sh: No such file or directory
+_____________________ test_native_real_offline_ros_process _____________________
+
+tmp_path = PosixPath('/review-evidence/fix-pytest-temp/test_native_real_offline_ros_p0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7b36083e0d10>
+
+    def test_native_real_offline_ros_process(tmp_path,monkeypatch):
+        root=Path(__file__).resolve().parents[3]
+        core=root/'vision_core'
+        from mtc_vision_adapter.native_rgbd import load_core
+>       load_core(str(core))
+
+/fix-src/mtc_vision_adapter/test/test_native_rgbd.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+core_path = '/vision_core'
+
+    def load_core(core_path=''):
+        if core_path:
+            import sys
+            root=Path(core_path).expanduser().resolve()
+            if not (root/'perception/dual_rate_rgbd.py').is_file():
+>               raise ValueError('vision_core_path must point to existing vision_core source')
+E               ValueError: vision_core_path must point to existing vision_core source
+
+/fix-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/native_rgbd.py:14: ValueError
+=============================== warnings summary ===============================
+../review-venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:475
+  Warning: could not create cache path /fix-src/mtc_vision_adapter/.pytest_cache/v/cache/nodeids: [Errno 13] Permission denied: '/fix-src/mtc_vision_adapter/pytest-cache-files-_ie661cp'
+
+../review-venv/lib/python3.12/site-packages/_pytest/cacheprovider.py:429
+  Warning: could not create cache path /fix-src/mtc_vision_adapter/.pytest_cache/v/cache/lastfailed: [Errno 13] Permission denied: '/fix-src/mtc_vision_adapter/pytest-cache-files-52ttz5o6'
+
+../review-venv/lib/python3.12/site-packages/_pytest/stepwise.py:51
+  Warning: could not create cache path /fix-src/mtc_vision_adapter/.pytest_cache/v/cache/stepwise: [Errno 13] Permission denied: '/fix-src/mtc_vision_adapter/pytest-cache-files-8jdu693w'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------- generated xml file: /review-evidence/fix-tests.xml --------------
+=========================== short test summary info ============================
+FAILED ../fix-src/mtc_vision_adapter/test/test_native_result_publisher.py::test_h2_manual_launcher_contract_without_camera
+FAILED ../fix-src/mtc_vision_adapter/test/test_native_rgbd.py::test_native_real_offline_ros_process
+2 failed, 166 passed, 3 warnings in 18.06s
