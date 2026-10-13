@@ -19,7 +19,19 @@ PickPlaceServer::PickPlaceServer(MockOptions options, const rclcpp::NodeOptions 
   group_(create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive)),
   slot_(std::make_shared<ActionSlot<Action>>())
 {
+  // Expose existing software Mock options; no FSM or cancellation policy changes.
+  options_.plan_available = declare_parameter("mock.plan_available", options_.plan_available);
+  options_.stop_evidence_available = declare_parameter("mock.stop_evidence_available", options_.stop_evidence_available);
+  options_.motion.status_unknown = declare_parameter("mock.status_unknown", options_.motion.status_unknown);
+  options_.result_delay_ms = declare_parameter("mock.result_delay_ms", options_.result_delay_ms);
   options_.validate();
+  observation_ = create_publisher<std_msgs::msg::String>("~/integration_state", rclcpp::QoS(5).reliable());
+  observation_timer_ = create_wall_timer(std::chrono::milliseconds(100), [this]() {
+    const auto extra = ",\"executions\":" + std::to_string(counts_->executions.load()) +
+      ",\"stops\":" + std::to_string(counts_->stops.load());
+    observation_->publish(integration_observation(*this, *slot_,
+      fsm_ ? fsm_->feedback().substate : "IDLE", extra));
+  }, group_);
   tool_ = std::make_shared<MockTool>(options_);
   server_ = make_server<Action>(this, "/mtc/manipulation/pick_place", slot_, group_,
     valid_pick_goal, [](const Action::Goal & g) {return g.request_id;});
@@ -27,6 +39,7 @@ PickPlaceServer::PickPlaceServer(MockOptions options, const rclcpp::NodeOptions 
 }
 PickPlaceServer::~PickPlaceServer()
 {
+  observation_timer_->cancel();
   timer_->cancel();
   fsm_.reset();
   motion_.reset();  // std::future joins owned constant-time Mock workers.
@@ -37,6 +50,8 @@ void PickPlaceServer::tick()
   if (slot_->pending) {
     slot_->active = std::move(slot_->pending);
     const auto g = slot_->active->get_goal();
+    RCLCPP_INFO(get_logger(), "MTC_TRACE event=pick_start child=%s request=%s",
+      goal_hex(slot_->active->get_goal_id()).c_str(), json_string(g->request_id).c_str());
     clock_ = std::make_shared<mtc::core::ManualClock>(1.0);
     motion_ = std::make_shared<AsyncMockMotion>(options_, clock_, counts_);
     fsm_ = std::make_unique<mtc::manipulation::PickPlaceFsm>(
@@ -93,6 +108,9 @@ void PickPlaceServer::tick()
   } else {
     slot_->active->abort(result);
   }
+  RCLCPP_INFO(get_logger(), "MTC_TRACE event=pick_result child=%s state=%s error=%d executions=%zu stops=%zu",
+    goal_hex(slot_->active->get_goal_id()).c_str(), fsm_->feedback().substate.c_str(),
+    int(result->error_code), counts_->executions.load(), counts_->stops.load());
   cleanup_stop_ = slot_->locked;
   slot_->release();
 }

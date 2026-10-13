@@ -3,6 +3,7 @@
 #include <mtc_interfaces/action/pick_place.hpp>
 #include <mtc_manipulation_cpp/pick_place_fsm.hpp>
 #include "mtc_ros2_action_cpp/action_slot.hpp"
+#include "mtc_ros2_action_cpp/integration_observation.hpp"
 #include "mtc_ros2_action_cpp/mock_ports.hpp"
 
 namespace mtc::ros2_action
@@ -23,6 +24,8 @@ private:
   std::shared_ptr<ActionSlot<Action>> slot_;
   rclcpp_action::Server<Action>::SharedPtr server_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr observation_timer_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr observation_;
   std::shared_ptr<mtc::core::ManualClock> clock_;
   std::shared_ptr<AsyncMockMotion> motion_;
   std::shared_ptr<MockTool> tool_;

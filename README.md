@@ -201,3 +201,7 @@ meituan_challenge_ws/
 仓库路径已于2026-10-09按用户要求从 `/home/meituan_challenge_ws` 迁至当前路径，
 保留Git历史。旧工程及官方驱动工作空间只读。开发者从 `main` 建独立分支；
 接口或安全语义变化需同步README和验收证据，不将Mock结果宣称为实机许可。
+
+## C++ Mock 统一启动与网页集成候选
+
+[mtc_cpp_mock_bringup SOP](src/mtc_cpp_mock_bringup/README.md) 提供 C++ Task → PickPlace 的统一启动、就绪检查、定向 Cancel、只读链路观测与 ROS 接入网页。候选以 main `f7eaa2c` 为起点，仍需负责人审阅；不意味着独立 MoveIt、完整机器人 FSM 或实机已验收。
