@@ -1,0 +1,12 @@
+# Engineering starting points, not competition standards.
+low_value_cutoff: 35
+white_value_cutoff: 245
+white_saturation_ceiling: 25
+warning_mean_v: 65
+reject_mean_v: 25
+warning_dark_fraction: 0.45
+reject_dark_fraction: 0.85
+warning_white_fraction: 0.35
+reject_white_fraction: 0.75
+warning_laplacian_variance: 35
+reject_laplacian_variance: 8

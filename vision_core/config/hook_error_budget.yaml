@@ -1,0 +1,16 @@
+schema_version: 1
+nominal_lateral_clearance_mm: 3
+nominal_vertical_clearance_mm: 5
+nominal_source: outputs/cad_analysis/geometry.json
+# 仅包络单侧差，不能视作允许误差或全路径安全裕量。
+vision_target_xy_mm: 1
+vision_target_yaw_deg: 1
+effective_yaw_lever_arm_mm: null
+terms_are_nonoverlapping: false
+terms:
+  vision: {lateral_mm: null, vertical_mm: null, yaw_deg: null}
+  camera_extrinsic: {lateral_mm: null, vertical_mm: null, yaw_deg: null}
+  hand_eye: {lateral_mm: null, vertical_mm: null, yaw_deg: null}
+  tool_tcp: {lateral_mm: null, vertical_mm: null, yaw_deg: null}
+  robot_positioning: {lateral_mm: null, vertical_mm: null, yaw_deg: null}
+  manufacturing: {lateral_mm: null, vertical_mm: null, yaw_deg: null}

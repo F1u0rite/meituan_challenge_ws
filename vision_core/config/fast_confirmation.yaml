@@ -1,0 +1,6 @@
+# Engineering visual confirmation only, never validated grasp pose.
+# Reuse the existing CAD body-boundary support scales and fill gate.
+min_footprint_scale: 0.70
+max_footprint_scale: 1.25
+min_contour_fill: 0.80
+min_body_band_points: 50

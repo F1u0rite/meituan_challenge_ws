@@ -1,0 +1,28 @@
+# Engineering preview settings, not accuracy acceptance thresholds.
+min_depth_m: 0.15
+max_depth_m: 1.0
+cad_interval_s: 1.0
+cad_surface_samples: 60000
+cad_max_points: 750
+# Solver sampling only; residual/support checks use up to 1500 observed points.
+cad_validation_points: 1500
+cad_max_nfev: 60
+min_object_points: 100
+max_footprint_scale: 1.8
+min_footprint_m: 0.020
+max_object_height_m: 0.110
+overlap_fraction: 0.5
+tracker_max_distance_px: 80.0
+tracker_max_gap_s: 1.0
+tracker_confirmation_hits: 2
+tracker_ambiguity_px: 8.0
+
+
+# Engineering bounds: full-object support, not a validated accuracy gate.
+opencv_threads: 1
+min_footprint_scale: 0.45
+
+# V3.3 measured RGB/depth support; unchanged quality and pose validity gates.
+joint_rgb_depth: true
+cad_body_boundary: true
+cad_ring_surface_axis: true

@@ -1,0 +1,10 @@
+outputs/
+data/
+assets/cad/
+tools/
+__pycache__/
+.pytest_cache/
+.venv/
+*.ply
+*.npz
+*.egg-info/
