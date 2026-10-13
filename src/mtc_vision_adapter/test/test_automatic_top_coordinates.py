@@ -111,6 +111,15 @@ def test_separate_installed_publisher_process_delivers_four_slots_and_missing_st
         obj['green_point_camera_m']=(base+.077*normal).tolist()
         obj['red_point_camera_m']=(base+.057*normal).tolist()
     row=HeightConstrainedPoints().apply(SimpleNamespace(timestamps=row['timestamps']),row)
+    # Optional scene fields must reach a separate ROS receiver with camera fields
+    # unchanged. This known synthetic transform is a serialization test only.
+    row['scene_reference'] = dict(schema='mtc.scene_reference.v1', ready=True,
+        status='READY', source_frame_id=row['source_frame_id'],
+        capture_timestamp_s=row['capture_timestamp'], timestamps=copy.deepcopy(row['timestamps']),
+        input_coordinate_frame='camera_color_optical', coordinate_frame='t0_scene',
+        unit_position='m', motion_usable=False, robot_transform_available=False,
+        reference_validity='EXACT_SOURCE_FRAME_ONLY',
+        T_scene_from_camera=[[1,0,0,0],[0,-1,0,0],[0,0,-1,.6],[0,0,0,1]])
     missing = copy.deepcopy(row)
     missing['source_frame_id'] = 'color_22_depth_20'
     missing['capture_timestamp'] += .5
@@ -119,6 +128,10 @@ def test_separate_installed_publisher_process_delivers_four_slots_and_missing_st
     missing['objects'][0]['raw_candidate_available']=False
     missing['objects'][0]['height_constraint'].update(applied=False,status='NO_CURRENT_CANDIDATE')
     missing['placement_targets'][0]['candidate_available'] = False
+    missing['scene_reference'].update(ready=False, status='NO_UNIQUE_CURRENT_T0',
+        source_frame_id=missing['source_frame_id'],
+        capture_timestamp_s=missing['capture_timestamp'],
+        T_scene_from_camera=None)
     rows = tmp_path / 'rows.json'
     rows.write_text(json.dumps([row, missing]))
     context = Context()
@@ -147,6 +160,10 @@ def test_separate_installed_publisher_process_delivers_four_slots_and_missing_st
         assert [len(a.detections) for a in arrays] == [4, 3]
         assert packets[0]['source_mode'] == 'replay' and packets[0]['replay'] is True
         assert packets[0]['source_frame_id'] == row['source_frame_id']
+        assert packets[0]['scene_coordinates']['objects'][0]['red_point_scene_m'] == pytest.approx([.1, .036, .048])
+        assert packets[0]['objects'][0]['red_point_camera_m'] == pytest.approx([.1,-.036,.552])
+        assert packets[1]['scene_coordinates']['ready'] is False
+        assert all(o['red_point_scene_m'] is None for o in packets[1]['scene_coordinates']['objects'])
         assert packets[0]['capture_timestamp_s'] == row['capture_timestamp']
         assert packets[0]['timestamps'] == row['timestamps']
         assert packets[0]['ros_dispatch_stamp']['sec'] > 0
@@ -176,3 +193,15 @@ def test_separate_installed_publisher_process_delivers_four_slots_and_missing_st
         executor.shutdown()
         node.destroy_node()
         rclpy.try_shutdown(context=context)
+
+
+def test_scene_reference_must_match_current_packet_and_leave_legacy_default_unchanged():
+    row=fixture()
+    assert 'scene_reference' not in convert(row)
+    row['scene_reference']=dict(schema='mtc.scene_reference.v1',ready=True,
+        source_frame_id='old_frame',capture_timestamp_s=row['capture_timestamp'],
+        timestamps=row['timestamps'],input_coordinate_frame='camera_color_optical',
+        coordinate_frame='t0_scene',unit_position='m',motion_usable=False,
+        robot_transform_available=False,T_scene_from_camera=[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+    with pytest.raises(ValueError,match='source mismatch'):
+        convert(row)

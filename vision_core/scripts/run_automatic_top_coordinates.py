@@ -32,6 +32,9 @@ def main():
     parser.add_argument('--top-height-mm', type=float, default=80.)
     parser.add_argument('--hole-height-mm', type=float, default=60.)
     parser.add_argument('--max-height-correction-mm', type=float, default=10.)
+    parser.add_argument('--scene-aruco-id', type=int, help='Opt-in current T0 scene coordinates from a fixed table marker')
+    parser.add_argument('--scene-aruco-dictionary', default='DICT_4X4_50')
+    parser.add_argument('--scene-stable-frames', type=int, default=5)
     args = parser.parse_args()
     if args.frames < 0:
         parser.error('frames must be nonnegative')
@@ -61,6 +64,12 @@ def main():
     heights = None if args.disable_height_constraint else HeightConstrainedPoints(
         top_height_m=args.top_height_mm/1000., hole_height_m=args.hole_height_mm/1000.,
         max_correction_m=args.max_height_correction_mm/1000.)
+    scene = None
+    if args.scene_aruco_id is not None:
+        from perception.scene_frame import SceneFrameInitializer
+        scene = SceneFrameInitializer(aruco_id=args.scene_aruco_id,
+            aruco_dictionary=args.scene_aruco_dictionary,
+            min_stable_frames=args.scene_stable_frames)
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
     predictor = SAM2ImagePredictor(build_sam2('configs/sam2.1/sam2.1_hiera_t.yaml',
@@ -123,6 +132,8 @@ def main():
             result['placement_targets'] = [placement.estimate(frame, result)]
             if heights is not None:
                 result = heights.apply(frame, result)
+            if scene is not None:
+                result['scene_reference'] = scene.process(frame, result)
             packet = sink.publish_result(result, mode='live' if camera is not None else 'offline')
             if images is not None:
                 images.publish_overlay(frame, result, mode='live' if camera is not None else 'offline')

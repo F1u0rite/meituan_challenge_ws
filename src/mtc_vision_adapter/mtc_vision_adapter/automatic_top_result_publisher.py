@@ -132,6 +132,17 @@ def candidate_packet(result, *, session_id, sequence, mode):
         targets.append(entry)
     packet['placement_targets'] = targets
     packet['height_constraint'] = result.get('height_constraint',dict(enabled=False))
+    if result.get('scene_reference') is not None:
+        from perception.scene_frame import scene_coordinates
+        reference = result['scene_reference']
+        if reference.get('schema') != 'mtc.scene_reference.v1' or type(reference.get('ready')) is not bool:
+            raise ValueError('invalid scene reference schema/readiness')
+        if reference.get('input_coordinate_frame') != frame or reference.get('unit_position') != 'm':
+            raise ValueError('scene reference frame/unit mismatch')
+        if reference.get('motion_usable') or reference.get('robot_transform_available'):
+            raise ValueError('scene reference is not a robot calibration')
+        packet['scene_coordinates'] = scene_coordinates(packet, reference)
+        packet['scene_reference'] = reference
     json.dumps(packet, allow_nan=False)
     return packet
 
