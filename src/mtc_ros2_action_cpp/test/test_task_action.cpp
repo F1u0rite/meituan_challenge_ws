@@ -126,6 +126,31 @@ TEST_F(TaskAction, UnconfirmedChildCancelPreserves520AndLocksParent)
   EXPECT_EQ(r.result->completed_count, 0);
   EXPECT_EQ(send(goal("after_fault")), nullptr);
 }
+
+TEST_F(TaskAction, DelayedCancelWaitsForChildStopThenAllowsNextTask)
+{
+  mtc::ros2_action::MockOptions options;
+  options.result_delay_ms = 700;
+  setup(options);
+  auto handle = send(goal()); ASSERT_NE(handle, nullptr);
+  ASSERT_TRUE(eventually([this]() {return child_moving();}));
+  std::this_thread::sleep_for(400ms);
+  cancel_after_dispatch(handle);
+  auto result = client->async_get_result(handle); ASSERT_TRUE(ready(result));
+  const auto terminal = result.get();
+  EXPECT_EQ(terminal.code, rclcpp_action::ResultCode::CANCELED);
+  EXPECT_EQ(terminal.result->error_code, ErrorCodes::OK);
+  EXPECT_FALSE(terminal.result->success);
+  EXPECT_EQ(terminal.result->completed_count, 0);
+  EXPECT_EQ(child->mock_call_counts()->executions.load(), 1u);
+  EXPECT_EQ(child->mock_call_counts()->stops.load(), 1u);
+  auto next = send(goal("after_delayed_cancel")); ASSERT_NE(next, nullptr);
+  auto next_result = client->async_get_result(next); ASSERT_TRUE(ready(next_result));
+  const auto completed = next_result.get();
+  EXPECT_EQ(completed.code, rclcpp_action::ResultCode::SUCCEEDED);
+  EXPECT_EQ(completed.result->error_code, ErrorCodes::OK);
+  EXPECT_EQ(completed.result->completed_count, 1);
+}
 TEST_F(TaskAction, ChildStatusUnknownPropagatesOriginalError)
 {
   mtc::ros2_action::MockOptions o; o.motion.status_unknown = true;
