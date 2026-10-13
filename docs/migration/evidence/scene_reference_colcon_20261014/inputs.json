@@ -1,0 +1,64 @@
+{
+  "created_at": "2026-10-13T22:03:49.430851+00:00",
+  "source_commit": "4e7ddd4794c28fdd423aaf67477fee5b8f40d2a0",
+  "repair_parent": "182386a2e896f8b85570b73619b7ec4788a64a4c",
+  "existing_pr": 19,
+  "base": "feature/perception-adapter",
+  "changed_runtime_or_test_file": "src/mtc_vision_adapter/setup.py",
+  "setup_sha256": "e6177e133ba3f091054bd7edd884b4f446e24606badf0b193310c7241c559fd3",
+  "diff": "diff --git a/src/mtc_vision_adapter/setup.py b/src/mtc_vision_adapter/setup.py\nindex 80e21fc..482da9a 100644\n--- a/src/mtc_vision_adapter/setup.py\n+++ b/src/mtc_vision_adapter/setup.py\n@@ -2,6 +2,7 @@ from setuptools import setup\n setup(name='mtc_vision_adapter',version='0.1.0',packages=['mtc_vision_adapter'],\n  data_files=[('share/ament_index/resource_index/packages',['resource/mtc_vision_adapter']),\n  ('share/mtc_vision_adapter',['package.xml'])],install_requires=['setuptools'],\n+ tests_require=['pytest'],\n  zip_safe=True,maintainer='vision team',maintainer_email='vision@example.invalid',\n  description='Diagnostic TCP vision bridge and offline replay; invalid 3D poses',\n  license='Apache-2.0',entry_points={'console_scripts':['replay_publisher = mtc_vision_adapter.publisher:main','live_tcp_bridge = mtc_vision_adapter.live_tcp_bridge:main','native_rgbd_publisher = mtc_vision_adapter.native_rgbd:main','automatic_top_coordinates_replay = mtc_vision_adapter.automatic_top_result_publisher:main']})",
+  "one_line_registration_identical_to": "PR18 deb4636e418fb6fc1357f66625fd4975a21b9687, merged into codex/yuze-parallel only",
+  "unchanged": "Runtime modules, all test assertions and vision_core unchanged relative to PR19 parent",
+  "validation": {
+    "before": {
+      "cwd": "/fix-review",
+      "exit_code": 5,
+      "ran_tests": 0
+    },
+    "after": {
+      "cwd": "/fix-review",
+      "exit_code": 0,
+      "tests": 168,
+      "errors": 0,
+      "failures": 0,
+      "skips": 0
+    },
+    "eight_new_tests": [
+      "test_scene_reference_rejects_wrong_destination_frame[True-base_link]",
+      "test_scene_reference_rejects_wrong_destination_frame[True-camera_color_optical]",
+      "test_scene_reference_rejects_wrong_destination_frame[True-]",
+      "test_scene_reference_rejects_wrong_destination_frame[True-None]",
+      "test_scene_reference_rejects_wrong_destination_frame[False-base_link]",
+      "test_scene_reference_rejects_wrong_destination_frame[False-camera_color_optical]",
+      "test_scene_reference_rejects_wrong_destination_frame[False-]",
+      "test_scene_reference_rejects_wrong_destination_frame[False-None]"
+    ],
+    "real_dds_cases": 7
+  },
+  "environment": {
+    "ubuntu": "24.04",
+    "ros": "Jazzy",
+    "network": "none",
+    "cpu": 2,
+    "memory_gib": 4,
+    "mounts": [],
+    "devices": [],
+    "ports": {},
+    "domain": 224,
+    "dependency_source": "Previously frozen offline wheel cache; no external network or device access"
+  },
+  "original_harness_failure": "Initial before/after commands mistakenly discovered /candidate, corrected cd /fix-review in v2; all initial logs retained",
+  "not_fixed": [
+    "Manual scene direction may be reused after T0 loss plus synthetic camera movement",
+    "Python Action 220/510/520",
+    "MoveIt child -11",
+    "Private camera/SAM inputs, physical accuracy, full FSM and hardware"
+  ],
+  "excluded": [
+    "raw outputs trees",
+    "caches",
+    "local machine configuration",
+    "other-session changes",
+    "unfinished functionality"
+  ]
+}

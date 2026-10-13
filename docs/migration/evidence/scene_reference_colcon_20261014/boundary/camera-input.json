@@ -1,0 +1,119 @@
+[
+  {
+    "source_frame_id": "color_21_depth_19",
+    "capture_timestamp": 1791910073.8,
+    "timestamps": {
+      "color_frame_number": 21,
+      "depth_frame_number": 19,
+      "color_sdk_ms": 1791910073800.0
+    },
+    "coordinate_frame": "camera_color_optical",
+    "unit_position": "m",
+    "pair_qualified": true,
+    "motion_usable": false,
+    "ring_pose_valid": false,
+    "body_pose_valid": false,
+    "objects": [
+      {
+        "color": "red",
+        "candidate_available": true,
+        "green_point_camera_m": [
+          0.1,
+          -0.02,
+          0.52
+        ],
+        "red_point_camera_m": [
+          0.1,
+          -0.02,
+          0.54
+        ]
+      },
+      {
+        "color": "blue",
+        "candidate_available": true,
+        "green_point_camera_m": [
+          0.1,
+          -0.02,
+          0.52
+        ],
+        "red_point_camera_m": [
+          0.1,
+          -0.02,
+          0.54
+        ]
+      },
+      {
+        "color": "yellow",
+        "candidate_available": true,
+        "green_point_camera_m": [
+          0.1,
+          -0.02,
+          0.52
+        ],
+        "red_point_camera_m": [
+          0.1,
+          -0.02,
+          0.54
+        ]
+      },
+      {
+        "color": "green",
+        "candidate_available": true,
+        "green_point_camera_m": [
+          0.1,
+          -0.02,
+          0.52
+        ],
+        "red_point_camera_m": [
+          0.1,
+          -0.02,
+          0.54
+        ]
+      }
+    ],
+    "scene_reference": {
+      "schema": "mtc.scene_reference.v1",
+      "ready": true,
+      "status": "READY",
+      "source_frame_id": "color_21_depth_19",
+      "capture_timestamp_s": 1791910073.8,
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "input_coordinate_frame": "camera_color_optical",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "motion_usable": false,
+      "robot_transform_available": false,
+      "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+      "T_scene_from_camera": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          -1,
+          0.6
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ]
+    }
+  }
+]

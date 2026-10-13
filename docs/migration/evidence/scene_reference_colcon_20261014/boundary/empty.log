@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/registration-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay", line 33, in <module>
+    sys.exit(load_entry_point('mtc-vision-adapter==0.1.0', 'console_scripts', 'automatic_top_coordinates_replay')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/registration-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py", line 257, in main
+    candidate_packet(row, session_id='preflight', sequence=1, mode='replay')
+  File "/registration-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py", line 143, in candidate_packet
+    raise ValueError('scene reference frame/unit mismatch')
+ValueError: scene reference frame/unit mismatch

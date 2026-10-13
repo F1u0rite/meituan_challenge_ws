@@ -1,0 +1,4 @@
+{
+  "error": "step.py default cwd /candidate selected original unregistered package during colcon test, although build used explicit /fix-review base-paths. Initial registration-after exit5/Ran0 is harness error, not evidence that one-line repair fails.",
+  "correction": "New commands explicitly cd /fix-review before both build and test. Restore original PR19 setup for a correctly scoped before observation, then copy one-line patched setup for after. Retain both initial logs."
+}
