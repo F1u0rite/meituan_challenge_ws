@@ -137,7 +137,9 @@ def candidate_packet(result, *, session_id, sequence, mode):
         reference = result['scene_reference']
         if reference.get('schema') != 'mtc.scene_reference.v1' or type(reference.get('ready')) is not bool:
             raise ValueError('invalid scene reference schema/readiness')
-        if reference.get('input_coordinate_frame') != frame or reference.get('unit_position') != 'm':
+        if (reference.get('input_coordinate_frame') != frame
+                or reference.get('coordinate_frame') != 't0_scene'
+                or reference.get('unit_position') != 'm'):
             raise ValueError('scene reference frame/unit mismatch')
         if reference.get('motion_usable') or reference.get('robot_transform_available'):
             raise ValueError('scene reference is not a robot calibration')

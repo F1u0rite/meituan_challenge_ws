@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-13T20:07:16.194149+00:00",
+  "base_commit": "4e7ddd4794c28fdd423aaf67477fee5b8f40d2a0",
+  "scope": "Completed ROS destination-frame validation repair only; general monitoring archive remains local",
+  "files": [
+    {
+      "path": "after/base-input.json",
+      "bytes": 2406,
+      "sha256": "7f096a6e126f358f7ab3b82cde2ad59e3f060826fa94255db133c2a15af9eb58"
+    },
+    {
+      "path": "after/base.log",
+      "bytes": 868,
+      "sha256": "d9fadd8e38ebd80d4d1d121228679618abee9720310dc7a21351fd24c0240e65"
+    },
+    {
+      "path": "after/camera-input.json",
+      "bytes": 2417,
+      "sha256": "e5d4a63e8b04b18f4d12a17d366f1180bce0ed9f7b7f5a92bd1b1c80812e4e69"
+    },
+    {
+      "path": "after/camera.log",
+      "bytes": 868,
+      "sha256": "d9fadd8e38ebd80d4d1d121228679618abee9720310dc7a21351fd24c0240e65"
+    },
+    {
+      "path": "after/empty-input.json",
+      "bytes": 2397,
+      "sha256": "2c13d5695e11a8c7d9319fcb47968d6a0139f374c7c4f29887bb6b2368e795cc"
+    },
+    {
+      "path": "after/empty.log",
+      "bytes": 868,
+      "sha256": "d9fadd8e38ebd80d4d1d121228679618abee9720310dc7a21351fd24c0240e65"
+    },
+    {
+      "path": "after/legacy-input.json",
+      "bytes": 1478,
+      "sha256": "8751d82fffb6d5f00199bfc373b49e047eeca23d58749e9dc2ffc7bd1987eda3"
+    },
+    {
+      "path": "after/legacy.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "after/missing-input.json",
+      "bytes": 2367,
+      "sha256": "74b57c47b6734e3fc6c43e71a9c99fc5863c6946f780bd5f354a58fa05db8bc8"
+    },
+    {
+      "path": "after/missing.log",
+      "bytes": 868,
+      "sha256": "d9fadd8e38ebd80d4d1d121228679618abee9720310dc7a21351fd24c0240e65"
+    },
+    {
+      "path": "after/not-ready-input.json",
+      "bytes": 2125,
+      "sha256": "f2b6f8c33496bffcdd11f43a7e6be1aa3bc45def0e27eaf1b822552f40584d7d"
+    },
+    {
+      "path": "after/not-ready.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "after/result.json",
+      "bytes": 28050,
+      "sha256": "26197f5f29d8f3a3275c52998592be49b058bbc9d524d1a736ab90bd524ccf94"
+    },
+    {
+      "path": "after/valid-input.json",
+      "bytes": 2405,
+      "sha256": "b284bb073f4b727a275aeae6ada5cb86bbe1ff719aeb490557646f66e374a734"
+    },
+    {
+      "path": "after/valid.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "after-command.sh",
+      "bytes": 243,
+      "sha256": "0b5ec01379ac71bcfbeed17b7caa0f9455600fb9fb7b59ced48627155c36afd7"
+    },
+    {
+      "path": "before/base-input.json",
+      "bytes": 2406,
+      "sha256": "7f096a6e126f358f7ab3b82cde2ad59e3f060826fa94255db133c2a15af9eb58"
+    },
+    {
+      "path": "before/base.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/camera-input.json",
+      "bytes": 2417,
+      "sha256": "e5d4a63e8b04b18f4d12a17d366f1180bce0ed9f7b7f5a92bd1b1c80812e4e69"
+    },
+    {
+      "path": "before/camera.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/empty-input.json",
+      "bytes": 2397,
+      "sha256": "2c13d5695e11a8c7d9319fcb47968d6a0139f374c7c4f29887bb6b2368e795cc"
+    },
+    {
+      "path": "before/empty.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/legacy-input.json",
+      "bytes": 1478,
+      "sha256": "8751d82fffb6d5f00199bfc373b49e047eeca23d58749e9dc2ffc7bd1987eda3"
+    },
+    {
+      "path": "before/legacy.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/missing-input.json",
+      "bytes": 2367,
+      "sha256": "74b57c47b6734e3fc6c43e71a9c99fc5863c6946f780bd5f354a58fa05db8bc8"
+    },
+    {
+      "path": "before/missing.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/not-ready-input.json",
+      "bytes": 2125,
+      "sha256": "f2b6f8c33496bffcdd11f43a7e6be1aa3bc45def0e27eaf1b822552f40584d7d"
+    },
+    {
+      "path": "before/not-ready.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before/result.json",
+      "bytes": 65263,
+      "sha256": "da10abef11c680211d20d30fcde7fb80c8cf58b7eb2b3c02c0349275ae40dec6"
+    },
+    {
+      "path": "before/valid-input.json",
+      "bytes": 2405,
+      "sha256": "b284bb073f4b727a275aeae6ada5cb86bbe1ff719aeb490557646f66e374a734"
+    },
+    {
+      "path": "before/valid.log",
+      "bytes": 78,
+      "sha256": "ecfcdde11f0f945a39a7c1a29f8c6cc6a8de90712994d62768438d804ef9ceb4"
+    },
+    {
+      "path": "before-command.sh",
+      "bytes": 179,
+      "sha256": "e5fe92f6053e0a38252cd23d78f295b5dc22f5cb3b24bfa7b8a6cc1308506d97"
+    },
+    {
+      "path": "boundary-probe.py",
+      "bytes": 6152,
+      "sha256": "e36b1784a1f9a120d6f87513900fe8c6f1ceaaf745ccdd152af6e70e2a7d38c7"
+    },
+    {
+      "path": "build-command.sh",
+      "bytes": 207,
+      "sha256": "6efa897b521706a19e9b35466de7eff80599163d2ec7d71c0dcf325a35006aff"
+    },
+    {
+      "path": "build.log",
+      "bytes": 313,
+      "sha256": "7b84f0fabe53c6fc437d401683777ebe404599e78e0a564642ef6083910aa024"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 430,
+      "sha256": "aa5b3df3e8124912eb96a49a46de00d8fb15c8dbe04f3e23da1c9ddfceded513"
+    },
+    {
+      "path": "inputs.json",
+      "bytes": 2582,
+      "sha256": "face4a38f653ce51e213d30ad77169811c8e4e498c42c9197df20c7c1522ce53"
+    },
+    {
+      "path": "layout-failure.log",
+      "bytes": 4183,
+      "sha256": "ba5fe18130829f58f2af99e3dc414954adde7893dddaa15f20b3b6447432d16b"
+    },
+    {
+      "path": "layout-failure.xml",
+      "bytes": 289200,
+      "sha256": "263d3386fef6caf119fd90b680bb0dca0a3fc54ec0738f9f966d56e3465cdc62"
+    },
+    {
+      "path": "module-identity.json",
+      "bytes": 794,
+      "sha256": "1410c7a9a3d3ffec8c6e77eb6e05d7cca14147d7c8143024dc73a6a8e738f940"
+    },
+    {
+      "path": "pre-stop-processes.txt",
+      "bytes": 103,
+      "sha256": "b70cc0a9f9e984ef2919cc267ee860092984b5f839d6db6d6fa367bd3534154a"
+    },
+    {
+      "path": "pytest.xml",
+      "bytes": 286301,
+      "sha256": "38d8c8eed6cc0d3af621dc50c1d2b0a07fb4849ade3dcf306004d460739d192d"
+    },
+    {
+      "path": "tests-command.sh",
+      "bytes": 633,
+      "sha256": "ec5989fae918757cec79bfe13ee4d0486ebd62b5f2c544a3aa5d4534ad630773"
+    },
+    {
+      "path": "tests.log",
+      "bytes": 342,
+      "sha256": "cbf768d9922a9a42aefeb03d749e28fa5fae35781cb57a8f3ad2179b0ce5d732"
+    }
+  ]
+}

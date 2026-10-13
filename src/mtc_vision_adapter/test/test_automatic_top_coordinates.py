@@ -205,3 +205,20 @@ def test_scene_reference_must_match_current_packet_and_leave_legacy_default_unch
         robot_transform_available=False,T_scene_from_camera=[[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
     with pytest.raises(ValueError,match='source mismatch'):
         convert(row)
+
+
+@pytest.mark.parametrize('destination', ['base_link', 'camera_color_optical', '', None])
+@pytest.mark.parametrize('ready', [True, False])
+def test_scene_reference_rejects_wrong_destination_frame(destination, ready):
+    row = fixture()
+    reference = dict(schema='mtc.scene_reference.v1', ready=ready,
+        status='READY' if ready else 'NOT_READY', source_frame_id=row['source_frame_id'],
+        capture_timestamp_s=row['capture_timestamp'], timestamps=copy.deepcopy(row['timestamps']),
+        input_coordinate_frame='camera_color_optical', coordinate_frame=destination,
+        unit_position='m', motion_usable=False, robot_transform_available=False,
+        T_scene_from_camera=[[1,0,0,0],[0,-1,0,0],[0,0,-1,.6],[0,0,0,1]] if ready else None)
+    if destination is None:
+        del reference['coordinate_frame']
+    row['scene_reference'] = reference
+    with pytest.raises(ValueError, match='frame/unit mismatch'):
+        convert(row)

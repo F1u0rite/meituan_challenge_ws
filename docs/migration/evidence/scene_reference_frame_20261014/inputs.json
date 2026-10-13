@@ -1,0 +1,65 @@
+{
+  "observed_source": "5efbd2d4f9e7d7d3a47ce91f199cbd1520f95c4c",
+  "repair_base": "4e7ddd4794c28fdd423aaf67477fee5b8f40d2a0",
+  "base_branch": "feature/perception-adapter",
+  "source_trees_equal": true,
+  "change": "Require scene_reference.coordinate_frame == t0_scene before either ROS publication",
+  "source_identity": {
+    "module": "/fix-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py",
+    "installed_sha256": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c",
+    "baseline_sha256": "269030a25b46933c59a5803fe8b826ca49640b463398fe9dcb3eea10d4783a81",
+    "patched_sha256": "d5d5e00a04137ca066af20430a27922e35722e63155d0a634f8e1e79d63aa18c",
+    "unchanged_vision_core_python_files": 132,
+    "test_file_sha256": "2f4e826bb68b2a8511156c8c666ffc6a93271d0a31fa33dcd89ca9009cbaffeb",
+    "public_baseline": "5efbd2d4f9e7d7d3a47ce91f199cbd1520f95c4c",
+    "repair_base": "4e7ddd4794c28fdd423aaf67477fee5b8f40d2a0",
+    "validation_layout": "Full source tree /fix-review; patched adapter install /fix-install; unchanged interfaces /candidate-install"
+  },
+  "isolation": {
+    "image": "sha256:fc34a89bd28242581b43c4be45d1e40952638b823cf5c55a34c5ebd2ae0c5e29",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 4294967296,
+    "devices": [],
+    "mounts": [],
+    "published_ports": [],
+    "cap_drop": [
+      "ALL"
+    ],
+    "no_new_privileges": true
+  },
+  "environment": {
+    "os": "Ubuntu24.04",
+    "ros": "Jazzy",
+    "python": "3.12.3",
+    "pytest": "8.3.5",
+    "numpy": "1.26.4",
+    "opencv_wheel": "4.8.1.78"
+  },
+  "before": {
+    "cases": 7,
+    "invalid_inputs_published": 4,
+    "positive_cases": 3,
+    "probe_exit": 1
+  },
+  "after": {
+    "cases": 7,
+    "invalid_inputs_rejected": 4,
+    "invalid_publications": 0,
+    "positive_cases": 3,
+    "probe_exit": 0
+  },
+  "regression": {
+    "passed": 168,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "added_cases": 8
+  },
+  "external_harness_failure": "First pytest invocation used /fix-src/package/test, so two tests resolved repository root as /. Repeated in full /fix-review/src/package/test layout; same assertions passed. Both logs/XML retained.",
+  "open_scope": [
+    "Manual positive-X reference after T0 loss and camera movement is not fixed; vision owner handoff",
+    "Full FSM/Action/Cancel, private SAM/CAD assets, live camera and physical calibration not validated"
+  ],
+  "ai_assistance": "OpenAI Codex diagnosis, minimal integration patch, external DDS probe, regression and evidence review"
+}

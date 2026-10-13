@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-10-13T20:06:13.256556+00:00",
+  "container": "mtc-scene-init-review-5efbd2d",
+  "state": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 137,
+    "Error": "",
+    "StartedAt": "2026-10-13T19:56:30.792480408Z",
+    "FinishedAt": "2026-10-13T20:06:05.773703428Z"
+  },
+  "exec_ids": null
+}

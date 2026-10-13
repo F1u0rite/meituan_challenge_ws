@@ -1,0 +1,1 @@
+colcon --log-base /review-evidence/fix-build-log build --base-paths /fix-src/mtc_vision_adapter --build-base /fix-build --install-base /fix-install --packages-select mtc_vision_adapter --executor sequential

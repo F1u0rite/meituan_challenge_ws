@@ -1,0 +1,2286 @@
+{
+  "passed": false,
+  "cases": [
+    {
+      "name": "valid",
+      "expected_reject": false,
+      "passed": true,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/valid-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921596.1885433,
+      "ended_at": 1791921597.1444745
+    },
+    {
+      "name": "not-ready",
+      "expected_reject": false,
+      "passed": true,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/not-ready-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921597.1450958,
+      "ended_at": 1791921598.0562198
+    },
+    {
+      "name": "legacy",
+      "expected_reject": false,
+      "passed": true,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/legacy-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921598.056501,
+      "ended_at": 1791921598.92477
+    },
+    {
+      "name": "base",
+      "expected_reject": true,
+      "passed": false,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/base-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921598.9251606,
+      "ended_at": 1791921600.3611534
+    },
+    {
+      "name": "camera",
+      "expected_reject": true,
+      "passed": false,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/camera-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921600.3615959,
+      "ended_at": 1791921603.3382149
+    },
+    {
+      "name": "empty",
+      "expected_reject": true,
+      "passed": false,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/empty-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921603.3385203,
+      "ended_at": 1791921606.3399253
+    },
+    {
+      "name": "missing",
+      "expected_reject": true,
+      "passed": false,
+      "argv": [
+        "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+        "--rows",
+        "/review-evidence/boundary-before/missing-input.json",
+        "--period-s",
+        "0",
+        "--wait-subscriber-s",
+        "8"
+      ],
+      "child_exit": 0,
+      "received": [
+        1,
+        1
+      ],
+      "started_at": 1791921606.3403537,
+      "ended_at": 1791921607.2608027
+    }
+  ],
+  "packets": [
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-0ce3d2509900",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-0ce3d2509900-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-0ce3d2509900-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-0ce3d2509900-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-0ce3d2509900-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": true,
+        "status": "READY",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": true,
+        "status": "READY",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": [
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1,
+            0.6
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921596,
+        "nanosec": 634563885
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-1de452ba907c",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-1de452ba907c-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1de452ba907c-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1de452ba907c-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1de452ba907c-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": false,
+        "status": "NO_UNIQUE_CURRENT_T0",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": false,
+            "green_point_scene_m": null,
+            "red_point_scene_m": null,
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": false,
+            "green_point_scene_m": null,
+            "red_point_scene_m": null,
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": false,
+            "green_point_scene_m": null,
+            "red_point_scene_m": null,
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": false,
+            "green_point_scene_m": null,
+            "red_point_scene_m": null,
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": false,
+        "status": "NO_UNIQUE_CURRENT_T0",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": null
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921597,
+        "nanosec": 549825632
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-b232cbc1d676",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-b232cbc1d676-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-b232cbc1d676-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-b232cbc1d676-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-b232cbc1d676-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921598,
+        "nanosec": 418235297
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-7e2f90c52ae4",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-7e2f90c52ae4-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7e2f90c52ae4-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7e2f90c52ae4-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7e2f90c52ae4-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": true,
+        "status": "READY",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": true,
+        "status": "READY",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "coordinate_frame": "base_link",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": [
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1,
+            0.6
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921599,
+        "nanosec": 853880089
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-7c841c266a9a",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-7c841c266a9a-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7c841c266a9a-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7c841c266a9a-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-7c841c266a9a-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": true,
+        "status": "READY",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": true,
+        "status": "READY",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "coordinate_frame": "camera_color_optical",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": [
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1,
+            0.6
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921602,
+        "nanosec": 831563691
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-1f141d70b09d",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-1f141d70b09d-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1f141d70b09d-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1f141d70b09d-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-1f141d70b09d-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": true,
+        "status": "READY",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": true,
+        "status": "READY",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "coordinate_frame": "",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": [
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1,
+            0.6
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921605,
+        "nanosec": 832036088
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    },
+    {
+      "schema": "mtc.top_hole_candidates.v1",
+      "session_id": "yuze-a7ca840857bf",
+      "sequence": 1,
+      "source_mode": "replay",
+      "replay": true,
+      "source_frame_id": "color_21_depth_19",
+      "coordinate_frame": "camera_color_optical",
+      "unit_position": "m",
+      "capture_timestamp_s": 1791910073.8,
+      "capture_timestamp_source": "RECORDED_SOURCE_LABEL_UNAVAILABLE",
+      "timestamps": {
+        "color_frame_number": 21,
+        "depth_frame_number": 19,
+        "color_sdk_ms": 1791910073800.0
+      },
+      "ros_capture_clock_verified": false,
+      "ros_header_policy": "ZERO_UNMAPPED_CAMERA_CLOCK",
+      "body_pose_valid": false,
+      "ring_pose_valid": false,
+      "motion_usable": false,
+      "processing_ms": 0.0,
+      "objects": [
+        {
+          "object_id": "yuze-a7ca840857bf-red",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "red",
+          "color_code": 1,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-a7ca840857bf-blue",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "blue",
+          "color_code": 2,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-a7ca840857bf-yellow",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "yellow",
+          "color_code": 3,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        },
+        {
+          "object_id": "yuze-a7ca840857bf-green",
+          "identity_kind": "UNIQUE_COLOR_SLOT",
+          "color": "green",
+          "color_code": 4,
+          "candidate_available": true,
+          "status": "CANDIDATE",
+          "green_point_camera_m": [
+            0.1,
+            -0.02,
+            0.52
+          ],
+          "red_point_camera_m": [
+            0.1,
+            -0.02,
+            0.54
+          ],
+          "green_point_semantics": "OBSERVED_TOP_CENTER",
+          "red_point_semantics": "CAD_DERIVED_HOLE_CENTER",
+          "rgb_confirmed": false,
+          "geometry_consistent": false,
+          "reasons": [
+            "NO_CURRENT_CANDIDATE"
+          ],
+          "ring_pose_valid": false,
+          "body_pose_valid": false,
+          "absolute_accuracy": "NOT_MEASURED",
+          "green_height_m": null,
+          "red_height_m": null,
+          "coordinate_variant": "RAW_UNCORRECTED",
+          "height_constraint": {
+            "enabled": false,
+            "applied": false
+          },
+          "raw_candidate_available": false,
+          "raw_green_point_camera_m": null,
+          "raw_red_point_camera_m": null,
+          "raw_green_height_m": null,
+          "raw_red_height_m": null
+        }
+      ],
+      "missing_colors": [],
+      "placement_targets": [],
+      "height_constraint": {
+        "enabled": false
+      },
+      "scene_coordinates": {
+        "coordinate_frame": "t0_scene",
+        "unit_position": "m",
+        "source_frame_id": "color_21_depth_19",
+        "ready": true,
+        "status": "READY",
+        "objects": [
+          {
+            "color": "red",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "blue",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "yellow",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          },
+          {
+            "color": "green",
+            "candidate_available": true,
+            "green_point_scene_m": [
+              0.1,
+              0.02,
+              0.07999999999999996
+            ],
+            "red_point_scene_m": [
+              0.1,
+              0.02,
+              0.05999999999999994
+            ],
+            "coordinate_variant": "RAW_UNCORRECTED"
+          }
+        ],
+        "placement_targets": [],
+        "absolute_accuracy": "NOT_MEASURED",
+        "motion_usable": false,
+        "robot_transform_available": false
+      },
+      "scene_reference": {
+        "schema": "mtc.scene_reference.v1",
+        "ready": true,
+        "status": "READY",
+        "source_frame_id": "color_21_depth_19",
+        "capture_timestamp_s": 1791910073.8,
+        "timestamps": {
+          "color_frame_number": 21,
+          "depth_frame_number": 19,
+          "color_sdk_ms": 1791910073800.0
+        },
+        "input_coordinate_frame": "camera_color_optical",
+        "unit_position": "m",
+        "motion_usable": false,
+        "robot_transform_available": false,
+        "reference_validity": "EXACT_SOURCE_FRAME_ONLY",
+        "T_scene_from_camera": [
+          [
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1,
+            0.6
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      "ros_dispatch_stamp": {
+        "sec": 1791921606,
+        "nanosec": 753628399
+      },
+      "dispatch_clock_is_not_capture_clock": true
+    }
+  ],
+  "arrays": [
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    {
+      "frame": "camera_color_optical",
+      "count": 4,
+      "valid": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "x": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    }
+  ],
+  "remaining_nodes": [
+    [
+      "scene_boundary_receiver",
+      "/"
+    ]
+  ],
+  "executable": "/candidate-install/mtc_vision_adapter/lib/mtc_vision_adapter/automatic_top_coordinates_replay",
+  "executable_sha256": "be72fc9481065b9b73a46f76497a72ec3e4f3f0c382b568b01d9434935d8561e",
+  "scope": "Actual installed separate processes, synthetic coordinates and local DDS; never motion or physical calibration"
+}

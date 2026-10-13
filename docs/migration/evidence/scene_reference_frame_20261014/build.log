@@ -1,0 +1,11 @@
+Starting >>> mtc_vision_adapter
+Finished <<< mtc_vision_adapter [1.15s]
+--- stderr: mtc_vision_adapter
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+
+Summary: 1 package finished [1.28s]
+  1 package had stderr output: mtc_vision_adapter
