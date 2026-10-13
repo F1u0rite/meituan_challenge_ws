@@ -273,26 +273,6 @@ std::optional<mtc::core::StopEvidence> MockMotionAdapter::stop_evidence() const
   return evidence_;
 }
 
-bool MockMotionAdapter::sample_stationary_feedback(const std::string & command_id)
-{
-  std::lock_guard<std::recursive_mutex> lock(mutex_);
-  if (command_id.empty() || !evidence_ || evidence_->command_id != command_id ||
-    active_command_ || !guard_.is_free() || !stop_confirmed_ ||
-    !evidence_->communication_ok || !evidence_->queue_empty ||
-    !evidence_->stationary_interval_verified) {return false;}
-
-  // This adapter owns the entire instantaneous virtual plant under this lock.
-  // A new execution invalidates evidence before changing that plant. Observe its
-  // current state; do not relabel a cached Result or invent a stationary interval.
-  auto sample = joint_feedback();
-  if (!std::isfinite(sample.stamp_s) || !std::isfinite(evidence_->feedback.stamp_s) ||
-    sample.stamp_s < evidence_->feedback.stamp_s ||
-    sample.position_rad != evidence_->feedback.position_rad ||
-    sample.velocity_rad_s != evidence_->feedback.velocity_rad_s) {return false;}
-  evidence_->feedback = std::move(sample);
-  return true;
-}
-
 bool MockMotionAdapter::force_begin_in_flight(const std::string & command_id)
 {
   std::lock_guard<std::recursive_mutex> lock(mutex_);

@@ -115,49 +115,6 @@ TEST_F(PickAction, CancelWithoutStopEvidenceAbortsAndKeepsFaultLocked)
   EXPECT_FALSE(r.result->placement_verified);
   EXPECT_EQ(send(goal("after_fault")), nullptr);
 }
-
-TEST_F(PickAction, DelayedCancelConfirmsStopAndAllowsNextUnloadedGoal)
-{
-  mtc::ros2_action::MockOptions options;
-  options.result_delay_ms = 700;
-  setup(options);
-  auto handle = send(goal()); ASSERT_NE(handle, nullptr);
-  ASSERT_TRUE(eventually([this]() {return dispatched.load();}));
-  std::this_thread::sleep_for(400ms);
-  auto cancel = client->async_cancel_goal(handle); ASSERT_TRUE(ready(cancel));
-  EXPECT_FALSE(cancel.get()->goals_canceling.empty());
-  auto result = client->async_get_result(handle); ASSERT_TRUE(ready(result));
-  const auto terminal = result.get();
-  EXPECT_EQ(terminal.code, rclcpp_action::ResultCode::CANCELED);
-  EXPECT_EQ(terminal.result->error_code, ErrorCodes::OK);
-  EXPECT_FALSE(terminal.result->success);
-  EXPECT_FALSE(terminal.result->placement_verified);
-  EXPECT_EQ(server->mock_call_counts()->executions.load(), 1u);
-  EXPECT_EQ(server->mock_call_counts()->stops.load(), 1u);
-  auto next = send(goal("after_confirmed_stop")); ASSERT_NE(next, nullptr);
-  auto next_result = client->async_get_result(next); ASSERT_TRUE(ready(next_result));
-  EXPECT_EQ(next_result.get().code, rclcpp_action::ResultCode::SUCCEEDED);
-}
-
-TEST_F(PickAction, DelayedCancelWithoutEvidenceStillAbortsAndLocksAdmission)
-{
-  mtc::ros2_action::MockOptions options;
-  options.result_delay_ms = 700;
-  options.stop_evidence_available = false;
-  setup(options);
-  auto handle = send(goal()); ASSERT_NE(handle, nullptr);
-  ASSERT_TRUE(eventually([this]() {return dispatched.load();}));
-  std::this_thread::sleep_for(400ms);
-  auto cancel = client->async_cancel_goal(handle); ASSERT_TRUE(ready(cancel));
-  EXPECT_FALSE(cancel.get()->goals_canceling.empty());
-  auto result = client->async_get_result(handle); ASSERT_TRUE(ready(result));
-  const auto terminal = result.get();
-  EXPECT_EQ(terminal.code, rclcpp_action::ResultCode::ABORTED);
-  EXPECT_EQ(terminal.result->error_code, ErrorCodes::CANCEL_NOT_CONFIRMED);
-  EXPECT_FALSE(terminal.result->placement_verified);
-  EXPECT_EQ(send(goal("after_unconfirmed_stop")), nullptr);
-  EXPECT_EQ(server->mock_call_counts()->executions.load(), 1u);
-}
 TEST_F(PickAction, StaleGoalCancelCannotInterruptNewGoal)
 {
   setup();

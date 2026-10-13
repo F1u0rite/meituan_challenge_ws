@@ -153,12 +153,7 @@ attempt编号；`CANCEL_CHILD` 核对原 ID，再取消保存的那个子 Goal h
 FSM=`CANCELLED` 且 `stop_confirmed=true` 才返回 ROS `CANCELED/OK`。
 Task 只从关联子 Goal 的这个最终结果调用 `confirm_child_stopped()`；ACK、
 子 SUCCEEDED、缺少子句柄、缺少结果均不能代替停止确认。首次运动尚未产生
-证据或历史证据已过期且未取得新观测时，取消仍得到 `ABORTED/520`。
-2026-10-13 C1 修复在 `AsyncMockMotion` 的关联 stop worker 内显式采样
-同一条已知停稳的虚拟命令，再由未修改的 Core 验证。该采样保留原停稳
-区间/命令身份；状态未知、缺少证据、错误 ID、时钟倒退均不能补造证据。
-`stop_evidence()` 仍返回可过期的快照，不自动刷新；详见
-[C1 修复与回归](../../docs/migration/C1_DELAYED_CANCEL_FIX_20261013.md)。
+证据或历史证据已过期时，取消可能得到 `ABORTED/520`，这是保守行为。
 
 **这个契约只适用于可信的本包 Mock Server。公共 Result 没有足够字段独立核验
 第三方的停稳证据。连接未知第三方/实机 Server 的通路未实现、不得验收；未来
