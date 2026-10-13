@@ -1,0 +1,33 @@
+# RGB hypothesis thresholds, not calibrated identification probabilities.
+# RGB-only silhouette prior: H3 extra wood contours cluster around fill 0.63-0.65;
+# this is separate from the unchanged V4.4 0.80 combined confirmation policy.
+min_rgb_contour_fill: 0.70
+# H4 wood background often admitted by legacy S>=65; red plastic interior S~150-200.
+# Provisional, requires separate four-color lighting/negative-scene verification.
+min_chromatic_saturation: 100
+# Saved red plastic H=0..3; wood H=13..19 bridged the previous H<=18 mask.
+# V4.5-only segmentation calibration; the H=165..179 wrap band is unchanged.
+red_low_hue_max: 10
+# Real green top H=38..42 was also yellow; green H<=92 admitted blue edges.
+# V4.5-only non-overlapping hue calibration, shared by masking and voting.
+hue_bounds_overrides:
+  yellow: [16, 31]
+  green: [32, 81]
+min_rgb_area_px: 2000
+min_rgb_short_side_px: 32
+max_rgb_aspect: 2.5
+min_depth_m: 0.15
+max_depth_m: 1.0
+min_depth_ratio: 0.50
+min_points: 100
+max_points: 1000
+depth_outlier_floor_m: 0.015
+max_plane_residual_m: 0.003
+min_hole_area_px: 100
+min_ring_points: 40
+min_hole_background_gap_m: 0.008
+body_mask_erode_px: 2
+body_min_face_support: 0.70
+
+# V4.5-D current-frame measured top cap route; false retains V4.5-B/C geometry.
+enable_top_cad: true

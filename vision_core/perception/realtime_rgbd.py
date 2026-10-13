@@ -1,5 +1,5 @@
 """Current-frame RGB-D/CAD diagnostics; reuse detector, segmentation and tracker."""
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from time import perf_counter, time
 from datetime import datetime
 import sys,json,hashlib
@@ -18,6 +18,14 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT.parent/'src/mtc_vision_adapter'))
 from mtc_vision_adapter.core import Tracker
 
+def verify_cad_sources(geometry, asset_dir):
+    """Verify cached STEP provenance, including Windows-authored source paths."""
+    for name in ('battery','hook'):
+        source=geometry[name]['source']
+        path=Path(asset_dir)/PureWindowsPath(source['source_path']).name
+        if hashlib.sha256(path.read_bytes()).hexdigest()!=source['sha256']:
+            raise ValueError('CAD cache source mismatch; rerun existing analyze_cad_rgbd.py')
+
 class RGBDVisionPipeline:
     def __init__(self,config_path=ROOT/'config/realtime_rgbd.yaml',
                  detector=None,geometry=None,surface=None,clock=perf_counter):
@@ -28,11 +36,7 @@ class RGBDVisionPipeline:
             raise ValueError('Invalid depth range or CAD interval')
         self.geometry=geometry or json.loads((ROOT/'outputs/cad_analysis/geometry.json').read_text(encoding='utf-8'))
         if geometry is None:
-            for name in ('battery','hook'):
-                source=self.geometry[name]['source']
-                path=ROOT/'assets/cad'/Path(source['source_path']).name
-                if hashlib.sha256(path.read_bytes()).hexdigest()!=source['sha256']:
-                    raise ValueError('CAD cache source mismatch; rerun existing analyze_cad_rgbd.py')
+            verify_cad_sources(self.geometry,ROOT/'assets/cad')
         self.surface=surface if surface is not None else sample_surface(
             np.load(ROOT/'outputs/cad_analysis/cad_meshes.npz')['battery'],
             count=int(self.config['cad_surface_samples']))
@@ -44,6 +48,7 @@ class RGBDVisionPipeline:
             confirmation_hits=self.config['tracker_confirmation_hits'],
             ambiguity_px=self.config['tracker_ambiguity_px'],allow_unknown=True)
         self.last_cad={};self.last_cad_timestamp={};self.rays_cache={}
+        self.on_table_plane=None
         self.cfg=OfflineConfig(min_depth_m=self.config['min_depth_m'],
             max_depth_m=self.config['max_depth_m'],single_red_object=False,fast_table_roi=True,
             max_cloud_points=6000,table_min_points=600,table_ransac_iterations=80,adaptive_table_roi=True,
@@ -115,6 +120,9 @@ class RGBDVisionPipeline:
         report,maps,cloud,rgb=analyze_frame(frame,detections,self.cfg,focus_color=focus,
             sdk_deproject=sdk_deproject,rays_xyz=rays,table_plane_override=plane_override)
         accepted=[]
+        report['plane_generated_host_s']=time() if report['table_plane'] is not None else None
+        if report['table_plane'] is not None and self.on_table_plane is not None:
+            self.on_table_plane(report['table_plane'],report['plane_generated_host_s'])
         if report['table_plane'] is not None:
             accepted=[(d,r) for d,r in zip(detections,report['candidates']) if r['accepted'] and d.detection_valid]
         if report['table_plane'] is None:

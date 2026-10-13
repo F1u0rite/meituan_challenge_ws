@@ -1,0 +1,7 @@
+# Opt-in only; client destination is hard-coded IPv4 loopback, never a listener.
+port: 8765
+camera_frame_id: camera_color_optical
+connect_timeout_s: 1.0
+send_timeout_s: 0.5
+reconnect_delay_s: 0.25
+max_pending_age_s: 0.5

@@ -17,6 +17,7 @@ from rclpy.qos import (
 from rosidl_runtime_py.convert import message_to_ordereddict
 from mtc_interfaces.msg import BatteryDetectionArray
 from mtc_vision_adapter.core import motion_rejection
+from live_test_support import installed_executable
 
 
 def equal(actual, expected):
@@ -35,7 +36,7 @@ def run_validation(fixture, out, exit_mode='natural'):
     fixture, out = Path(fixture), Path(out)
     out.mkdir(parents=True, exist_ok=True)
     workspace = Path(__file__).resolve().parents[3]
-    executable = workspace/'install/mtc_vision_adapter/lib/mtc_vision_adapter/replay_publisher'
+    executable = installed_executable(workspace, 'replay_publisher')
     assert executable.is_file(), 'Build and source the workspace overlay first'
     records = [json.loads(line) for line in fixture.read_text().splitlines() if line]
     assert len(records) == 4

@@ -82,3 +82,12 @@ The adapter is an offline replay publisher, not a live D435i ROS node.
 The next stage may prepare live input integration, but cross-host transport,
 capture-clock alignment, real TF/calibration and actual downstream rejection
 must be verified before any motion use.
+
+## Automatic top/hole candidate and image output
+
+The opt-in automatic runner adds top/hole candidate JSON, invalid-pose battery
+arrays and JPEG streams. See [setup](../../vision_core/docs/automatic_top_setup.md)
+and [message contract](../../vision_core/docs/automatic_top_coordinates.md).
+Use MTC_VISION_INSTALL_BASE for an isolated/merged colcon install; process tests
+continue to execute actual installed binaries. This does not connect the C++
+FSM or authorize motion.

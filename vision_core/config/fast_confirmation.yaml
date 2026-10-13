@@ -4,3 +4,6 @@ min_footprint_scale: 0.70
 max_footprint_scale: 1.25
 min_contour_fill: 0.80
 min_body_band_points: 50
+
+# Local captured-host to processing-wall freshness; no sensor/ROS mapping claimed.
+max_detection_age_s: 2.5

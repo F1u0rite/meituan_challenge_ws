@@ -82,3 +82,10 @@ must be verified before any motion use.
 body_pose_valid=false, ring_pose_valid=false. JSON null becomes ROS NaN for unmeasured poses. Consumers must reject invalid ring_pose, non-finite body_pose, stale/replay observations and uncalibrated frames; public IDL has no body_pose_valid field. Synthetic example timestamps/frames cannot be motion input.
 
 Four-color/multi-target software support is synthetic tested; real four-color acceptance is NOT MEASURED. True XYZ/Yaw, aperture pose, table/tool/hand-eye calibration, live D435i integration and C++ FSM consumption remain pending. CAD residuals are not positioning accuracy.
+
+## Automatic top/hole, T0 and image delivery
+
+See [setup and actual verification](docs/automatic_top_setup.md) and the
+[coordinate/image contract](docs/automatic_top_coordinates.md). The separate
+opt-in runner exports camera-coordinate candidates, physical-height constraints,
+T0 desired hole positions and independent JPEG output; it does not control a robot.

@@ -71,26 +71,52 @@ def _diagnose(frame, detector, source, min_depth, max_depth):
 def main(argv=None):
     parser = argparse.ArgumentParser(description='D435i RGB-D preview; no automatic recording')
     parser.add_argument('--fps', type=int, default=15)
+    parser.add_argument('--perception-pipeline', choices=('legacy', 'simplified'), default='legacy',
+                        help='V4.4 cached CAD gates or V4.5 independent RGB identity and same-frame geometry')
+    parser.add_argument('--cad-geometry', type=Path, help='Read-only geometry.json for simplified perception; no asset copy')
     parser.add_argument('--color-size', type=int, nargs=2, default=(1280, 720), metavar=('W', 'H'))
     parser.add_argument('--depth-size', type=int, nargs=2, default=(640, 480), metavar=('W', 'H'))
     parser.add_argument('--min-depth-m', type=float, default=.15)
     parser.add_argument('--max-depth-m', type=float, default=2.0)
     parser.add_argument('--scene', choices=('top', 'tilted', 'side'), default='top')
     parser.add_argument('--output', type=Path, default=ROOT/'data'/'rgbd')
+    parser.add_argument('--tcp-send', action='store_true', help='Opt-in V1 loopback TCP diagnostics; requires dual-rate')
+    parser.add_argument('--ros-publish', action='store_true', help='Publish this same dual-rate result to existing native ROS2 topics; no second camera')
+    parser.add_argument('--ros-wait-subscriber-s', type=float, default=0.)
+    parser.add_argument('--tcp-config', type=Path, default=ROOT/'config/tcp_sender.yaml')
     parser.add_argument('--dual-rate', action='store_true', help='Bounded capture, fast detection and slower CAD worker')
     parser.add_argument('--continuous-max-seconds', type=float, default=30.)
     parser.add_argument('--continuous-max-frames', type=int, default=450)
     parser.add_argument('--full-vision', action='store_true',
                         help='Existing RGB-D segmentation + CAD + tracking diagnostic preview')
     parser.add_argument('--replay', type=Path, help='Offline session; never starts a camera')
+    parser.add_argument('--live', action='store_true', help='Native camera UI; selects existing full-vision dual-rate pipeline')
+    parser.add_argument('--pair-manifest',type=Path,help='Approved original native NPY pairs; requires offline dual-rate replay')
     parser.add_argument('--headless', action='store_true')
     parser.add_argument('--preview-authorized', action='store_true',
                         help='Only use after explicit human camera preparation confirmation')
     parser.add_argument('--vision-config', type=Path, default=ROOT/'config/realtime_rgbd.yaml')
-    parser.add_argument('--replay-output', type=Path, help='New offline results directory; must not exist')
+    parser.add_argument('--run-output', '--replay-output', dest='replay_output', type=Path,
+                        help='New results directory; must not exist (legacy replay alias retained)')
     parser.add_argument('--ui-smoke', action='store_true', help='Finite offline GUI check only')
     parser.add_argument('--max-frames', type=int, default=0)
     args = parser.parse_args(argv)
+    if args.live:
+        if args.replay or args.pair_manifest:
+            parser.error('--live cannot be combined with offline replay inputs')
+        args.full_vision = args.dual_rate = True
+    if not args.replay and not args.preview_authorized:
+        parser.error('Human confirmation required: 准备好了，启动预览')
+    if args.pair_manifest and not (args.replay and args.dual_rate and args.full_vision):
+        parser.error('--pair-manifest requires --replay --full-vision --dual-rate')
+    if not args.headless and os.name!='nt' and not os.environ.get('DISPLAY'):
+        parser.error('No DISPLAY: run in Ubuntu graphical desktop Terminal, or use --headless for actual offline rendering')
+    if args.tcp_send and not (args.dual_rate and args.full_vision):
+        parser.error('--tcp-send requires --full-vision --dual-rate')
+    if args.ros_publish and not (args.dual_rate and args.full_vision):
+        parser.error('--ros-publish requires --full-vision --dual-rate (or --live)')
+    if args.ros_wait_subscriber_s < 0:
+        parser.error('--ros-wait-subscriber-s must be nonnegative')
     if args.ui_smoke and not args.replay:
         parser.error('--ui-smoke is offline only')
     if args.replay and not args.full_vision:
@@ -103,6 +129,9 @@ def main(argv=None):
         if not args.replay and not args.preview_authorized:
             parser.error('Human confirmation required: 准备好了，启动预览')
         if args.dual_rate:
+            if not args.replay and not args.headless:
+                from scripts.live_display import run_live_display
+                return run_live_display(args)
             from scripts.dual_rate_runner import run_dual_rate
             return run_dual_rate(args)
         return run_full_vision(args)
@@ -113,11 +142,20 @@ def main(argv=None):
     detector = UnifiedBatteryDetector()
     session = f"session_{datetime.now():%Y%m%d_%H%M%S}_red_{args.scene}"
     count = 0
+    from input.rgbd_pair_guard import RGBDPairGuard
+    gate=RGBDPairGuard();consecutive_bad=0
     try:
         profiles = source.start()
         print('Actual queried stream selection:', json.dumps(profiles, ensure_ascii=False))
         while True:
             frame = source.read()
+            report=gate.inspect(frame.timestamps)
+            if not report['qualified']:
+                consecutive_bad+=1
+                print('RGBD_REJECTED',report,flush=True)
+                if consecutive_bad>=30:raise RuntimeError('No qualified RGB-D in 30 SDK observations')
+                continue
+            consecutive_bad=0
             geometry, points, rgb, visualization = _diagnose(frame, detector, source,
                 args.min_depth_m, args.max_depth_m)
             cv2.imshow('RGB-D RED preview (s save, q quit)', visualization)
@@ -161,8 +199,20 @@ def run_full_vision(args):
         frames=((folder.name,load_rgbd_sample(folder)) for folder in folders)
     else:
         source=RealSenseRGBDSource(preferred_color=tuple(args.color_size),preferred_depth=tuple(args.depth_size),fps=args.fps)
+        from input.rgbd_pair_guard import RGBDPairGuard
+        gate=RGBDPairGuard()
         def stream():
-            while True:yield 'live',source.read(latest=True)
+            consecutive_bad=0
+            while True:
+                frame=source.read(latest=True)
+                report=gate.inspect(frame.timestamps)
+                if not report['qualified']:
+                    consecutive_bad+=1
+                    print('RGBD_REJECTED',report,flush=True)
+                    if consecutive_bad>=30:raise RuntimeError('No qualified RGB-D in 30 SDK observations')
+                    continue
+                consecutive_bad=0
+                yield 'live',frame
         frames=stream()
     def save_current(frame,result,views,visualization,trigger):
         nonlocal saved
