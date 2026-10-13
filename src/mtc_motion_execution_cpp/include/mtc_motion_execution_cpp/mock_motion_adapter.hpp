@@ -64,6 +64,10 @@ public:
   mtc::core::JointFeedback joint_feedback() const override;
   std::optional<bool> explicit_stop_confirmation() const override;
   std::optional<mtc::core::StopEvidence> stop_evidence() const override;
+  /// Explicit offline observation of an unchanged, already verified stationary
+  /// command. Keeps the original interval/identity; never creates missing evidence.
+  /// stop_evidence() itself remains a snapshot and can still become stale.
+  bool sample_stationary_feedback(const std::string & command_id);
   mtc::core::MotionResult execute_trajectory(const mtc::core::TimedTrajectory & trajectory) override;
 
   /// 最近一次停止请求是否已被确认停稳（显式语义，供上层判断）。
