@@ -1,0 +1,645 @@
+[
+  {
+    "header": {
+      "stamp": {
+        "sec": 1700000000,
+        "nanosec": 0
+      },
+      "frame_id": "synthetic_unregistered_color_optical_frame"
+    },
+    "detections": []
+  },
+  {
+    "header": {
+      "stamp": {
+        "sec": 1700000000,
+        "nanosec": 249999872
+      },
+      "frame_id": "synthetic_unregistered_color_optical_frame"
+    },
+    "detections": [
+      {
+        "object_id": "synthetic-000001",
+        "color": 2,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000002",
+        "color": 4,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000003",
+        "color": 1,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000004",
+        "color": 3,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 249999872
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      }
+    ]
+  },
+  {
+    "header": {
+      "stamp": {
+        "sec": 1700000000,
+        "nanosec": 500000000
+      },
+      "frame_id": "synthetic_unregistered_color_optical_frame"
+    },
+    "detections": [
+      {
+        "object_id": "synthetic-000001",
+        "color": 2,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000002",
+        "color": 4,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000003",
+        "color": 1,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000004",
+        "color": 3,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 500000000
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      }
+    ]
+  },
+  {
+    "header": {
+      "stamp": {
+        "sec": 1700000000,
+        "nanosec": 750000128
+      },
+      "frame_id": "synthetic_unregistered_color_optical_frame"
+    },
+    "detections": [
+      {
+        "object_id": "synthetic-000001",
+        "color": 2,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000002",
+        "color": 4,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000003",
+        "color": 1,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      },
+      {
+        "object_id": "synthetic-000004",
+        "color": 3,
+        "body_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "ring_pose": {
+          "header": {
+            "stamp": {
+              "sec": 1700000000,
+              "nanosec": 750000128
+            },
+            "frame_id": "synthetic_unregistered_color_optical_frame"
+          },
+          "pose": {
+            "position": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN
+            },
+            "orientation": {
+              "x": NaN,
+              "y": NaN,
+              "z": NaN,
+              "w": NaN
+            }
+          }
+        },
+        "confidence": 1.0,
+        "ring_pose_valid": false
+      }
+    ]
+  }
+]

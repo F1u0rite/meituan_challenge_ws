@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-13T22:25:13.154296+00:00",
+  "files": [
+    {
+      "path": "registration-before.log",
+      "bytes": 675,
+      "sha256": "89749fbc937a89e71d3e1995ffad69064fdeb87e98a61695fc9f3156e9414fea"
+    },
+    {
+      "path": "registration-before-command.json",
+      "bytes": 1617,
+      "sha256": "a55e2451e0f7bb116edeb73cdcbed47811fc9e8ce7d2a08d8ef72e12796cb142"
+    },
+    {
+      "path": "registration-before-command.sh",
+      "bytes": 689,
+      "sha256": "be1ee00ac8064d76777e222075319275b80c4a09e506db071b4bf06bcd2dcf4b"
+    },
+    {
+      "path": "registration-after.log",
+      "bytes": 1342,
+      "sha256": "b202478084fe128f5e48376f0604a43a2f7eb9d281c237983fe1a51e8ffebe9d"
+    },
+    {
+      "path": "registration-after-command.json",
+      "bytes": 1954,
+      "sha256": "e0f51fa75c52ef4cf86167818eb425b4f4e066558d40b4295ac312866cb9b7c4"
+    },
+    {
+      "path": "registration-after-command.sh",
+      "bytes": 1024,
+      "sha256": "3af9e26af8464968bd036f42c4e67241788db8836b0529705b16aeb30ef41611"
+    },
+    {
+      "path": "registration-after.xml",
+      "bytes": 7545,
+      "sha256": "1ddf01c4e9a88354e3c55cc4c00c7600bc3b2cbb9555cce208e7df627801a3ec"
+    },
+    {
+      "path": "registration-results.txt",
+      "bytes": 145,
+      "sha256": "2a30c71b0d9f4f9851bec9453adfe72b121e2fcaee11a7a87e9b6d6b01e5a052"
+    },
+    {
+      "path": "registration-module-identity.json",
+      "bytes": 1040,
+      "sha256": "21071c5d49d45a28b5313df3ac7f88126845d0351a93c6a7e519234c1ad3d9a2"
+    },
+    {
+      "path": "vision-python-freeze.txt",
+      "bytes": 4940,
+      "sha256": "c71e70729e5ef2050062469c8d8f820bc9ae573eafc1787fd91e1f4bbab2a705"
+    },
+    {
+      "path": "vision-python-versions.json",
+      "bytes": 196,
+      "sha256": "5e57ad5771b32a83a432df9cd0bafd9c24ea5ab34bf1a920f010e0723fba9a38"
+    },
+    {
+      "path": "empty-domain.json",
+      "bytes": 63,
+      "sha256": "6ee6c4992226e57416c6a7b609743117bf048d5e882156be101c891044c72a5f"
+    },
+    {
+      "path": "registration_identity.py",
+      "bytes": 1259,
+      "sha256": "9fca489dab5414f1468988b2fa584cc4419fc6cfa5791085d87815f0c1a885c5"
+    },
+    {
+      "path": "minimal-fix.patch",
+      "bytes": 780,
+      "sha256": "cb9cbe60b75452da5a816f9e8c707a8a92013b7c89ff4e9a49979c8c89bf5e1d"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 2490,
+      "sha256": "9046fca3d83f5e31fe3916ff829b6f1a85a4ad5fad8af035152648cd91ffd879"
+    },
+    {
+      "path": "replay/replay-natural/ros_logs/python3_442_1791930085839.log",
+      "bytes": 692,
+      "sha256": "11369ca9521258f31ddf534fd9b6eb1ee01c237be24137693997d1e04b2f9cb1"
+    },
+    {
+      "path": "replay/replay-natural/ros_publisher.log",
+      "bytes": 692,
+      "sha256": "11369ca9521258f31ddf534fd9b6eb1ee01c237be24137693997d1e04b2f9cb1"
+    },
+    {
+      "path": "replay/replay-natural/ros_received.json",
+      "bytes": 15078,
+      "sha256": "a9cc0417bcfdeccc6f5adbbfc28b2cd07c7ab35932832489751dc8caf6715282"
+    },
+    {
+      "path": "replay/replay-natural/ros_results.json",
+      "bytes": 1094,
+      "sha256": "9f71827962b41c1bb130b1408f0c63d48fe3d06fa80852fc50f7f52e88673fa7"
+    },
+    {
+      "path": "replay/replay-sigint/ros_logs/python3_488_1791930090884.log",
+      "bytes": 423,
+      "sha256": "c451e19be1b1f2460a1a6b66368f891ca2d3685fd7235a605bcd47ea02976d1f"
+    },
+    {
+      "path": "replay/replay-sigint/ros_publisher.log",
+      "bytes": 423,
+      "sha256": "c451e19be1b1f2460a1a6b66368f891ca2d3685fd7235a605bcd47ea02976d1f"
+    },
+    {
+      "path": "replay/replay-sigint/ros_received.json",
+      "bytes": 5154,
+      "sha256": "0d93a2235a891ceb722c97a51b64a4b5e9b3286c090583c1ac4e974290618069"
+    },
+    {
+      "path": "replay/replay-sigint/ros_results.json",
+      "bytes": 886,
+      "sha256": "1c466c8ac51c3cfd2ec647b1a568e923834c0d63bc06609e883622b185401550"
+    },
+    {
+      "path": "replay/synthetic-natural/ros_logs/python3_419_1791930082804.log",
+      "bytes": 700,
+      "sha256": "763312c6c38a3fb1bc3d01ac21434ec1613ddc61173b98e026d4addeac441a42"
+    },
+    {
+      "path": "replay/synthetic-natural/ros_publisher.log",
+      "bytes": 700,
+      "sha256": "763312c6c38a3fb1bc3d01ac21434ec1613ddc61173b98e026d4addeac441a42"
+    },
+    {
+      "path": "replay/synthetic-natural/ros_received.json",
+      "bytes": 15078,
+      "sha256": "a9cc0417bcfdeccc6f5adbbfc28b2cd07c7ab35932832489751dc8caf6715282"
+    },
+    {
+      "path": "replay/synthetic-natural/ros_results.json",
+      "bytes": 1094,
+      "sha256": "9f71827962b41c1bb130b1408f0c63d48fe3d06fa80852fc50f7f52e88673fa7"
+    },
+    {
+      "path": "replay/synthetic-sigint/ros_logs/python3_465_1791930088861.log",
+      "bytes": 427,
+      "sha256": "cedd7e2b295d8230f7083f72c1d69606a10539c5f660bb7260a06cb049a26d6e"
+    },
+    {
+      "path": "replay/synthetic-sigint/ros_publisher.log",
+      "bytes": 427,
+      "sha256": "cedd7e2b295d8230f7083f72c1d69606a10539c5f660bb7260a06cb049a26d6e"
+    },
+    {
+      "path": "replay/synthetic-sigint/ros_received.json",
+      "bytes": 5154,
+      "sha256": "0d93a2235a891ceb722c97a51b64a4b5e9b3286c090583c1ac4e974290618069"
+    },
+    {
+      "path": "replay/synthetic-sigint/ros_results.json",
+      "bytes": 886,
+      "sha256": "1c466c8ac51c3cfd2ec647b1a568e923834c0d63bc06609e883622b185401550"
+    },
+    {
+      "path": "inputs.json",
+      "bytes": 2240,
+      "sha256": "e77816f3fb08dba4b87cbb4d48e6503d4d08ba71d49d9b3543a80ac04d7def87"
+    }
+  ],
+  "scope": "Verified main-only colcon registration; frozen original success and failure logs"
+}

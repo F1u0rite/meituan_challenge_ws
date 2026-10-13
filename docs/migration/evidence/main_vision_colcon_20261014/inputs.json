@@ -1,0 +1,64 @@
+{
+  "source_sha": "b25c2cdd9cca58b09e864d44be4383f34542b42b",
+  "repair_base": "main",
+  "setup_sha256": "ddd14a9f9de29373a0b9b5e46c708f6fe360c2550402774d05d60adb470a1312",
+  "tested_change": "Add tests_require=['pytest']; runtime modules and tests byte-identical to source_sha",
+  "source_vision_equal_to": "dc76a0bf0a43f9110f3d24cfa38a2b3478f48dcd",
+  "prior_fixes": {
+    "pr18": "Merged into codex/yuze-parallel only; absent from this main snapshot",
+    "pr19": "Open against feature/perception-adapter, includes newer scene/live features not delivered in main",
+    "pr20": "Open main C++ audit fix; different package and defect"
+  },
+  "deduplication": "Main-only minimal backport is necessary; do not merge either feature branch to obtain registration. No duplicate PR targeting main for this vision package was found.",
+  "before": {
+    "tests": 0,
+    "exit_code": 5,
+    "cwd": "/fix-review"
+  },
+  "after": {
+    "tests": 57,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "cwd": "/fix-review"
+  },
+  "installed_processes": {
+    "natural_synthetic_frames": 4,
+    "natural_replay_frames": 4,
+    "sigint_synthetic_frames": 2,
+    "sigint_replay_frames": 2,
+    "publisher_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "environment": {
+    "ros": "Jazzy",
+    "ubuntu": "24.04",
+    "image": "sha256:c162dc5d8c0ad9bacfacdffb89f8da9f1398bee688e3b962d0776a913a3dd7c4",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 4294967296,
+    "devices": [],
+    "mounts": [],
+    "ports": {},
+    "domain": 225,
+    "test_domains": [
+      191,
+      192,
+      193,
+      194
+    ],
+    "offline_wheels": 23
+  },
+  "custom_install_layout": "The delivered older validator resolves <workspace>/install directly. Container-only /fix-review/install -> /registration-install alias; no source/test changes or host mount.",
+  "limitations": [
+    "Private 22-frame vision fixture missing",
+    "No real camera or full FSM consumption",
+    "Existing Python Action/Cancel and MoveIt shutdown failures remain"
+  ],
+  "provenance": "OpenAI Codex assisted one-line setup registration, isolated regression and frozen evidence. Upstream Apache-2.0 retained; no algorithm or kernel changes."
+}
