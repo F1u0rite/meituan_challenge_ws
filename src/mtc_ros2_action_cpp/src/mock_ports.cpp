@@ -182,7 +182,13 @@ bool AsyncMockMotion::poll_stop(const std::string & reason)
   if (!execution_ready()) {return false;}
   if (!stopping_.valid()) {
     stopping_ = std::async(std::launch::async,
-      [executor = executor_, id = last_id_, reason, available = options_.stop_evidence_available]() {
+      [executor = executor_, adapter = adapter_, id = last_id_, reason,
+        available = options_.stop_evidence_available]() {
+        // Result delivery may lag the instantaneous Mock movement. Take an
+        // explicit observation of the same stationary virtual command before
+        // Core checks identity, freshness and interval. Missing/unknown evidence
+        // stays missing; no thresholds or executable backend policies change.
+        if (available) {adapter->sample_stationary_feedback(id);}
         auto r = executor->cancel_goal(id, reason);
         if (!available) {
           r.stop_confirmed = false;
