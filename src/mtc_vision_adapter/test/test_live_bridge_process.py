@@ -20,7 +20,7 @@ from mtc_interfaces.msg import BatteryDetectionArray
 from std_msgs.msg import String
 from rosidl_runtime_py.convert import message_to_ordereddict
 from mtc_vision_adapter.live_protocol import MAX_BYTES, diagnostic_array
-from live_test_support import frame, battery
+from live_test_support import frame, battery, installed_executable
 
 
 def test_real_live_tcp_ros_bridge(tmp_path, monkeypatch):
@@ -32,7 +32,7 @@ def test_real_live_tcp_ros_bridge(tmp_path, monkeypatch):
     out=Path(os.environ.get('MTC_LIVE_VALIDATION_OUT',str(tmp_path/'evidence')))
     out.mkdir(parents=True,exist_ok=True)
     log_path=out/'live_bridge.log'
-    executable=root/'install/mtc_vision_adapter/lib/mtc_vision_adapter/live_tcp_bridge'
+    executable=installed_executable(root, 'live_tcp_bridge')
     assert executable.is_file(),'build and source overlay first'
     qos=QoSProfile(depth=5,reliability=ReliabilityPolicy.RELIABLE,
                    history=HistoryPolicy.KEEP_LAST,durability=DurabilityPolicy.VOLATILE,

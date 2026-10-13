@@ -73,6 +73,7 @@ def main(argv=None):
     parser.add_argument('--fps', type=int, default=15)
     parser.add_argument('--perception-pipeline', choices=('legacy', 'simplified'), default='legacy',
                         help='V4.4 cached CAD gates or V4.5 independent RGB identity and same-frame geometry')
+    parser.add_argument('--cad-geometry', type=Path, help='Read-only geometry.json for simplified perception; no asset copy')
     parser.add_argument('--color-size', type=int, nargs=2, default=(1280, 720), metavar=('W', 'H'))
     parser.add_argument('--depth-size', type=int, nargs=2, default=(640, 480), metavar=('W', 'H'))
     parser.add_argument('--min-depth-m', type=float, default=.15)

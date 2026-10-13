@@ -6,6 +6,7 @@ unverified. No table cache, background history or complete CAD fit admits identi
 from pathlib import Path
 from time import perf_counter, time
 import json
+import hashlib
 import cv2
 import numpy as np
 import yaml
@@ -18,6 +19,7 @@ from .battery_only import PixelBatteryDetector
 from .color_classifier import ColorClassifier
 from .vision_interface import finalize_interface
 from .top_bar_pose import TopBarPoseEstimation, observed_layout
+from .insertion_constraint import select_insertion_direction
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -32,7 +34,13 @@ class BatteryDetection:
         for bounds in pixels.config['hsv_ranges']['red']:
             if bounds[0]==0:bounds[3]=min(bounds[3],config.get('red_low_hue_max',bounds[3]))
         pixels.config['min_contour_area_px']=config['min_rgb_area_px']
-        self.detector=UnifiedBatteryDetector(candidate_detector=pixels);self.classifier=ColorClassifier()
+        self.classifier=ColorClassifier()
+        # Segmentation and independent color voting must share calibrated hue
+        # boundaries, or touching yellow/green/blue targets become one object.
+        for ranges in (pixels.config['hsv_ranges'],self.classifier.ranges):
+            for label,(low,high) in config.get('hue_bounds_overrides',{}).items():
+                for bounds in ranges[label]:bounds[0]=low;bounds[3]=high
+        self.detector=UnifiedBatteryDetector(candidate_detector=pixels)
         self.tracker=Tracker(max_gap_s=1.,max_distance=80.,confirmation_hits=2,ambiguity_px=8.,allow_unknown=True)
     def detect(self,color,stamp):
         hsv=cv2.cvtColor(color,cv2.COLOR_BGR2HSV);proposals=[];tracking=[]
@@ -198,15 +206,24 @@ class RingPoseEstimation:
         return out
 
 class SimplifiedPerception:
-    def __init__(self,config_path=None):
+    def __init__(self,config_path=None,*,geometry_path=None):
         self.config=yaml.safe_load(Path(config_path or ROOT/'config/simplified_rgbd.yaml').read_text())
-        file=ROOT/'outputs/cad_analysis/geometry.json';self.geometry=json.loads(file.read_text()) if file.exists() else None
+        file=Path(geometry_path).expanduser().resolve() if geometry_path is not None else ROOT/'outputs/cad_analysis/geometry.json'
+        self.geometry=None;self.geometry_provenance=None
+        if geometry_path is not None or file.exists():
+            encoded=file.read_bytes()
+            self.geometry=json.loads(encoded)
+            if not isinstance(self.geometry,dict) or not isinstance(self.geometry.get('battery'),dict):
+                raise ValueError('CAD geometry must contain a battery object')
+            self.geometry_provenance=dict(path=str(file),sha256=hashlib.sha256(encoded).hexdigest(),
+                battery_source_sha256=self.geometry['battery'].get('source',{}).get('sha256'),
+                source='READ_ONLY_EXTERNAL_CAD' if geometry_path is not None else 'LOCAL_CAD_CACHE')
         self.detection=BatteryDetection(self.config);self.body=BodyPoseEstimation(self.config,self.geometry)
         self.ring=RingPoseEstimation(self.config,self.geometry,self.detection.classifier.ranges)
         self.top=TopBarPoseEstimation(self.config,self.geometry)
         self.guard=RGBDPairGuard();self.rate=RateMeter();self.last_timestamp=None;self.table_hint=None
     def set_table_hint(self,*args,**kwargs):pass  # Compatibility only: no identity/cache dependency.
-    def process(self,frame,source_frame_id):
+    def process(self,frame,source_frame_id,*,insertion_reference=None):
         start=perf_counter();validate_frame(frame.color_bgr,frame.aligned_depth,frame.intrinsics,frame.depth_scale)
         stamp=capture_time(frame)
         if self.last_timestamp is not None and stamp<=self.last_timestamp:raise ValueError('Non-increasing capture time')
@@ -226,6 +243,7 @@ class SimplifiedPerception:
             top_ms+=(perf_counter()-stage)*1000
             if top is not None:
                 top.update(source_frame_id=source_frame_id,capture_timestamp=stamp,timestamps=frame.timestamps)
+                top=select_insertion_direction(top,insertion_reference,source_frame_id,stamp)
             if top and top['top_geometry_valid']:
                 direction=np.asarray(top['insertion_direction_candidates'][0]);yaw=float(np.arctan2(direction[1],direction[0])%np.pi)
                 body=dict(body,body_xyz_candidate=top['body_center_candidate'],
@@ -243,6 +261,7 @@ class SimplifiedPerception:
                 elif np.linalg.norm(np.asarray(ring['center_candidate'])-top['ring_center_candidate'])>.003:
                     top['ring_center_geometry_valid']=False
                     top['reasons']=top['reasons']+['INCONSISTENT_LOCAL_APERTURE_AND_TOP_CAD_CENTERS']
+                    top=select_insertion_direction(top,insertion_reference,source_frame_id,stamp)
             accepted=not p['reasons'];state='CONFIRMED_OBJECT' if accepted else 'AMBIGUOUS';surface=body['visible_surface_center_xyz']
             obj=dict(object_id=t['object_id'],color=p['label']['color_label'],color_label=p['label']['color_label'],observed_color=d.color,
                 confidence=d.confidence,confidence_semantics='CONTOUR_AREA_OVER_MIN_AREA_RECT; NOT_CALIBRATED_PROBABILITY',color_confidence=p['label']['color_confidence'],
@@ -266,6 +285,7 @@ class SimplifiedPerception:
             diagnostic_object_count=len(objects),camera_motion_proxy=dict(stable=None,reason='NOT_REQUIRED_FOR_RGB_IDENTITY'),background_filter_report=dict(table_failure='NOT_REQUIRED_V45',table_hint_used=False),
             tracking_status={k:tracking[k] for k in ('missed','lost','ambiguous_candidate_indices')},processing_latency_ms=elapsed,timing_ms=dict(total=elapsed,detection=rgb_ms,body=body_ms,ring=ring_ms,top_cad=top_ms,cad_fit=0.,tracking=0.,render=0.),
             detection_fps=self.rate.hz(),max_detection_age_s=2.5,coordinate_frame='camera_color_optical',body_pose_valid=False,ring_pose_valid=False,pipeline_version='V4.5',pair_diagnostics=pair)
+        result['cad_geometry_provenance']=self.geometry_provenance
         result['layout_diagnostics']=observed_layout(objects)
         result=finalize_interface(result)
         for obj in result['objects']:
@@ -278,6 +298,9 @@ class SimplifiedPerception:
                     obj['geometry_source']='CURRENT_OBSERVED_TOP_PLUS_MEASURED_CAD'
                 else:obj['geometry_source']='CURRENT_LOCAL_APERTURE_WITH_TOP_CHECK'
             else:obj['geometry_source']='CURRENT_MASK_DEPTH_LOCAL_APERTURE'
+            obj['insertion_direction_selected']=top.get('insertion_direction_selected') if top else None
+            obj['insertion_direction_unique']=bool(top and top.get('direction_unique'))
+            obj['direction_selection']=top.get('direction_selection') if top else None
             obj['motion_usable']=False
         return result,views
 

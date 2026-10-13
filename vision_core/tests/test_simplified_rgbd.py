@@ -87,3 +87,20 @@ def test_red_wrap_and_blue_survive_touching_wood_without_valid_depth(red_hue):
     from perception.battery_only import PixelBatteryDetector
     # The shared Legacy HSV configuration remains available for rollback.
     assert PixelBatteryDetector().config['hsv_ranges']['red'][0][3]==18
+
+
+@pytest.mark.parametrize('green_hue',[34,40])
+def test_touching_four_colors_do_not_merge_at_hue_boundaries(green_hue):
+    p=SimplifiedPerception()
+    for number in [1,2]:
+        f=frame(number,False);hsv=np.zeros(f.color_bgr.shape,np.uint8)
+        hsv[250:391,40:201]=(green_hue,220,220)
+        hsv[250:391,202:363]=(90,220,220)  # Old green/blue overlap.
+        hsv[392:533,40:201]=(24,220,220)
+        hsv[392:533,202:363]=(1,220,220)
+        f.color_bgr=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+        result,views=p.process(f,'touching-four-'+str(number))
+    assert {o['color'] for o in result['confirmed_objects']}=={'green','blue','yellow','red'}
+    assert len(views)==4 and all(not o['body_pose_valid'] and not o['ring_pose_valid'] for o in result['objects'])
+    green=next(o for o in result['objects'] if o['color']=='green')
+    assert green['bbox']==[40,250,161,141]

@@ -23,3 +23,16 @@ def frame(sequence=0, objects=None, **changes):
                   objects=[battery()] if objects is None else objects)
     result.update(changes)
     return result
+
+
+def installed_executable(workspace, name):
+    """Resolve explicit, isolated or conventional colcon install without fake binaries."""
+    import os
+    from pathlib import Path
+    workspace = Path(workspace)
+    explicit = os.environ.get('MTC_VISION_INSTALL_BASE')
+    base = Path(explicit).expanduser().resolve() if explicit else (
+        workspace/'install/yuze' if (workspace/'install/yuze').is_dir() else workspace/'install')
+    isolated = base/'mtc_vision_adapter/lib/mtc_vision_adapter'/name
+    merged = base/'lib/mtc_vision_adapter'/name
+    return merged if not isolated.is_file() and merged.is_file() else isolated

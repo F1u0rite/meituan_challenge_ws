@@ -91,7 +91,7 @@ def run_dual_rate(args):
     simplified=getattr(args,'perception_pipeline','legacy')=='simplified'
     if simplified:
         from perception.simplified_rgbd import SimplifiedPerception,DisabledFullCAD
-        fast=SimplifiedPerception()
+        fast=SimplifiedPerception(geometry_path=getattr(args,'cad_geometry',None))
         cad=DisabledFullCAD(fast.geometry)
     else:fast=FastPerception()
     if not simplified:cad=CADWorker(RGBDVisionPipeline(args.vision_config))

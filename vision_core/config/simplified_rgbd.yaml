@@ -8,6 +8,11 @@ min_chromatic_saturation: 100
 # Saved red plastic H=0..3; wood H=13..19 bridged the previous H<=18 mask.
 # V4.5-only segmentation calibration; the H=165..179 wrap band is unchanged.
 red_low_hue_max: 10
+# Real green top H=38..42 was also yellow; green H<=92 admitted blue edges.
+# V4.5-only non-overlapping hue calibration, shared by masking and voting.
+hue_bounds_overrides:
+  yellow: [16, 31]
+  green: [32, 81]
 min_rgb_area_px: 2000
 min_rgb_short_side_px: 32
 max_rgb_aspect: 2.5

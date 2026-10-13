@@ -19,6 +19,7 @@ from std_msgs.msg import String
 from rosidl_runtime_py.convert import message_to_ordereddict
 from mtc_vision_adapter.native_rgbd import native_array
 from mtc_vision_adapter.core import to_ros
+from live_test_support import installed_executable
 
 
 def test_native_confirmed_mapping_still_has_no_motion_pose():
@@ -79,7 +80,7 @@ def test_native_real_offline_ros_process(tmp_path,monkeypatch):
     monkeypatch.setenv('ROS_AUTOMATIC_DISCOVERY_RANGE','LOCALHOST')
     monkeypatch.delenv('ROS_DISCOVERY_SERVER',raising=False)
     monkeypatch.delenv('ROS_STATIC_PEERS',raising=False)
-    executable=root/'install/mtc_vision_adapter/lib/mtc_vision_adapter/native_rgbd_publisher'
+    executable=installed_executable(root, 'native_rgbd_publisher')
     assert executable.is_file()
     qos=QoSProfile(depth=5,reliability=ReliabilityPolicy.RELIABLE,
                    history=HistoryPolicy.KEEP_LAST,durability=DurabilityPolicy.VOLATILE,
@@ -145,7 +146,7 @@ def test_native_real_offline_ros_process(tmp_path,monkeypatch):
 
 def test_native_camera_mode_refuses_without_authorization(tmp_path):
     root=Path(__file__).resolve().parents[3]
-    executable=root/'install/mtc_vision_adapter/lib/mtc_vision_adapter/native_rgbd_publisher'
+    executable=installed_executable(root, 'native_rgbd_publisher')
     result=subprocess.run([str(executable),'--ros-args','-p','input_mode:=d435i'],
                            capture_output=True,text=True,timeout=10,
                            env=dict(os.environ,ROS_DOMAIN_ID='212',ROS_AUTOMATIC_DISCOVERY_RANGE='LOCALHOST'))
