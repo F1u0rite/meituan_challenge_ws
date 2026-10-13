@@ -233,6 +233,85 @@ class RealBackendTests(unittest.TestCase):
             with self.assertRaises(ApiError):
                 self.backend.camera_frame("color")
 
+    def test_export_keeps_legacy_task_events_and_complete_filtered_history(self):
+        self.ready()
+        identity = self.submit()["goal_id"]
+        task = self.backend.tasks["real-1"]
+        for i in range(650):
+            self.backend._event("ROS_LOG", str(i), task)
+        child = "b" * 32
+        self.backend.declare_trace(dict(execute_goal_id=identity, pick_goal_id=child, task_id="real-1"), "/fixture")
+        self.backend._event("PICK_RESULT", "stop unconfirmed", module="pickplace", goal_id=child,
+                            level="error", error_code=520)
+        exported = self.backend.export_session()
+        self.assertTrue({"snapshot", "tasks", "events", "note"} <= exported.keys())
+        record = exported["tasks"][0]
+        self.assertEqual(record["task_id"], "real-1")
+        self.assertEqual(record["goal_id"], identity)
+        self.assertEqual(len([e for e in record["events"] if e["kind"] == "ROS_LOG"]), 650)
+        self.assertEqual(record["events"][0]["kind"], "GOAL_REQUESTED")
+        self.assertEqual(record["events"][-1]["error_code"], 520)
+        self.assertEqual([e["seq"] for e in record["events"]], sorted(e["seq"] for e in record["events"]))
+        self.assertEqual(len(task["events"]), 300)
+        filtered = self.backend.export_session(goal_id=child, module="pickplace", errors=True)
+        self.assertEqual(filtered["total"], 1)
+        self.assertEqual(filtered["tasks"][0]["events"], filtered["events"])
+
+    def test_export_records_timeout_in_same_snapshot_and_event_list(self):
+        self.ready()
+        self.submit()
+        self.clock.now += 11
+        exported = self.backend.export_session()
+        self.assertEqual(exported["snapshot"]["task"]["status"], "UNKNOWN")
+        self.assertEqual(exported["tasks"][0]["status"], "UNKNOWN")
+        self.assertEqual(exported["events"][-1]["kind"], "ACTION_UNKNOWN")
+        self.assertEqual(exported["events"][-1]["seq"], exported["snapshot"]["event_seq"])
+
+    def test_http_v1_task_cancel_stop_and_readonly_additions_remain_compatible(self):
+        self.ready()
+        server = Server(("127.0.0.1", 0), self.backend)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(thread.join)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+
+        def post(path, payload):
+            return urlopen(Request(base + path, data=json.dumps(payload).encode(),
+                                   headers={"Content-Type": "application/json"}), timeout=5)
+
+        payload = goal("http-compat")
+        del payload["scenario"]
+        with post("/api/tasks", payload) as response:
+            self.assertEqual(response.status, 202)
+            ack = json.load(response)
+        self.assertEqual(set(ack), {"task_id", "goal_id", "status"})
+        self.assertEqual(ack["status"], "SUBMITTING")
+        self.backend.accepted(ack["goal_id"], True)
+        with post("/api/tasks/http-compat/cancel", {"goal_id": ack["goal_id"]}) as response:
+            self.assertEqual(response.status, 202)
+            self.assertIsNone(json.load(response)["request_delivered"])
+        with post("/api/stop", {}) as response:
+            self.assertEqual(response.status, 202)
+        calls = list(self.backend.transport.calls)
+        self.assertEqual([call[0] for call in calls], ["submit", "cancel", "stop"])
+        for path in ("/api/snapshot", "/api/tasks/http-compat", "/api/events", "/api/export"):
+            with urlopen(base + path, timeout=5) as response:
+                data = json.load(response)
+                if path == "/api/snapshot":
+                    self.assertEqual(data["schema_version"], 1)
+                    self.assertFalse(data["stop_evidence"]["confirmed"])
+                if path == "/api/export":
+                    self.assertIn('filename="webui-session.json"', response.headers["Content-Disposition"])
+                    self.assertTrue({"snapshot", "tasks", "events", "note"} <= data.keys())
+                    self.assertIsInstance(data["tasks"][0]["events"], list)
+        for path in ("/api/fjt", "/api/tool/io", "/api/joints", "/api/demo/confirm-stop"):
+            with self.subTest(path=path), self.assertRaises(HTTPError) as caught:
+                post(path, {})
+            self.assertEqual(caught.exception.code, 404)
+        self.assertEqual(self.backend.transport.calls, calls)
+
 
 class ImageTests(unittest.TestCase):
     def test_rgb_padding_and_big_endian_depth_are_decoded(self):

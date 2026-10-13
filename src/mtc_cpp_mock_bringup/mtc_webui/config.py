@@ -14,6 +14,7 @@ class RosConfig:
     task_action: str = "/mtc/task/execute"
     task_topic: str = "/mtc/task/state"
     task_publisher: str = "/task_executor"
+    pick_action: str = "/mtc/manipulation/pick_place"
     robot_topic: str = "/mtc/robot/state"
     robot_publisher: str = "/mtc_aubo_bridge"
     tool_topic: str = "/mtc/tool/state"
@@ -23,6 +24,24 @@ class RosConfig:
     stop_service: str = "/mtc/bridge/request_stop"
     color_topic: str = ""
     depth_topic: str = ""
+    perception_topic: str = "/mtc/perception/batteries"
+    perception_publisher: str = ""
+    planner_topic: str = ""
+    planner_publisher: str = ""
+    tool_verification_topic: str = ""
+    tool_verification_publisher: str = ""
+    controller_topic: str = ""
+    controller_publisher: str = ""
+    fjt_action: str = ""
+    fjt_publisher: str = ""
+    motion_topic: str = ""
+    motion_publisher: str = ""
+    pick_publisher: str = ""
+    calibration_topic: str = ""
+    calibration_publisher: str = ""
+    trace_topic: str = ""
+    trace_publisher: str = ""
+    tf_pairs: tuple = ()
     freshness_ms: int = 3000
 
     def __post_init__(self):
@@ -32,6 +51,19 @@ class RosConfig:
             raise ValueError("read_only 必须为布尔值")
         if type(self.freshness_ms) is not int or not 500 <= self.freshness_ms <= 5000:
             raise ValueError("freshness_ms 必须为 500–5000 毫秒")
+        if self.motion_topic and not self.motion_publisher:
+            raise ValueError("执行端遥测必须配置 motion_publisher，不能从 FSM 推测运动")
+        for kind in ("planner", "tool_verification", "calibration", "trace"):
+            if getattr(self, kind + "_topic") and not getattr(self, kind + "_publisher"):
+                raise ValueError(kind + " 必须配置完整发布节点名")
+        if not isinstance(self.tf_pairs, (list, tuple)) or len(self.tf_pairs) > 16:
+            raise ValueError("tf_pairs 必须为最多 16 组 target/source 坐标系")
+        pairs = []
+        for pair in self.tf_pairs:
+            if not isinstance(pair, (list, tuple)) or len(pair) != 2 or any(not isinstance(v, str) or not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_/]*", v) for v in pair) or pair[0] == pair[1]:
+                raise ValueError("tf_pairs 每项为两个不同坐标系 [target, source]")
+            pairs.append(tuple(pair))
+        object.__setattr__(self, "tf_pairs", tuple(dict.fromkeys(pairs)))
         for key, value in asdict(self).items():
             if key.endswith(("_topic", "_publisher", "_action", "_service")):
                 if not isinstance(value, str) or (value and not re.fullmatch(r"/[a-zA-Z_][a-zA-Z0-9_]*(/[a-zA-Z_][a-zA-Z0-9_]*)*", value)):

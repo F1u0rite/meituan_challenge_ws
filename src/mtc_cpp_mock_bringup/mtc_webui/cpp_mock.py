@@ -32,12 +32,19 @@ def cpp_config(namespace='/mtc_cpp_mock', domain_id=None, read_only=False):
         domain_id = int(os.environ['ROS_DOMAIN_ID'])
     return CppConfig(domain_id=domain_id, read_only=read_only, cpp_namespace=ns,
                      task_action=ns + '/task/execute', task_topic=ns + '/task/state',
+                     pick_action=ns + '/manipulation/pick_place',
                      task_publisher=ns + '/mtc_mock_task')
 
 
 class CppMockBackend(RosBackend):
     mode = 'cpp_mock'
     scope_note = 'C++ Mock ROS 操作台；软件 Mock，无硬件、MoveIt、独立停稳传感器'
+
+    def invalidate(self, kind):
+        with self.lock:
+            super().invalidate(kind)
+            if kind == 'cpp_task':
+                super().invalidate('task_state')
 
     def _reasons(self, include_active=True):
         reasons = []
@@ -101,6 +108,7 @@ class CppMockTransport(RosTransport):
             for kind, name in [('cpp_task', 'mtc_mock_task'), ('cpp_pick', 'mtc_mock_pick_place')]:
                 full = self.config.cpp_namespace + '/' + name
                 self._subscribe(kind, String, full + '/integration_state', full)
+            self._subscribe_pick()
             self.node.create_subscription(Log, '/rosout', self._log, qos_profile_sensor_data)
             self.node.create_timer(0.02, self._drain)
             self.node.create_timer(0.2, self._graph)
@@ -130,6 +138,8 @@ class CppMockTransport(RosTransport):
                                        reason='C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果')
 
     def _receive(self, kind, message, info):
+        if kind in ("pick_status", "pick_feedback"):
+            return super()._receive(kind, message, info)
         self._authority(kind)
         source = self.sources.get(kind)
         if not source:

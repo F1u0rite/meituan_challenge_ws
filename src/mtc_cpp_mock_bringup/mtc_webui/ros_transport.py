@@ -9,6 +9,8 @@ import queue
 import threading
 import time
 import uuid
+from mtc_webui.telemetry import controller_sample, fjt_sample, execution_sample
+from mtc_webui.observations import perception_sample, planner_sample, tool_verification_sample
 
 
 def fields(message, names):
@@ -68,6 +70,9 @@ def encode_image(message, kind):
                                   preview="深度伪彩 0–2 m；非标定测量" if kind == "depth" else "RGB 图像")
 
 
+from mtc_webui.diagnostics import calibration_sample, trace_sample, goal_key
+
+
 class RosTransport:
     def __init__(self, backend):
         self.backend, self.config = backend, backend.config
@@ -75,6 +80,9 @@ class RosTransport:
         self.done = threading.Event()
         self.thread = None
         self.handles, self.subscriptions, self.sources, self.topics = {}, {}, {}, {}
+        self.fjt_name = ""
+        self.fjt_requested = set()
+        self.pick_requested = set()
         self.last_frame, self.last_image_error = {}, {}
         self.deadlines = {}
         self.context = self.node = self.executor = None
@@ -102,7 +110,7 @@ class RosTransport:
             from rclpy.action import ActionClient
             from rclpy.qos import qos_profile_sensor_data
             from mtc_interfaces.action import ExecuteTask
-            from mtc_interfaces.msg import TaskState, RobotState, ToolState
+            from mtc_interfaces.msg import TaskState, RobotState, ToolState, BatteryDetectionArray
             from mtc_interfaces.srv import RequestStop
             from sensor_msgs.msg import JointState
             from rcl_interfaces.msg import Log
@@ -118,10 +126,22 @@ class RosTransport:
             specs = [("task_state", TaskState, self.config.task_topic, self.config.task_publisher),
                      ("robot", RobotState, self.config.robot_topic, self.config.robot_publisher),
                      ("tool", ToolState, self.config.tool_topic, self.config.tool_publisher),
-                     ("joints", JointState, self.config.joint_topic, self.config.joint_publisher)]
+                     ("joints", JointState, self.config.joint_topic, self.config.joint_publisher),
+                     ("perception", BatteryDetectionArray, self.config.perception_topic, self.config.perception_publisher)]
             for kind, msg_type, topic, publisher in specs:
                 if topic:
                     self._subscribe(kind, msg_type, topic, publisher)
+            from std_msgs.msg import String
+            for kind in ("motion", "planner", "tool_verification", "calibration", "trace"):
+                if getattr(self.config, kind + "_topic"):
+                    self._subscribe(kind, String, getattr(self.config, kind + "_topic"),
+                                    getattr(self.config, kind + "_publisher"))
+            self._subscribe_pick()
+            if self.config.tf_pairs:
+                from tf2_ros import Buffer, TransformListener
+                self.tf_buffer = Buffer(node=self.node)
+                self.tf_listener = TransformListener(self.tf_buffer, self.node, spin_thread=False)
+                self.node.create_timer(0.5, self._check_tf)
             # Volatile best-effort reader accepts both common rosout publisher profiles.
             self.node.create_subscription(Log, "/rosout", self._log, qos_profile_sensor_data)
             self.node.create_timer(0.05, self._drain)
@@ -142,12 +162,107 @@ class RosTransport:
             if self.context and self.context.ok():
                 self.context.shutdown()
 
-    def _subscribe(self, kind, msg_type, topic, publisher=""):
+    def _subscribe(self, kind, msg_type, topic, publisher="", qos=None):
         # Exactly two positional args: rclpy uses the signature to pass MessageInfo.
         def callback(message, info):
             self._receive(kind, message, info)
         self.topics[kind] = (topic, publisher)
-        self.subscriptions[kind] = self.node.create_subscription(msg_type, topic, callback, self.qos)
+        self.subscriptions[kind] = self.node.create_subscription(msg_type, topic, callback, qos or self.qos)
+
+    def _subscribe_pick(self):
+        from mtc_interfaces.action import PickPlace
+        from action_msgs.msg import GoalStatusArray
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+        name = self.config.pick_action
+        if not name:
+            return
+        self.pick_result_type = PickPlace.Impl.GetResultService
+        self.pick_get_result = self.node.create_client(self.pick_result_type, name + "/_action/get_result")
+        self._subscribe("pick_status", GoalStatusArray, name + "/_action/status", self.config.pick_publisher,
+                        QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self._subscribe("pick_feedback", PickPlace.Impl.FeedbackMessage, name + "/_action/feedback", self.config.pick_publisher)
+
+    def _pick_result(self, goal_id):
+        if goal_id in self.pick_requested or not self.pick_get_result.service_is_ready():
+            return
+        self.pick_requested.add(goal_id)
+        if len(self.pick_requested) > 500:
+            self.pick_requested = {goal_id}
+        request = self.pick_result_type.Request()
+        request.goal_id.uuid = list(uuid.UUID(goal_id).bytes)
+        source = self.sources.get("pick_status")
+        future = self.pick_get_result.call_async(request)
+        def received(done):
+            try:
+                self._authority("pick_status")
+                if not source or self.sources.get("pick_status") != source:
+                    return
+                response = done.result()
+                self.backend.record_pick_result(goal_id, response.status,
+                    fields(response.result, "success placement_verified error_code message"), source[1])
+            except Exception as error:
+                self.backend.log("webui", 30, f"PickPlace 结果读取失败：{error}")
+        future.add_done_callback(received)
+
+    def _check_tf(self):
+        from rclpy.time import Time
+        now = self.node.get_clock().now().nanoseconds
+        pairs = []
+        for target, source in self.config.tf_pairs:
+            row = dict(target=target, source=source, available=False, reason=None, static_cache=None)
+            try:
+                transform = self.tf_buffer.lookup_transform(target, source, Time())
+                stamp = transform.header.stamp.sec * 1_000_000_000 + transform.header.stamp.nanosec
+                age = (now - stamp) / 1e6 if stamp else None
+                t, q = transform.transform.translation, transform.transform.rotation
+                values = [t.x, t.y, t.z, q.x, q.y, q.z, q.w]
+                finite = all(math.isfinite(v) for v in values) and abs(sum(v*v for v in values[3:]) - 1) <= .02
+                row.update(available=finite and (stamp == 0 or -500 <= age < self.config.freshness_ms),
+                           transform_stamp=str(stamp), age_ms=round(age) if age is not None else None, static_cache=stamp == 0,
+                           reason="静态 TF 缓存可查询" if stamp == 0 and finite else "动态 TF 可查询" if finite and -500 <= age < self.config.freshness_ms else "TF 数值或时间戳无效/过期")
+            except Exception as error:
+                row['reason'] = str(error)[:1000]
+            pairs.append(row)
+        self.backend.observe("tf", dict(pairs=pairs, available=all(r['available'] for r in pairs)),
+                             "本机 tf2 Buffer 只读查询；静态缓存不证明标定有效或发布节点在线", now, 0)
+
+    def _subscribe_fjt(self, name):
+        from control_msgs.action import FollowJointTrajectory
+        from action_msgs.msg import GoalStatusArray
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+        self.fjt_name = name
+        # No FJT ActionClient or send_goal/cancel_goal client. Reading an already
+        # terminal result cannot take ownership of execution or change a Goal.
+        self.fjt_result_type = FollowJointTrajectory.Impl.GetResultService
+        self.fjt_get_result = self.node.create_client(self.fjt_result_type, name + "/_action/get_result")
+        self._subscribe("fjt_status", GoalStatusArray, name + "/_action/status", self.config.fjt_publisher,
+                        QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE,
+                                   durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self._subscribe("fjt_feedback", FollowJointTrajectory.Impl.FeedbackMessage,
+                        name + "/_action/feedback", self.config.fjt_publisher)
+
+    def _fjt_result(self, goal_id):
+        if goal_id in self.fjt_requested or not self.fjt_get_result.service_is_ready():
+            return
+        self.fjt_requested.add(goal_id)
+        # Only one observed terminal Goal is requested; retain a bounded dedupe set.
+        if len(self.fjt_requested) > 500:
+            self.fjt_requested = {goal_id}
+        request = self.fjt_result_type.Request()
+        request.goal_id.uuid = list(uuid.UUID(goal_id).bytes)
+        source = self.sources.get("fjt_status")
+        future = self.fjt_get_result.call_async(request)
+        def received(done):
+            try:
+                self._authority("fjt_status")
+                if not source or self.sources.get("fjt_status") != source:
+                    return
+                response = done.result()
+                self.backend.record_fjt_result(goal_id, response.status, response.result.error_code,
+                                               response.result.error_string, source[1])
+            except Exception as error:
+                self.backend.log("webui", 30, f"FJT 结果读取失败：{error}")
+        future.add_done_callback(received)
 
     def _authority(self, kind):
         topic, pin = self.topics[kind]
@@ -173,6 +288,13 @@ class RosTransport:
         from rclpy.action.graph import get_action_server_names_and_types_by_node
         from sensor_msgs.msg import Image, CompressedImage
         topics = self.node.get_topic_names_and_types()
+        controller_topics = sorted(name for name, types in topics
+                                   if types == ["control_msgs/msg/JointTrajectoryControllerState"])
+        controller_topic = self.config.controller_topic or (controller_topics[0] if len(controller_topics) == 1 else "")
+        if controller_topic and "controller" not in self.subscriptions:
+            from control_msgs.msg import JointTrajectoryControllerState
+            self._subscribe("controller", JointTrajectoryControllerState, controller_topic,
+                            self.config.controller_publisher)
         image_topics = sorted(name for name, types in topics if any(t in ("sensor_msgs/msg/Image", "sensor_msgs/msg/CompressedImage") for t in types))
         for kind in ("color", "depth"):
             if kind in self.subscriptions:
@@ -195,19 +317,33 @@ class RosTransport:
             publishers[kind] = self._authority(kind)
         action_servers = []
         stop_servers = []
+        pick_servers = []
+        fjt_servers = {}
+        nodes = []
         for name, namespace in self.node.get_node_names_and_namespaces():
             full_name = namespace.rstrip("/") + "/" + name
+            if "_UNKNOWN_" not in full_name:
+                nodes.append(full_name)
             for action, types in get_action_server_names_and_types_by_node(self.node, name, namespace):
                 if action == self.config.task_action and "mtc_interfaces/action/ExecuteTask" in types:
                     action_servers.append(full_name)
+                if action == self.config.pick_action and "mtc_interfaces/action/PickPlace" in types:
+                    pick_servers.append(full_name)
+                if "control_msgs/action/FollowJointTrajectory" in types:
+                    fjt_servers.setdefault(action, []).append(full_name)
             for service, types in self.node.get_service_names_and_types_by_node(name, namespace):
                 if service == self.config.stop_service and "mtc_interfaces/srv/RequestStop" in types:
                     stop_servers.append(full_name)
+        fjt_name = self.config.fjt_action or (next(iter(fjt_servers)) if len(fjt_servers) == 1 else "")
+        if fjt_name and not self.fjt_name:
+            self._subscribe_fjt(fjt_name)
         self.backend.connection_update(connected=True, reason="ROS 已连接；设备状态按来源与时间戳核验",
                                        action_ready=len(action_servers) == 1 and self.action.server_is_ready(),
                                        stop_ready=len(stop_servers) == 1 and self.stop.service_is_ready(),
                                        action_servers=action_servers, stop_servers=stop_servers,
-                                       publishers=publishers, image_topics=image_topics)
+                                       publishers=publishers, image_topics=image_topics, nodes=sorted(nodes),
+                                       pick_servers=pick_servers, controller_topics=controller_topics,
+                                       fjt_action=self.fjt_name, fjt_servers=fjt_servers)
 
     def _receive(self, kind, message, info):
         # Refresh authority on each sample, not only on the periodic graph poll.
@@ -219,8 +355,72 @@ class RosTransport:
         gid = info.get("publisher_gid")
         if gid is not None and bytes(gid).hex() != source[0]:
             return
-        stamp = message.header.stamp.sec * 1_000_000_000 + message.header.stamp.nanosec
+        if kind in ("motion", "planner", "tool_verification", "calibration", "trace"):
+            try:
+                import json
+                if len(message.data) > 32768:
+                    raise ValueError(kind + " telemetry 超过 32 KiB")
+                raw = json.loads(message.data)
+                data = {"motion": execution_sample, "planner": planner_sample,
+                        "tool_verification": tool_verification_sample, "calibration": calibration_sample, "trace": trace_sample}[kind](raw)
+                stamp = raw["stamp_ns"]
+                age = (self.node.get_clock().now().nanoseconds - stamp) / 1e6
+                self.backend.observe(kind, data, source[1], stamp, age)
+            except (ValueError, TypeError, KeyError) as error:
+                self.backend.invalidate(kind)
+                self.backend.log("webui", 30, str(error))
+            return
+        if kind in ("pick_status", "pick_feedback"):
+            stamp = info.get("source_timestamp", 0)
+            age = (time.time_ns() - stamp) / 1e6
+            if kind == "pick_status":
+                entries = [dict(goal_id=bytes(e.goal_info.goal_id.uuid).hex(), status=e.status) for e in message.status_list]
+                try:
+                    for entry in entries: goal_key(entry["goal_id"])
+                except ValueError:
+                    self.backend.invalidate(kind)
+                    return
+                terminal = self.backend.observe_pick_status(entries, source[1], stamp, age)
+                if terminal and stamp > 0 and -500 <= age < self.config.freshness_ms:
+                    self._pick_result(terminal)
+            else:
+                data = fields(message.feedback, "substate progress object_attached_estimated detail")
+                if not math.isfinite(data["progress"]) or not 0 <= data["progress"] <= 1:
+                    data["progress"] = None
+                self.backend.observe_pick_feedback(bytes(message.goal_id.uuid).hex(), data, source[1], stamp, age)
+            return
+        if kind == "fjt_status":
+            # GoalStatusArray has no Header. DDS publication time is freshness
+            # evidence; Goal acceptance time is not the message timestamp.
+            stamp = info.get("source_timestamp", 0)
+            age = (time.time_ns() - stamp) / 1e6
+            entries = [dict(goal_id=bytes(e.goal_info.goal_id.uuid).hex(), status=e.status)
+                       for e in message.status_list]
+            try:
+                for entry in entries: goal_key(entry["goal_id"])
+            except ValueError:
+                self.backend.invalidate(kind)
+                return
+            terminal = self.backend.observe_fjt_status(entries, source[1], stamp, age)
+            if terminal and stamp > 0 and -500 <= age < self.config.freshness_ms:
+                self._fjt_result(terminal)
+            return
+        header = message.feedback.header if kind == "fjt_feedback" else message.header
+        stamp = header.stamp.sec * 1_000_000_000 + header.stamp.nanosec
         age = (self.node.get_clock().now().nanoseconds - stamp) / 1_000_000
+        if kind == "perception":
+            try:
+                self.backend.observe(kind, perception_sample(message), source[1], stamp, age)
+            except (ValueError, TypeError) as error:
+                self.backend.invalidate(kind)
+                self.backend.log("webui", 30, str(error))
+            return
+        if kind == "fjt_feedback":
+            self.backend.observe_fjt_feedback(fjt_sample(message), source[1], stamp, age)
+            return
+        if kind == "controller":
+            self.backend.observe(kind, controller_sample(message), source[1], stamp, age)
+            return
         if kind in ("color", "depth"):
             if time.monotonic() - self.last_frame.get(kind, 0) < 0.2:
                 return
@@ -249,8 +449,9 @@ class RosTransport:
     def _log(self, message):
         # Avoid mirroring unrelated system logs and the console's own messages.
         name = message.name
-        if ("mtc" in name or name in {"task_executor", "motion_executor", "tool_manager", "aubo_driver"}) and "web_console" not in name:
-            self.backend.log(name, message.level, message.msg)
+        configured = {getattr(self.config, k).strip("/").replace("/", ".") for k in self.config.__dataclass_fields__ if k.endswith("_publisher")}
+        if ("mtc" in name or name in configured or name in {"task_executor", "motion_executor", "tool_manager", "aubo_driver"}) and "web_console" not in name:
+            self.backend.log(name, message.level, message.msg, str(message.stamp.sec * 1_000_000_000 + message.stamp.nanosec))
 
     def _drain(self):
         while not self.commands.empty():

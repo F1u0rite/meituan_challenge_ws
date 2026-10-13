@@ -238,7 +238,7 @@ class MockBackend:
             age = 15000 if self.condition == "stale" else 0
             available = self.condition != "missing"
             def sample(data):
-                return {"source": "webui.mock_backend", "received_at": iso_time(self.wall_clock() - age / 1000),
+                return {"source": "mtc_webui.mock_backend", "received_at": iso_time(self.wall_clock() - age / 1000),
                         "age_ms": age if available else None, "available": available,
                         "data": data if available else None}
             phase = task["substate"] if active else ""
