@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <iomanip>
+#include <map>
 #include <sstream>
 #include <utility>
 
@@ -59,6 +60,17 @@ MoveItPlannerPort::MoveItPlannerPort(
   clock_(std::move(clock)),
   asynchronous_(asynchronous)
 {
+  // 工具模型是 TCP 的唯一来源：启用时由 CAD 几何计算 ee_link -> hook_tcp 与工具碰撞体。
+  if (config_.tool.enabled) {
+    const auto frames = compute_tool_frames(config_.tool);
+    if (frames.valid) {
+      config_.ee_to_tcp = frames.ee_to_tcp;
+      config_.tcp_status = config_.tool_status;
+      tool_bodies_ = tool_bodies_in_ee(config_.tool, frames);
+    } else {
+      tool_error_ = frames.message;
+    }
+  }
 }
 
 MoveItPlannerPort::~MoveItPlannerPort()
@@ -226,6 +238,13 @@ PlanResult MoveItPlannerPort::plan_blocking(
       return true;
     };
 
+  if (!tool_error_.empty()) {
+    return fail("INVALID_CONFIG", "", "tool model: " + tool_error_);
+  }
+  if (config_.tool.enabled && !accept_calibration("tool_geometry", config_.tool_status)) {
+    return fail("TOOL_UNKNOWN", "", "tool geometry status is UNKNOWN");
+  }
+
   const Transform tcp_to_ee = inverse(config_.ee_to_tcp);
   double stamp = clock_ ? clock_->now() : 0.0;
   if (!std::isfinite(stamp) || stamp < 0.0) {
@@ -236,6 +255,8 @@ PlanResult MoveItPlannerPort::plan_blocking(
   bool payload_released = false;
 
   std::vector<mtc::core::MotionCommand> commands;
+  // 同一 PickPlace 状态内顺序执行的原语共用一个看门狗：按状态累计时长。
+  std::map<mtc::manipulation::PickPlaceState, double> state_duration;
   for (const auto & primitive : target.primitives) {
     PrimitivePlanReport entry;
     entry.primitive_name = primitive.name;
@@ -268,6 +289,7 @@ PlanResult MoveItPlannerPort::plan_blocking(
     auto make_request = [&](const std::string & label, MotionMode mode, const Pose6D & goal) {
         BackendRequest request;
         request.label = label;
+        request.tool_bodies = tool_bodies_;
         request.mode = mode;
         request.ee_goal = goal;
         request.start = chain;
@@ -330,8 +352,14 @@ PlanResult MoveItPlannerPort::plan_blocking(
                  "cannot transform ring pose from '" + ring->frame_id + "' to '" +
                  report.planning_frame + "'");
       }
+      Pose6D ring_goal = *ring_in_frame;
+      if (config_.hook_up_alignment && config_.insertion_axis == 2) {
+        // 钩口朝上：只信提环的插入轴；绕插入轴的滚转对舌规由重力决定（感知给出的滚转不可靠）。
+        ring_goal.orientation = align_roll_to_up(
+          ring_goal.orientation, mtc::core::Vector3{0.0, 0.0, 1.0}, config_.hook_up_min_tilt_rad);
+      }
       const auto tcp_goal = offset_along_local_axis(
-        *ring_in_frame, config_.insertion_axis, -spec.distance_m);
+        ring_goal, config_.insertion_axis, -spec.distance_m);
       ee_goal = apply(tcp_goal, tcp_to_ee);
     } else if (spec.goal == GoalKind::RELATIVE_UP) {
       const auto ee_now = backend_->end_effector_pose(chain);
@@ -456,13 +484,18 @@ PlanResult MoveItPlannerPort::plan_blocking(
     entry.state_watchdog_s = watchdog;
     entry.point_count = trajectory.points.size();
     entry.duration_s = duration;
-    if (watchdog > 0.0 && duration > watchdog * config_.state_timeout_usage) {
+    const double state_total = state_duration[spec.executing_state] + duration;
+    if (watchdog > 0.0 && state_total > watchdog * config_.state_timeout_usage) {
+      const bool shared = state_total > duration;
       return fail_primitive("EXCEEDS_STATE_WATCHDOG",
-               "trajectory lasts " + fmt(duration) + " s, more than " +
+               "trajectory lasts " + fmt(duration) + " s" +
+               (shared ? " (" + fmt(state_total) + " s with earlier primitives in the same state)" :
+               std::string()) + ", more than " +
                fmt(config_.state_timeout_usage * 100.0) + "% of the " +
                mtc::manipulation::to_string(spec.executing_state) + " watchdog (" +
                fmt(watchdog) + " s)");
     }
+    state_duration[spec.executing_state] = state_total;
     const auto timeout_ms = static_cast<uint32_t>(
       std::ceil(duration * config_.timeout_factor * 1000.0)) + config_.timeout_margin_ms;
     entry.timeout_ms = timeout_ms;

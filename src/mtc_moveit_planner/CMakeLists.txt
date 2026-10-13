@@ -26,6 +26,8 @@ add_library(mtc_moveit_planner_core SHARED
   src/moveit_planner_port.cpp
   src/start_consistency.cpp
   src/scene_ids.cpp
+  src/ee_limited_retiming.cpp
+  src/tool_model.cpp
 )
 target_include_directories(mtc_moveit_planner_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -92,6 +94,9 @@ install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 # ---------------------------------------------------------------------------
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_pytest REQUIRED)
+
+  ament_add_pytest_test(test_shutdown_evidence test/test_shutdown_evidence.py)
 
   ament_add_gtest(test_pose_math test/test_pose_math.cpp)
   target_link_libraries(test_pose_math mtc_moveit_planner_core)
@@ -104,6 +109,12 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_scene_ids test/test_scene_ids.cpp)
   target_link_libraries(test_scene_ids mtc_moveit_planner_core)
+
+  ament_add_gtest(test_ee_limited_retiming test/test_ee_limited_retiming.cpp)
+  target_link_libraries(test_ee_limited_retiming mtc_moveit_planner_core)
+
+  ament_add_gtest(test_tool_model test/test_tool_model.cpp)
+  target_link_libraries(test_tool_model mtc_moveit_planner_core)
 
   ament_add_gtest(test_moveit_planner_port test/test_moveit_planner_port.cpp)
   target_link_libraries(test_moveit_planner_port mtc_moveit_planner_core)

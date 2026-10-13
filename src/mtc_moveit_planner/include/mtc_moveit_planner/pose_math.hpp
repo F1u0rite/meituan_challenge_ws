@@ -117,6 +117,52 @@ inline mtc::core::Pose6D translate_in_frame(
   return out;
 }
 
+inline double dot(const mtc::core::Vector3 & a, const mtc::core::Vector3 & b)
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline mtc::core::Vector3 cross(const mtc::core::Vector3 & a, const mtc::core::Vector3 & b)
+{
+  return mtc::core::Vector3{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
+}
+
+inline mtc::core::Vector3 scaled(const mtc::core::Vector3 & v, double s)
+{
+  return mtc::core::Vector3{v.x * s, v.y * s, v.z * s};
+}
+
+inline mtc::core::Vector3 unit(const mtc::core::Vector3 & v)
+{
+  const double n = std::sqrt(dot(v, v));
+  return n > 0.0 ? scaled(v, 1.0 / n) : mtc::core::Vector3{};
+}
+
+/// 由三根正交单位轴（父系中表达，即旋转矩阵的三列）求四元数。
+inline mtc::core::Quaternion quaternion_from_axes(
+  const mtc::core::Vector3 & x, const mtc::core::Vector3 & y, const mtc::core::Vector3 & z)
+{
+  const double m00 = x.x, m01 = y.x, m02 = z.x;
+  const double m10 = x.y, m11 = y.y, m12 = z.y;
+  const double m20 = x.z, m21 = y.z, m22 = z.z;
+  const double trace = m00 + m11 + m22;
+  mtc::core::Quaternion q;
+  if (trace > 0.0) {
+    const double s = std::sqrt(trace + 1.0) * 2.0;
+    q = {(m21 - m12) / s, (m02 - m20) / s, (m10 - m01) / s, 0.25 * s};
+  } else if (m00 > m11 && m00 > m22) {
+    const double s = std::sqrt(1.0 + m00 - m11 - m22) * 2.0;
+    q = {0.25 * s, (m01 + m10) / s, (m02 + m20) / s, (m21 - m12) / s};
+  } else if (m11 > m22) {
+    const double s = std::sqrt(1.0 + m11 - m00 - m22) * 2.0;
+    q = {(m01 + m10) / s, 0.25 * s, (m12 + m21) / s, (m02 - m20) / s};
+  } else {
+    const double s = std::sqrt(1.0 + m22 - m00 - m11) * 2.0;
+    q = {(m02 + m20) / s, (m12 + m21) / s, 0.25 * s, (m10 - m01) / s};
+  }
+  return normalized(q);
+}
+
 /// 两姿态之间的最小旋转角（弧度，范围 [0, π]）。
 inline double angle_between(const mtc::core::Quaternion & a, const mtc::core::Quaternion & b)
 {

@@ -42,6 +42,15 @@ StartCheck check_trajectory_start(
     check.message = "trajectory has no valid first point";
     return check;
   }
+  // 空关节集合必须拒绝：否则下面的比较一次都不执行，最大偏差保持 0 而误判为通过（fail-open）。
+  if (trajectory.joint_names.empty()) {
+    check.message = "trajectory has no joints";
+    return check;
+  }
+  if (actual_names.empty()) {
+    check.message = "actual state has no joints";
+    return check;
+  }
   if (actual_names.size() != actual_positions.size() || !std::isfinite(tolerance_rad) ||
     tolerance_rad < 0.0)
   {
@@ -86,7 +95,8 @@ StartCheck check_trajectory_start(
       check.worst_joint = trajectory.joint_names[i];
     }
   }
-  check.ok = check.max_deviation_rad <= tolerance_rad;
+  // 只有真正比较过至少一个关节才可能通过（防御性，空集合已在上面拒绝）。
+  check.ok = !check.worst_joint.empty() && check.max_deviation_rad <= tolerance_rad;
   std::ostringstream os;
   os << std::setprecision(6) << "max start deviation " << check.max_deviation_rad << " rad at " <<
     check.worst_joint << (check.ok ? " <= " : " > ") << tolerance_rad << " rad";

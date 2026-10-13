@@ -370,6 +370,59 @@ TEST(MoveItPlannerPort, TrajectoryLongerThanStateWatchdogIsRefused)
     << result.message;
 }
 
+/// 拆分提案：快速接近（side_approach）+ 慢速预对准（side_insert），两者都在 MOVE_PRE_ALIGN 执行。
+PlanTarget split_acquire_target()
+{
+  auto target = acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate());
+  auto approach = target.primitives.front();
+  approach.name = "side_approach";
+  approach.max_linear_speed = 0.15;
+  approach.max_angular_speed = 0.3;
+  target.primitives.insert(target.primitives.begin(), approach);
+  target.primitive_names.insert(target.primitive_names.begin(), approach.name);
+  return target;
+}
+
+TEST(MoveItPlannerPort, SplitApproachStopsShortOfStandoffAndKeepsSlowFinalSegment)
+{
+  Fixture f;
+  const auto result = f.port()->plan_blocking(split_acquire_target());
+  ASSERT_TRUE(result.ok) << result.message;
+  ASSERT_EQ(result.commands.size(), 3u);
+  EXPECT_EQ(result.commands[0].primitive_name, "side_approach");
+  EXPECT_EQ(result.commands[1].primitive_name, "side_insert");
+  // 接近段停在提环前 0.05 m（预对准 0.03 + 退让 0.02），预对准段只走最后 0.02 m。
+  const auto & approach_end = result.commands[0].trajectory->points.back();
+  const auto & insert_end = result.commands[1].trajectory->points.back();
+  EXPECT_NEAR(z_of(approach_end), 0.25 - 0.05, 1e-9);
+  EXPECT_NEAR(z_of(insert_end), 0.25 - 0.03, 1e-9);
+  ASSERT_GE(f.backend->requests.size(), 2u);
+  EXPECT_DOUBLE_EQ(f.backend->requests[0].max_linear_speed_m_s, 0.15);
+  EXPECT_DOUBLE_EQ(f.backend->requests[1].max_linear_speed_m_s, 0.02);
+}
+
+TEST(MoveItPlannerPort, PrimitivesSharingAStateShareItsWatchdog)
+{
+  Fixture probe;
+  probe.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = 1000.0;
+  auto port = probe.port();
+  ASSERT_TRUE(port->plan_blocking(split_acquire_target()).ok);
+  const double d1 = port->last_report().primitives[0].duration_s;
+  const double d2 = port->last_report().primitives[1].duration_s;
+  ASSERT_GT(d1, 0.0);
+  ASSERT_GT(d2, 0.0);
+
+  // 每段单独都在 80% 以内，但两段之和超过：必须拒绝。
+  Fixture f;
+  const double threshold = 0.5 * (std::max(d1, d2) + d1 + d2);
+  f.config.state_timeouts[PickPlaceState::MOVE_PRE_ALIGN] = threshold / f.config.state_timeout_usage;
+  const auto result = f.port()->plan_blocking(split_acquire_target());
+  EXPECT_FALSE(result.ok);
+  EXPECT_EQ(result.message.rfind("[EXCEEDS_STATE_WATCHDOG] side_insert", 0), 0u) << result.message;
+  EXPECT_NE(result.message.find("with earlier primitives in the same state"), std::string::npos)
+    << result.message;
+}
+
 TEST(MoveItPlannerPort, StartMismatchAndMissingJointAreRefused)
 {
   Fixture f;
@@ -391,6 +444,39 @@ TEST(MoveItPlannerPort, TighterControllerJointLimitsAreEnforced)
   const auto result = f.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
   EXPECT_FALSE(result.ok);
   EXPECT_EQ(result.message.rfind("[JOINT_LIMIT_VIOLATION] side_insert", 0), 0u) << result.message;
+}
+
+TEST(MoveItPlannerPort, ToolModelSetsTcpAndAttachesBodiesToEveryRequest)
+{
+  Fixture f;
+  auto & tool = f.config.tool;
+  tool.enabled = true;
+  tool.flange_axis_cad = {0.0, 1.0, 0.0};
+  tool.insertion_cad = {0.0, 0.0, 1.0};
+  tool.hook_up_cad = {0.0, -1.0, 0.0};
+  tool.tcp_cad_m = {0.0, 0.110, 0.045};
+  mtc::moveit_planner::ToolBodySpec tongue;
+  tongue.id = "tongue";
+  tongue.size_m = {0.044, 0.005, 0.085};
+  tool.bodies = {tongue};
+  f.config.tool_status = CalibrationStatus::ESTIMATED;
+  auto port = f.port();
+  EXPECT_NEAR(port->config().ee_to_tcp.translation.z, 0.110, kTol);
+  EXPECT_EQ(port->config().tcp_status, CalibrationStatus::ESTIMATED);
+  const auto result = port->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  ASSERT_TRUE(result.ok) << result.message;
+  EXPECT_NE(result.message.find("tool_geometry=ESTIMATED"), std::string::npos) << result.message;
+  ASSERT_FALSE(f.backend->requests.empty());
+  for (const auto & request : f.backend->requests) {
+    ASSERT_EQ(request.tool_bodies.size(), 1u) << request.label;
+    EXPECT_EQ(request.tool_bodies[0].id, "mtc_moveit_planner/tongue");
+  }
+
+  Fixture bad;
+  bad.config.tool = tool;
+  bad.config.tool.insertion_cad = {0.0, 1.0, 0.0};   // 与法兰轴平行：非法
+  const auto refused = bad.port()->plan_blocking(acquire_target(TOOL_PASSIVE_HOOK_V1, ring_estimate()));
+  EXPECT_EQ(refused.message.rfind("[INVALID_CONFIG]", 0), 0u) << refused.message;
 }
 
 TEST(MoveItPlannerPort, ScalingAboveExecutorCapIsRefused)

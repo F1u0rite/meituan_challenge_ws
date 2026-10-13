@@ -108,6 +108,9 @@ PlannerConfig default_planner_config()
   constexpr double kPreSeatClearance = 0.02;
   constexpr double kWithdrawTravel = 0.03;
   constexpr double kRetreat = 0.10;
+  // "快速接近 + 慢速预对准"拆分提案中，快速段停在预对准位之前再退 2 cm（占位；V1 占位几何下
+  // 2 cm 可达、5 cm 不可达，见 docs/planning/V1_FEASIBILITY.md）。
+  constexpr double kApproachBackoff = 0.02;
 
   auto & p = config.primitives;
   // 抓取侧（PLAN_ACQUIRE 一次规划 acquire + test_lift）
@@ -115,6 +118,11 @@ PlannerConfig default_planner_config()
       PickPlaceState::MOVE_PRE_ALIGN);
   p["top_insert"] = spec(MotionMode::FREE_SPACE, GoalKind::RING_STANDOFF, kInsertTravel,
       PickPlaceState::MOVE_PRE_ALIGN);
+  // 拆分提案的快速接近段（FSM 尚未发出这些原语；未发出时这两条规则不起作用）。
+  p["side_approach"] = spec(MotionMode::FREE_SPACE, GoalKind::RING_STANDOFF,
+      kInsertTravel + kApproachBackoff, PickPlaceState::MOVE_PRE_ALIGN);
+  p["top_approach"] = spec(MotionMode::FREE_SPACE, GoalKind::RING_STANDOFF,
+      kInsertTravel + kApproachBackoff, PickPlaceState::MOVE_PRE_ALIGN);
   p["test_lift"] = spec(MotionMode::CARTESIAN, GoalKind::RELATIVE_UP, kTestLift,
       PickPlaceState::TEST_LIFT, ToolGapBefore::ENGAGE_INSERT, kInsertTravel);
   // 搬运侧（LIFT 状态一次规划 lift + transport + pre_seat + seat_contact + retreat）
@@ -152,6 +160,29 @@ PlannerConfig default_planner_config()
   config.slots["P2"] = placeholder_slot(0.35, 0.10, 0.13);
   config.slots["P3"] = placeholder_slot(0.35, 0.25, 0.13);
   return config;
+}
+
+}  // namespace moveit_planner
+}  // namespace mtc
+
+namespace mtc
+{
+namespace moveit_planner
+{
+
+void apply_tool_travel(
+  PlannerConfig & config, double insert_travel_m, double withdraw_travel_m,
+  double approach_backoff_m)
+{
+  auto & p = config.primitives;
+  for (const char * name : {"side_insert", "top_insert"}) {
+    if (p.count(name)) {p[name].distance_m = insert_travel_m;}
+  }
+  for (const char * name : {"side_approach", "top_approach"}) {
+    if (p.count(name)) {p[name].distance_m = insert_travel_m + approach_backoff_m;}
+  }
+  if (p.count("test_lift")) {p["test_lift"].gap_distance_m = insert_travel_m;}
+  if (p.count("retreat")) {p["retreat"].gap_distance_m = withdraw_travel_m;}
 }
 
 }  // namespace moveit_planner

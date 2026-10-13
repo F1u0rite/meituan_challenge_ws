@@ -1,7 +1,9 @@
 # mtc_moveit_planner —— MoveIt 2 规划适配层（PlannerPort 实现）
 
 > **状态：Mock / Fake Hardware 专用，只规划、不执行。** 输出默认 `simulation_only=true`；
-> TCP、工位、提环位姿均为 PLACEHOLDER，禁止用于真实运动。负责人：常建烁。
+> V1 TCP / 工具外形来自 CAD（ESTIMATED）；工位、提环位姿仍为 PLACEHOLDER。负责人：常建烁。
+> 最新结果：[V1 可行性](../../docs/planning/V1_FEASIBILITY.md)、
+> [P0 / move_group 退出验收](../../docs/planning/MOVE_GROUP_SHUTDOWN_AUDIT.md)。
 
 ## 1. 它做什么
 
@@ -31,21 +33,21 @@ PickPlaceFsm ──PlanTarget──▶ MoveItPlannerPort (纯 C++，可离线测
 
 | 原语 | 执行状态（看门狗） | 方式 | 目标 | 起点 |
 |---|---|---|---|---|
-| `side_insert`(V1) / `top_insert`(V2) | MOVE_PRE_ALIGN (30 s) | OMPL | 提环位姿沿插入轴 (+Z) **后退 0.03 m**（预对准位） | 当前状态 |
-| `test_lift` | TEST_LIFT (15 s) | 笛卡尔直线 | +Z 0.01 m | **假设** ToolPort 插入 0.03 m 后 |
+| `side_insert`(V1) / `top_insert`(V2) | MOVE_PRE_ALIGN (30 s) | FREE_SPACE | 提环位姿沿插入轴 (+Z) 后退：V1 **0.06 m**，V2 **0.03 m**（预对准位） | 当前状态 |
+| `test_lift` | TEST_LIFT (15 s) | 笛卡尔直线 | +Z 0.01 m | **假设** ToolPort 完成对应插入行程后 |
 | `lift` | LIFT (30 s) | 笛卡尔直线 | +Z 0.05 m | 当前状态（试提已执行） |
 | `transport` | TRANSPORT (60 s) | OMPL | 工位上方 0.10 m，保持抓取姿态 | 上一段终点 |
 | `pre_seat` | MOVE_PRE_SEAT (30 s) | 笛卡尔直线 | 工位上方 0.02 m | 上一段终点 |
 | `seat_contact` | SEAT (20 s) | 笛卡尔直线 | 工位高度（**接触意图，仅仿真**） | 上一段终点 |
-| `retreat` | RETREAT (30 s) | 笛卡尔直线 | +Z 0.10 m | **假设** ToolPort 退出 0.03 m 后 |
+| `retreat` | RETREAT (30 s) | 笛卡尔直线 | +Z 0.10 m | **假设** ToolPort 完成对应退钩行程后 |
 | `hook_engage` / `auto_lock` / `unload` / `side_withdraw` / `withdraw` | — | **拒绝**（ToolPort 负责） | — | — |
 
-OMPL 行的原语（FREE_SPACE）**先尝试末端直线**（完整、无碰撞、满足关节约束、无构型翻转才采用），
-不可行再用 OMPL；控制器限位（foreArm ±2.41、wrist1 ±2.66、wrist3 ±2.23）以 MoveIt 路径约束下发并在输出前复核。
+FREE_SPACE 原语先尝试末端直线，再评估带固定种子的 IK 与逐点碰撞检查的关节插值，最后回退 OMPL；
+控制器限位（foreArm ±2.41、wrist1 ±2.66、wrist3 ±2.23）以 MoveIt 路径约束下发并在输出前复核。
 
-距离来自 `config/motion_profiles.yaml` 与 `config/manipulation.yaml`（均为占位值）；
+插入/退钩行程由本包 `config/planner.yaml` 配置，V2 使用 `sequence_v2_override.yaml`；其余距离仍含占位值。
 末端线/角速度上限取原语自身的 `max_linear_speed` / `max_angular_speed`，
-在 TOTG 时间参数化后按需**均匀拉伸**时间（路径不变）。
+关节插值路径启用末端限速时间参数化，其他路径在 TOTG 后按需均匀拉伸时间。
 
 ## 2A. 规划场景与起点一致性
 
@@ -60,7 +62,7 @@ OMPL 行的原语（FREE_SPACE）**先尝试末端直线**（完整、无碰撞�
   auto check = mtc::moveit_planner::check_trajectory_start(*cmd.trajectory, names, positions);  // 0.01 rad
   if (!check.ok) { /* 拒绝；用 MoveItPlannerPort::replan_primitive(target, cmd.primitive_name, measured) 重规划 */ }
   ```
-  轨迹或实测状态中出现**重复 / 空关节名**一律判不通过（不会"取第一个"）；`replan_primitive()` 收到重名的实测状态
+  轨迹或实测状态中出现**空关节集合、重复 / 空关节名**一律判不通过（不会"取第一个"）；`replan_primitive()` 收到重名的实测状态
   返回 `[INVALID_START_STATE]`。
 
 ## 3. 构建与测试
@@ -84,11 +86,14 @@ ros2 launch mtc_moveit_planner plan_tool.launch.py program:=plan_battery_sequenc
 bash src/mtc_moveit_planner/scripts/run_planning_evidence.sh
 ```
 
-证据写入 `docs/planning/evidence/<时间戳>/`。
+证据写入 `docs/planning/evidence/<时间戳>/`。脚本同时检查 launch 的每个子进程是否正常退出；
+崩溃、信号升级、缺少正常退出记录均为 FAIL，并返回非零退出码。
+系统 MoveIt 2.12.4 在本机存在插件卸载退出缺陷；诊断与显式启用的临时规避方法见
+[退出验收报告](../../docs/planning/MOVE_GROUP_SHUTDOWN_AUDIT.md)。
 
 ## 5. 已知限制（详见 docs/planning/PLANNING_HANDOFF.md）
 
-1. 碰撞场景只有占位桌面与电池载荷；无工具、相机、工位支架模型，取货电池本体未作为障碍物。
-2. TCP = 单位变换（PLACEHOLDER），轨迹实际把 `ee_link` 送到提环位置。
+1. 碰撞场景含占位桌面、电池载荷和 V1 CAD 工具外形；缺相机、工位支架，取货电池本体未作为障碍物。
+2. V1 TCP 按 CAD 估计，安装方向和贴合面待实测；V2 TCP 仍为单位变换（PLACEHOLDER）。
 3. `test_lift` / `retreat` 起点依赖对 ToolPort 动作的假设；执行端必须核对起点偏差。
 4. 只读 Fake 环境中验证；不调用 execute()，不发送 FollowJointTrajectory。

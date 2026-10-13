@@ -88,4 +88,31 @@ TEST(StartConsistency, DuplicateOrEmptyJointNamesAreRejected)
       {0.1, 0.2, 0.3, 0.0}).ok);
 }
 
+TEST(StartConsistency, EmptyJointSetsAreRejected)
+{
+  const std::vector<std::string> actual_names{"shoulder_joint", "upperArm_joint", "foreArm_joint"};
+  const std::vector<double> actual_positions{0.1, 0.2, 0.3};
+
+  // 轨迹没有关节、首点也没有位置：维度"一致"，但没有任何可比较的关节，必须拒绝。
+  mtc::core::TimedTrajectory no_joints;
+  no_joints.header_frame_id = "world";
+  no_joints.points = {{0.0, {}, {}, {}}, {1.0, {}, {}, {}}};
+  auto check = check_trajectory_start(no_joints, actual_names, actual_positions);
+  EXPECT_FALSE(check.ok);
+  EXPECT_EQ(check.message, "trajectory has no joints");
+
+  // 即使容差极大，空集合也不能通过。
+  EXPECT_FALSE(check_trajectory_start(no_joints, actual_names, actual_positions, 1e9).ok);
+
+  // 实测状态为空。
+  check = check_trajectory_start(trajectory(), {}, {});
+  EXPECT_FALSE(check.ok);
+  EXPECT_EQ(check.message, "actual state has no joints");
+
+  // 两边都为空。
+  check = check_trajectory_start(no_joints, {}, {}, 1e9);
+  EXPECT_FALSE(check.ok);
+  EXPECT_EQ(check.message, "trajectory has no joints");
+}
+
 }  // namespace

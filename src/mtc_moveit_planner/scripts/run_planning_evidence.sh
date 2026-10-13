@@ -26,14 +26,22 @@ stop_group() {
   local pgid="$1" name="$2"
   [ -z "$pgid" ] && return 0
   if kill -0 -- "-$pgid" 2>/dev/null; then
-    kill -INT -- "-$pgid" 2>/dev/null
+    # Signal the launch parent once; launch forwards SIGINT to its children.
+    # Signalling the whole group also makes launch forward a second SIGINT.
+    kill -INT "$pgid" 2>/dev/null
     for _ in $(seq 1 30); do kill -0 -- "-$pgid" 2>/dev/null || break; sleep 0.5; done
     if kill -0 -- "-$pgid" 2>/dev/null; then
-      note "WARN: $name did not exit 15 s after SIGINT; sending SIGTERM to its own process group"
+      note "FAIL: $name did not exit 15 s after SIGINT; sending SIGTERM to its own process group"
       kill -TERM -- "-$pgid" 2>/dev/null
       sleep 3
     fi
   fi
+  # Reap this script's launch child so its final lifecycle records are flushed.
+  if kill -0 -- "-$pgid" 2>/dev/null; then
+    note "FAIL: $name survived SIGTERM; sending SIGKILL to its own process group"
+    kill -KILL -- "-$pgid" 2>/dev/null
+  fi
+  wait "$pgid" 2>/dev/null || true
 }
 cleanup() {
   stop_group "$MG_PGID" "move_group launch"
@@ -93,7 +101,20 @@ done
 [ "$ok" -eq 1 ] || { note "ABORT: controllers not active within 60 s (see control_launch.log)"; exit 1; }
 note "PASS controllers active"
 
-ros2 launch aubo_moveit_config aubo_moveit.launch.py aubo_type:=aubo_S3 launch_rviz:=false \
+# Optional, explicit workaround for the upstream MoveIt 2.12.4 plugin-unload
+# shutdown crash. Scoped to this launch subtree; never enabled by default.
+# See docs/planning/MOVE_GROUP_SHUTDOWN_AUDIT.md before using it.
+MG_ENV=(env)
+case "${MTC_MOVE_GROUP_PIN_PLUGINS:-0}" in
+  0) ;;
+  1)
+    PIN_LIBS="$(ros2 pkg prefix moveit_simple_controller_manager)/lib/libmoveit_simple_controller_manager.so:$(ros2 pkg prefix moveit_ros_move_group)/lib/libmoveit_move_group_default_capabilities.so"
+    MG_ENV+=("LD_PRELOAD=$PIN_LIBS")
+    note "WARN: diagnostic plugin-retention workaround enabled for move_group launch only; upstream shutdown defect remains"
+    ;;
+  *) note "ABORT: MTC_MOVE_GROUP_PIN_PLUGINS must be 0 or 1"; exit 1 ;;
+esac
+"${MG_ENV[@]}" ros2 launch aubo_moveit_config aubo_moveit.launch.py aubo_type:=aubo_S3 launch_rviz:=false \
   > "$OUT/move_group_launch.log" 2>&1 &
 MG_PGID=$!
 ok=0
@@ -149,6 +170,15 @@ if grep -q "PLAN FAILED" "$OUT/collision_probe.log"; then
 else
   note "FAIL collision_probe: goal inside table was NOT rejected"
 fi
+# 工具碰撞反证：法兰离桌面 9 cm、舌规会插入桌面；工具模型生效时必须失败（失败 = PASS）。
+ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/tool_collision_probe" program:=plan_fixed_pose \
+  extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/tool_collision_probe_override.yaml" \
+  > "$OUT/tool_collision_probe.log" 2>&1
+if grep -q "PLAN FAILED" "$OUT/tool_collision_probe.log"; then
+  note "PASS tool_collision_probe: hook tool would enter the table and the goal was rejected"
+else
+  note "FAIL tool_collision_probe: goal accepted although the hook tool would enter the table"
+fi
 run_tool plan_battery_sequence_v1 program:=plan_battery_sequence
 run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v2_override.yaml"
@@ -156,6 +186,18 @@ run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
 # ---- 5. 退出 ----------------------------------------------------------------
 cleanup
 CTRL_PGID=""; MG_PGID=""
-LEFT="$(ros2 node list --no-daemon --spin-time 2 2>/dev/null)"
-if [ -z "$LEFT" ]; then note "PASS all nodes started by this script exited"; else note "WARN nodes still present:"; note "$LEFT"; fi
+for launch_log in move_group_launch control_launch; do
+  if python3 "$SCRIPT_DIR/check_launch_shutdown.py" "$OUT/$launch_log.log" > "$OUT/${launch_log}_shutdown.txt"; then
+    note "PASS $launch_log clean shutdown"
+  else
+    note "FAIL $launch_log clean shutdown (see ${launch_log}_shutdown.txt)"
+  fi
+done
+if LEFT="$(ros2 node list --no-daemon --spin-time 2 2>/dev/null)"; then
+  if [ -z "$LEFT" ]; then note "PASS ROS domain empty after cleanup"; else note "FAIL nodes still present:"; note "$LEFT"; fi
+else
+  note "FAIL unable to query ROS graph after cleanup"
+fi
 note "evidence directory: $OUT"
+# Planning and shutdown failures must be reflected in the script exit status.
+! grep -q '^FAIL' "$SUMMARY"

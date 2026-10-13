@@ -125,9 +125,14 @@ public:
   /// 由 PlanTarget 内容生成去重键（阶段/对象/工位/原语/提环位姿）。
   static std::string make_key(const mtc::manipulation::PlanTarget & target);
 
+  /// 工具模型启用时随每次规划下发的工具碰撞体（ee_link 坐标）。
+  const std::vector<AttachedPayload> & tool_bodies() const {return tool_bodies_;}
+
 private:
   PlanningBackendPtr backend_;
   PlannerConfig config_;
+  std::vector<AttachedPayload> tool_bodies_;
+  std::string tool_error_;
   mtc::core::ClockPtr clock_;
   bool asynchronous_;
 

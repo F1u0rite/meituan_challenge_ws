@@ -4,6 +4,10 @@
 > 适用范围：**Mock / Fake Hardware，只规划、不执行**。所有输出标记 `simulation_only=true`，
 > 未经现场授权与标定，不得用于真实机械臂。
 
+> **10/12 最新验收**：V1 CAD 规划结果见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md)；
+> 空关节集合拒绝修复、MoveIt 退出缺陷的对照实验与临时规避见
+> [MOVE_GROUP_SHUTDOWN_AUDIT.md](MOVE_GROUP_SHUTDOWN_AUDIT.md)。下文首轮结果仅作历史记录。
+
 ## 1. 一句话说明
 
 把状态机（PickPlace FSM）"下一步要去哪"的请求，交给 MoveIt 2 算出一条**完整的、带时间的关节轨迹**，
@@ -51,6 +55,18 @@ PickPlace FSM ◀──PlanResult（每个动作一条完整 TimedTrajectory）�
 | **场景对象 ID 隔离**：本模块写入的对象统一叫 `mtc_moveit_planner/…`，只增删自己前缀的对象；别的模块叫 `table` 的东西不会被覆盖或删掉 | ✅ 单元测试 + Fake move_group 实测反证 |
 | **V1 时长稳定**：复测发现上一轮"可重复"不对（同一请求有时 123 s，因为逆解随机落到另一组解）。改成固定 27 个种子求多组解、按预计时长挑最短的 | 最终代码连续 5 次都是 39.59 s，规划耗时约 0.4–0.5 s；仍超看门狗，保留为已知阻断，没有放宽安全参数 |
 
+## 2C. 第四轮：V1 可行性 + 舌规 CAD
+
+| 内容 | 结果 |
+|---|---|
+| 末端限速时间最优参数化（上限不变） | 所有关节插值路径更快 |
+| 按 `舌规V1.STEP` 建工具模型：真实 TCP、工具碰撞体、"钩口朝上"、插入行程 60 mm | 法兰朝下时舌头本就水平，**V1 不再需要大角度转向** |
+| V1 单块电池（状态机不改） | 7 段全部成功，预对准 13.31 s < 24 s ✅ |
+| 舌规装法 | 舌头朝插入方向 13.3 s；差 90° 约 20 s；装反（180°）不可行 |
+| 更正 | 之前"要转 180°、必须改状态机"是占位 TCP 造成的错误结论 |
+
+详见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md)。
+
 ## 3. 规划模块保证的事（对 FSM 的契约）
 
 - 每个动作返回**一条完整轨迹**，按动作名一一对应；一段失败则整体失败，不返回半套结果。
@@ -90,9 +106,9 @@ MTC_RMW=rmw_cyclonedds_cpp bash src/mtc_moveit_planner/scripts/run_planning_evid
 
 | 问题 | 找谁 |
 |---|---|
-| V1 预对准仍需 39.59 s > 24 s（90° 转向 × 0.1 rad/s）：建议加 V1 就绪位或拆分接近/预对准 | 孙嘉明 |
+| V1 已可行（按 CAD，13.31 s）；需确认舌规安装方向、谁执行 60 mm 插入 / 退钩，见 [V1_FEASIBILITY.md](V1_FEASIBILITY.md) | 孙嘉明 / 现场 |
 | `test_lift` / `retreat` 起点依赖工具动作假设：执行前调用 `check_trajectory_start()`，不通过则 `replan_primitive()` | 孙嘉明（执行适配接入） |
 | PLAN_ACQUIRE 看门狗只有 2 s | 孙嘉明 |
-| TCP（ee_link→钩尖）、T0/P1–P3 位姿、提环轴向、相机外参 | 韩明赫 |
+| 舌规 TCP 已按 CAD 估计（ESTIMATED）；需现场核对安装方向与贴合面；T0/P1–P3 位姿、提环轴向、相机外参 | 韩明赫 |
 | 场景只有占位桌面 + 电池；缺工具外形、相机、工位支架的实测尺寸 | 常建烁（现场按实测补） |
 | 统一启动顺序中加入 `move_group` 与本模块 | 张叔阳 |

@@ -49,9 +49,17 @@ struct JointStateSnapshot
 
 /// 随末端一起运动的载荷（电池）碰撞体：长方体，位姿相对规划末端 link（ee_link）固定。
 /// 只附着在**规划起点状态**上参与碰撞检查，不修改 move_group 的全局规划场景。
+enum class BodyShape
+{
+  BOX,        ///< size_m = 长 × 宽 × 高
+  CYLINDER,   ///< size_m = (直径, 直径, 长度)，轴沿局部 z
+};
+
+/// 附着在 ee_link 上的碰撞体（电池载荷、工具外形）。
 struct AttachedPayload
 {
   std::string id = "mtc_moveit_planner/battery_payload";  ///< 带本模块前缀，见 scene_ids.hpp
+  BodyShape shape = BodyShape::BOX;
   mtc::core::Vector3 size_m{0.06, 0.06, 0.10};
   Transform ee_to_payload;                 ///< ee_link -> 载荷中心
   std::vector<std::string> touch_links{"ee_link", "wrist3_Link"};
@@ -89,6 +97,8 @@ struct BackendRequest
   bool avoid_collisions = true;
   /// 规划时随末端一起运动的载荷；空表示末端无载荷。
   std::optional<AttachedPayload> payload;
+  /// 工具外形碰撞体：每次规划都附着在起点状态上（不改全局场景）。
+  std::vector<AttachedPayload> tool_bodies;
   /// FREE_SPACE 时先尝试末端直线（完整、无碰撞、满足关节约束才采用），失败再用 OMPL。
   bool prefer_straight_line = false;
   /// 额外关节位置约束（rad）：作为 MoveIt 路径约束下发，使解落在控制器限位内。
