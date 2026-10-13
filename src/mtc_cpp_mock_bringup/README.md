@@ -6,6 +6,14 @@
 
 本候选与验收源版本、PR、日志索引的对应关系见 [本轮验收报告](https://github.com/AfonsoZhang/meituan-robotics-challenge-2026/blob/main/docs/cpp-mock-webui-acceptance.md)。报告在独立验收仓库归档，原始失败日志保留。
 
+## Web UI P0–P2 增量（2026-10-13）
+
+新增任务/双层 FSM、独立停止反馈、关节与只读 FJT、RGB-D/检测、Planner/工具证据、八模块三态和按任务/Goal/模块追踪的完整已记录事件导出。缺发布器显示未知，可选 JSON 为消费侧预留，由模块负责人确认正式状态接口。Cancel ACK ≠ Stop Confirmed；状态不从 FSM 推断运动。
+
+保留原有 HTTP 任务/取消/停止接口，网页仅下发顶层 ExecuteTask Goal。当前联合验证限定 C++ Mock / GenericSystem Fake Hardware，无真实机械臂控制。详细来源与接口见 [操作台说明](mtc_webui/README.md)、[P0](mtc_webui/telemetry-contract.md)、[P1](mtc_webui/p1-contract.md)、[P2](mtc_webui/p2-contract.md)。本增量基于 PR #8，不包含独立 PR #15 的 C1 内核修复，也不改动 FSM/Action/Motion 内核。
+
+Python/浏览器客户端逻辑由个人仓库固定源码同步；此前 17 项隔离 ROS 接口结果及当前兼容性证据见 [UI 报告](https://github.com/AfonsoZhang/meituan-robotics-challenge-2026/blob/95bfa6002db3dd5330461efcfcd0cc8112323246/docs/web-ui.md)。这些是客户端/合成消息验证，不能作为真实发布器或完整 Task→FJT Fake 链路验收。新增依赖已在 package.xml 声明：control_msgs、tf2_ros_py、geometry_msgs、python3-opencv、python3-numpy。
+
 ## 环境与构建
 
 Ubuntu 24.04、ROS 2 Jazzy、C++17。使用已有 Jazzy 依赖缓存/镜像；构建需要 `rclcpp`、`rclcpp_action`、`rclpy`、`std_msgs`、`action_msgs`、`sensor_msgs`、`rcl_interfaces`、`ament_index_python`、`ament_cmake_gtest` 和本仓库 `mtc_interfaces`、C++ Core/Task/Manipulation/Motion 包。Web 使用 Python 标准库与本地 HTML/CSS/JS，无 npm/CDN。相机功能不在本轮 Mock 链路中。

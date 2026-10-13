@@ -32,6 +32,11 @@ class Guards(unittest.TestCase):
         self.backend.connection_update(child_ready=False)
         self.assertFalse(self.backend.snapshot()['operations']['submit'])
 
+    def test_invalid_cpp_source_clears_derived_task_state(self):
+        self.backend.observe('task_state', {'state':'EXECUTE_ITEM'}, 'cpp_task', 100, 0)
+        self.backend.invalidate('cpp_task')
+        self.assertFalse(self.backend.snapshot()['task_state']['available'])
+
     def test_scope_mismatch_blocks_goal(self):
         self.backend.observe('cpp_pick', {'scope':'hardware','admission_open':True}, 'cpp_pick', 101, 0)
         self.assertFalse(self.backend.snapshot()['operations']['submit'])

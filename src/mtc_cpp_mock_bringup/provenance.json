@@ -26,5 +26,318 @@
   "scope": "Launch/config/read-only observation/Action UUID logs/ROS-connected cpp_mock UI; no FSM, admission, cancel or motion core changes.",
   "ai_assistance": "OpenAI Codex, 2026-10-12; implementation, tests, documentation",
   "destination_directory": "src/mtc_cpp_mock_bringup/mtc_webui",
-  "integration_note": "Renamed Python module webui to mtc_webui to avoid importing the earlier workbench UI from the caller current directory."
+  "integration_note": "Renamed Python module webui to mtc_webui to avoid importing the earlier workbench UI from the caller current directory.",
+  "webui_observability_update": {
+    "source_repository": "https://github.com/AfonsoZhang/meituan-robotics-challenge-2026",
+    "source_commit": "95bfa6002db3dd5330461efcfcd0cc8112323246",
+    "source_directory": "webui",
+    "upstream_base": "8f11750e0bd2e485826acb904fd31382945ba0b9",
+    "date": "2026-10-13",
+    "scope": "P0/P1/P2 read-only status consumers, top-level ExecuteTask console and compatible HTTP export; no FSM/Action/Cancel/Motion kernel changes",
+    "authorization": "User: 推送PR; current validation restricted to C++ Mock / GenericSystem Fake Hardware",
+    "mapping": [
+      {
+        "source": "webui/README.md",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/README.md",
+        "source_sha256": "efd7da4c3e2a2e44d8402145c4b17246be427f401c09082da79592ad0512a7ce",
+        "destination_sha256": "fa71bbe03607736a4171f18e82f4a60807d35312aeb45b006088d51d3332b89b",
+        "adaptations": [
+          "cross-repository evidence links pinned to personal source commit",
+          "installed package entrypoints and source-workspace test paths"
+        ]
+      },
+      {
+        "source": "webui/__init__.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/__init__.py",
+        "source_sha256": "3aca5545b424f135fff74819b578943d1b58c0127865259487cf22d3dd0dd095",
+        "destination_sha256": "3aca5545b424f135fff74819b578943d1b58c0127865259487cf22d3dd0dd095",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/config.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/config.py",
+        "source_sha256": "80dddde775666cc4a8163f3fa928aad062f1339f690ad68a200f7db5f95deca1",
+        "destination_sha256": "80dddde775666cc4a8163f3fa928aad062f1339f690ad68a200f7db5f95deca1",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/connection.example.json",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/connection.example.json",
+        "source_sha256": "3ffc3fa4f5014f882903bdc1795acbe21ff9bf19e87481b6d7514f37e829926e",
+        "destination_sha256": "3ffc3fa4f5014f882903bdc1795acbe21ff9bf19e87481b6d7514f37e829926e",
+        "adaptations": []
+      },
+      {
+        "source": "webui/cpp_mock.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/cpp_mock.py",
+        "source_sha256": "9a1ac6a55685f4a3571f52a405101617dfc980975c3c5e3d2dc551a43bb8cb46",
+        "destination_sha256": "96b4ba88c4ee642cc1f365bdbee426090f9d505065d0099495502dd4a01355bb",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/diagnostics.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/diagnostics.py",
+        "source_sha256": "10fead6598391d8e4c08d444d3c2ca3ae94987dd32e5462a9ec9a1a03a1262eb",
+        "destination_sha256": "cdddc1fc55444353f35b703d25ec703aca5130bd85938ed129afa65c12dd9a68",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/mock_backend.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/mock_backend.py",
+        "source_sha256": "8968e85ac2e526bce5c9acd18f05b6caf79336e650c5eaa9c01058c254e9d6f5",
+        "destination_sha256": "eb27e99f527d274a6699d8891cb614c9726695dac9dd87616987fcf4a17003b4",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/observations.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/observations.py",
+        "source_sha256": "32c85b374c7377c7231b35dbf23965c181e5c646b154fca1f5bf1610fe8a311f",
+        "destination_sha256": "dd477a4bc3c37bcf64c5b36dcea9c823a38ada54d6c131c4749b62d245713f1c",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/p0_integration_check.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/p0_integration_check.py",
+        "source_sha256": "5ca4afc78f014dd601383e5e20c199632ade6e49b84a3284383add350395aade",
+        "destination_sha256": "7eafa319975815f6f86d0737a338ac2fd6ca267e4781be2e3d79c757e7f35ced",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/p1-contract.md",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/p1-contract.md",
+        "source_sha256": "d5de8a7492532965f019ac31535596cca67bba4b74522fb140f9c4f87ddc8fa9",
+        "destination_sha256": "d5de8a7492532965f019ac31535596cca67bba4b74522fb140f9c4f87ddc8fa9",
+        "adaptations": [
+          "cross-repository evidence links pinned to personal source commit"
+        ]
+      },
+      {
+        "source": "webui/p1_integration_check.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/p1_integration_check.py",
+        "source_sha256": "9a459767150d71ed98d97c0407dd61debe8d0a4cbc6e802b21186fcc2b42c226",
+        "destination_sha256": "85c276cf81a14c4afb64ec271caea0692869a748f16b3b32fd271ff60d796e50",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/p2-contract.md",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/p2-contract.md",
+        "source_sha256": "a39df2cb781cc49c00c1e5ceff8aa09454f02f69de36abe23f1ac8f42a72639a",
+        "destination_sha256": "a39df2cb781cc49c00c1e5ceff8aa09454f02f69de36abe23f1ac8f42a72639a",
+        "adaptations": [
+          "cross-repository evidence links pinned to personal source commit"
+        ]
+      },
+      {
+        "source": "webui/p2_integration_check.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/p2_integration_check.py",
+        "source_sha256": "107dc32bd1271319340ce62159a01c9db6ddb228e808a19608ad11f45fb27ba2",
+        "destination_sha256": "444432f547510cd7e803385a377c44a9b82b4a32d6f7b38e24b37715ea86afb9",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/provenance.json",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/provenance.json",
+        "source_sha256": "7683e199045e28a85b8ed32ef650f18d202bd4943c4ff3d024cb2825df216ae4",
+        "destination_sha256": "7683e199045e28a85b8ed32ef650f18d202bd4943c4ff3d024cb2825df216ae4",
+        "adaptations": []
+      },
+      {
+        "source": "webui/ros_backend.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/ros_backend.py",
+        "source_sha256": "be6f7f25f4454bebab89f8ab790b225d56b9628312ea1880d6ee5cbac0bc2986",
+        "destination_sha256": "1a5266d7976a67ff1581367667ba432459294bdf0ed98b0142cc855c0602c713",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/ros_integration_check.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/ros_integration_check.py",
+        "source_sha256": "81ce86f570f00f00ebe034e15935d482873cf06cb91db9b8e25c1da1b6c08597",
+        "destination_sha256": "ae1797c314fff3226b73294e8b52b358831a9c148b31a3323c90ab091be9bf4e",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/ros_transport.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/ros_transport.py",
+        "source_sha256": "3dc008d3b1973a64e3cb2cd220437946b59a29ea90b09555c1e5cbf6e97bde05",
+        "destination_sha256": "692d89a0d98b317f9697065c199c4436e0a8763106afefd0dc75959894e48864",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/server.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/server.py",
+        "source_sha256": "541f4d5ae90ade6034020c27df373bcf4a82a7873d47044a6871989010e41f86",
+        "destination_sha256": "3ab18f99add89b979ee9f0e2b139c720af54b790a4f34502e738d660496fadde",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/static/app.js",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/app.js",
+        "source_sha256": "70ef5e81284ad67c20149622933e4affd626bfbda47aa2eae27a63b55e56dae5",
+        "destination_sha256": "70ef5e81284ad67c20149622933e4affd626bfbda47aa2eae27a63b55e56dae5",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/favicon.svg",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/favicon.svg",
+        "source_sha256": "926554080f4b882f38d4f5c0b8ad3592cd47c61b2aa671edbf2979449bf8dccd",
+        "destination_sha256": "926554080f4b882f38d4f5c0b8ad3592cd47c61b2aa671edbf2979449bf8dccd",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/index.html",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/index.html",
+        "source_sha256": "7fa22458ceec29b45b5c808d0464875a5d95b88ebb8a7e9d11e056d5f521dd7d",
+        "destination_sha256": "7fa22458ceec29b45b5c808d0464875a5d95b88ebb8a7e9d11e056d5f521dd7d",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/p0.js",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/p0.js",
+        "source_sha256": "45e0267194a446e972a27ad8c47b17275cb4f6812ff1248e7e45377b8b4970c9",
+        "destination_sha256": "45e0267194a446e972a27ad8c47b17275cb4f6812ff1248e7e45377b8b4970c9",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/p1.js",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/p1.js",
+        "source_sha256": "85a81eb94c906999bb0c7a243aacaf5b2eb778df442df955484b5d488576f6fa",
+        "destination_sha256": "85a81eb94c906999bb0c7a243aacaf5b2eb778df442df955484b5d488576f6fa",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/p2.js",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/p2.js",
+        "source_sha256": "76225c78c070433eecc3c699068dec5ba3019108eec71a03a503a157b81f141a",
+        "destination_sha256": "76225c78c070433eecc3c699068dec5ba3019108eec71a03a503a157b81f141a",
+        "adaptations": []
+      },
+      {
+        "source": "webui/static/styles.css",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/static/styles.css",
+        "source_sha256": "7ae741d3ceb3e213e5c36ebe555183711964cb3eeea4ace3780752d5ee3b10d7",
+        "destination_sha256": "7ae741d3ceb3e213e5c36ebe555183711964cb3eeea4ace3780752d5ee3b10d7",
+        "adaptations": []
+      },
+      {
+        "source": "webui/telemetry-contract.md",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/telemetry-contract.md",
+        "source_sha256": "60698539592f5a98a0b65af2eda0750d7795910e708036b86afb38384afe2d00",
+        "destination_sha256": "60698539592f5a98a0b65af2eda0750d7795910e708036b86afb38384afe2d00",
+        "adaptations": [
+          "cross-repository evidence links pinned to personal source commit"
+        ]
+      },
+      {
+        "source": "webui/telemetry.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/telemetry.py",
+        "source_sha256": "076436c620209dea00aab803183f12fa6a8f78374185908f2ab6d1ffaa0decba",
+        "destination_sha256": "076436c620209dea00aab803183f12fa6a8f78374185908f2ab6d1ffaa0decba",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_cpp_mock.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_cpp_mock.py",
+        "source_sha256": "edd33efd0b7573ab44e09483ce0388414e306eb8282853fb470a5476edfd041c",
+        "destination_sha256": "393125be949408413d5b40a24b1ad4659e5fea5bb2ddfe9cabb1ac29357b213d",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_diagnostics.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_diagnostics.py",
+        "source_sha256": "8aa79445685050cddfda0f0602f262f703bed6bd6a7de29060749fe23185449e",
+        "destination_sha256": "8aadd7908c3e732d806717a1a733c68d26499c8cd34cfc5c74da948b39fb0856",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_mock_backend.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_mock_backend.py",
+        "source_sha256": "7e8adb1efb9ddd8f411df10c15a3ce6411b055c102a238a1d159f2b7ed423d95",
+        "destination_sha256": "88ddc162ec04fabd42f1e486705e3c2d45ebe30e85951794d08b5c3865c50b7e",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_observations.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_observations.py",
+        "source_sha256": "f61904231852930d1cc0f6a6eaedae102f8c9bc78790fbff9954417853a8cbc9",
+        "destination_sha256": "e130346ea57b7dcd54aecfb4798b1848faa07b52dacc471fdac1fd4ac62e8864",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_p0.cjs",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_p0.cjs",
+        "source_sha256": "7dd34c2c0d1849c8c1c892a52204327c511b4b7d05e8ac038495ecbadeac4acf",
+        "destination_sha256": "7dd34c2c0d1849c8c1c892a52204327c511b4b7d05e8ac038495ecbadeac4acf",
+        "adaptations": []
+      },
+      {
+        "source": "webui/test_p1.cjs",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_p1.cjs",
+        "source_sha256": "18bfba3fe43cf2b0219bc067d418cd74e5c0e697006e202f94d3a536e0738fc4",
+        "destination_sha256": "18bfba3fe43cf2b0219bc067d418cd74e5c0e697006e202f94d3a536e0738fc4",
+        "adaptations": []
+      },
+      {
+        "source": "webui/test_p2.cjs",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_p2.cjs",
+        "source_sha256": "addc66c0a813e7bbad0937b2f53625b0e6d4198beeb3b841c372cd794b03f56a",
+        "destination_sha256": "addc66c0a813e7bbad0937b2f53625b0e6d4198beeb3b841c372cd794b03f56a",
+        "adaptations": []
+      },
+      {
+        "source": "webui/test_ros_backend.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_ros_backend.py",
+        "source_sha256": "97ca59e9d66f7f23c0ec85c36e026790f434899fa2be5b425b2f667b94e6e79f",
+        "destination_sha256": "e57d8420bf1219917234ded8a9354a94f737b475b905a76900adb3b01c8d1066",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      },
+      {
+        "source": "webui/test_telemetry.py",
+        "destination": "src/mtc_cpp_mock_bringup/mtc_webui/test_telemetry.py",
+        "source_sha256": "0cdfdd0537016b4d5eefbbd69c93b5928397f7e1480c14d9ad499737a67281f3",
+        "destination_sha256": "045e90103bfcbf6ce5423bb321329be040ccc1815c43c5ef7e601ff60f1336a5",
+        "adaptations": [
+          "Python import/module namespace webui -> mtc_webui"
+        ]
+      }
+    ],
+    "ai_assistance": "OpenAI Codex: UI, adapters, tests, packaging and documentation"
+  }
 }

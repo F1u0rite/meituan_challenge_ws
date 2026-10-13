@@ -7,6 +7,9 @@
   <title>机器人任务操作台 · 美团挑战赛</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+  <script src="/p0.js" defer></script>
+  <script src="/p1.js" defer></script>
+  <script src="/p2.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
@@ -21,7 +24,7 @@
       <a href="#records" data-view="records" class="nav-link"><span aria-hidden="true">≡</span>任务记录<span id="record-count" class="nav-count">0</span></a>
       <a href="#connections" data-view="connections" class="nav-link"><span aria-hidden="true">⌘</span>接口状态</a>
     </nav>
-    <div class="sidebar-note"><span class="dot yellow"></span> <span id="station-mode">实机工作站</span><p>系统集成与验收<br><span id="sidebar-status">等待 ROS 连接</span></p><span class="version">Web UI / v0.2</span></div>
+    <div class="sidebar-note"><span class="dot yellow"></span> <span id="station-mode">实机工作站</span><p>系统集成与验收<br><span id="sidebar-status">等待 ROS 连接</span></p><span class="version">Web UI / v0.3</span></div>
   </aside>
 
   <div class="workspace">
@@ -38,10 +41,10 @@
         <div class="console-grid">
           <section class="panel workcell-panel" aria-labelledby="workcell-title">
             <div class="panel-heading"><div><h2 id="workcell-title">工位总览</h2><p id="workcell-description">等待设备与任务状态</p></div><span id="task-status" class="tag">待命</span></div>
-            <div id="live-view" class="live-view">
-              <div class="camera-toolbar"><label for="camera-stream">相机观察</label><select id="camera-stream"><option value="color">RGB 彩色</option><option value="depth">深度伪彩</option></select><span id="camera-quality" class="tag">等待数据</span></div>
-              <div class="live-image"><img id="camera-image" alt="ROS 相机实时画面" hidden><div id="camera-empty" class="camera-empty"><strong>等待相机数据</strong><p id="camera-message">连接后显示相机原始画面</p><a href="#connections">查看接入状态</a></div></div>
-              <p class="source-note" id="camera-note">来源 — · 图像时间 —</p>
+            <div class="task-overview">
+              <div class="task-overview-heading"><strong id="task-mode">等待任务</strong><span id="task-feedback-quality" class="muted">等待反馈</span></div>
+              <div id="task-colors" class="command-sequence" aria-label="已提交的颜色口令与顺序"></div>
+              <dl class="task-facts"><div><dt>当前处理</dt><dd id="task-current-item">未提供</dd></div><div><dt>目标电池 ID</dt><dd id="task-object">未提供</dd></div><div><dt>目标颜色</dt><dd id="task-target-color">未提供</dd></div><div><dt>目标放置工位</dt><dd id="task-slot">未提供</dd></div></dl>
             </div>
             <div class="workcell" id="mock-scene" data-mock hidden>
               <svg viewBox="0 0 780 366" role="img" aria-labelledby="scene-title scene-desc">
@@ -68,8 +71,9 @@
             </div>
             <div class="task-progress"><div><span id="progress-label">尚未提交任务</span><strong id="progress-count">0 / 0</strong></div><progress id="progress" value="0" max="1" aria-label="服务端确认的完成数"></progress></div>
             <ol id="lifecycle" class="lifecycle" aria-label="任务生命周期"><li data-stage="ready">待命</li><li data-stage="accepted">已受理</li><li data-stage="running">执行中</li><li data-stage="canceling">取消中</li><li data-stage="finished">已结束</li></ol>
-            <div class="fsm-line"><span>FSM <strong id="fsm-state">未知</strong></span><span id="external-task"></span></div><div class="task-identifiers"><span>任务 <code id="task-id">—</code></span><span>耗时 <strong id="elapsed">—</strong></span></div>
+            <div class="fsm-line"><span>FSM <strong id="fsm-state">未知</strong></span><span>PickPlace <strong id="pick-state">未知</strong></span><span id="external-task"></span></div><div class="task-identifiers"><span>任务 <code id="task-id">—</code></span><span>耗时 <strong id="elapsed">—</strong></span></div>
             <div id="task-result" class="result" role="status" hidden></div>
+
           </section>
 
           <section class="panel command-panel" aria-labelledby="command-title">
@@ -94,18 +98,98 @@
           </section>
         </div>
 
-        <div class="observations-grid">
-          <section class="panel" aria-labelledby="device-title"><div class="panel-heading compact"><h2 id="device-title">设备与工具</h2><span id="sample-quality" class="tag">等待数据</span></div>
-            <dl class="device-list"><div><dt>机器人通信</dt><dd id="robot-communication">未知</dd></div><div><dt>机器人就绪</dt><dd id="robot-ready">未知</dd></div><div><dt>运动状态</dt><dd id="robot-motion">未知</dd></div><div><dt>停稳确认</dt><dd id="robot-stop">未知</dd></div><div><dt>安全联锁</dt><dd id="robot-safety">未知</dd></div><div><dt>控制器模式</dt><dd id="robot-controller">未知</dd></div><div><dt>工具估计</dt><dd id="tool-state">未知</dd></div><div><dt>独立验证</dt><dd id="tool-verified">未知</dd></div></dl>
-            <p class="source-note" id="source-note">数据源尚未连接</p>
+        <section class="panel safety-panel" aria-labelledby="safety-title">
+          <div class="panel-heading"><div><h2 id="safety-title">安全状态与停止反馈</h2><p>请求回执、任务结果与独立停稳证据分别核验</p></div><span id="sample-quality" class="tag">等待数据</span></div>
+          <dl class="safety-overview"><div><dt>ROS 2 通信</dt><dd id="safety-ros">未知</dd></div><div><dt>机器人通信</dt><dd id="robot-communication">未知</dd></div><div><dt>Robot Ready</dt><dd id="robot-ready">未知</dd></div><div><dt>Safety Interlock</dt><dd id="robot-safety">未知</dd></div><div><dt>FAULT 锁定</dt><dd id="safety-lock">未知</dd></div><div><dt>控制器模式</dt><dd id="robot-controller">未知</dd></div></dl>
+          <a class="source-note" href="#system-health">查看 ROS 2 模块状态 ↓</a>
+          <div class="stop-proof">
+            <p class="stop-principle">Cancel ACK ≠ Stop Confirmed</p>
+            <dl class="stop-evidence-grid"><div><dt>Stop Request / 送达回执</dt><dd id="safety-stop-request">未请求</dd></div><div><dt>Stop Confirmed / 独立证据</dt><dd id="safety-stop-confirmed">未确认</dd><p id="safety-stop-detail">等待独立反馈</p></div><div><dt>Cancel ACK</dt><dd id="safety-cancel-ack">未请求取消</dd></div><div><dt>Cancel Final Result</dt><dd id="safety-cancel-final">未请求取消</dd></div></dl>
+            <p id="safety-stop-source" class="source-note">RobotState 来源未知</p>
+          </div>
+          <dl class="tool-evidence"><div><dt>工具估计</dt><dd id="tool-state">未知</dd></div><div><dt>工具独立验证</dt><dd id="tool-verified">未知</dd></div></dl>
+          <p class="source-note" id="source-note">数据源尚未连接</p>
+        </section>
+
+        <div class="motion-grid">
+          <section class="panel motion-panel" aria-labelledby="motion-title">
+            <div class="panel-heading"><div><h2 id="motion-title">机械臂与轨迹执行</h2><p>显示执行端实际反馈，缺失字段保留未知</p></div><strong id="motion-physical" class="tag">未知</strong></div>
+            <dl class="motion-facts"><div><dt>执行端状态</dt><dd id="motion-state">未提供</dd></div><div><dt>Motion Primitive</dt><dd id="motion-primitive">未提供</dd></div><div><dt>command_id</dt><dd id="motion-command">未提供</dd></div><div><dt>trajectory_id</dt><dd id="motion-trajectory">未提供</dd></div><div><dt>FJT Goal UUID</dt><dd id="motion-goal">未提供</dd></div><div><dt>轨迹 ROS 状态</dt><dd id="motion-native-state">未提供</dd></div><div><dt>实际执行时间</dt><dd id="motion-elapsed">未提供</dd></div><div><dt>预计总时长</dt><dd id="motion-expected">未提供</dd></div><div><dt>执行端报告结果</dt><dd id="motion-execution-result">未提供</dd></div><div><dt>执行端错误码</dt><dd id="motion-error-code">未提供</dd></div></dl>
+            <div class="motion-progress-heading"><span>执行端报告进度</span><strong id="motion-progress-value">未提供</strong></div><progress id="motion-progress" max="1" value="0" hidden aria-label="执行端报告的轨迹进度"></progress>
+            <p id="motion-reason" class="source-note">未提供</p><p class="source-note">最近一条 FJT 最终结果</p><p id="motion-result" class="result neutral">尚无执行结果</p><p id="motion-source" class="source-note">来源未知</p>
           </section>
-          <section class="panel" aria-labelledby="joints-title"><div class="panel-heading compact"><h2 id="joints-title">关节反馈</h2><span id="joints-quality" class="tag">等待数据</span></div><div id="joints" class="joint-grid"><p class="muted">尚未收到 JointState</p></div><p id="joints-note" class="source-note">显示实际位置反馈，单位 °；不提供点动指令。</p></section>
+          <section class="panel" aria-labelledby="joints-title">
+            <div class="panel-heading"><div><h2 id="joints-title">六关节反馈与目标对比</h2><p>实际位置 / 速度，及同帧轨迹采样目标</p></div><span id="joints-quality" class="tag">等待数据</span></div>
+            <div class="table-scroll"><table class="joint-table"><thead><tr><th>关节名</th><th>实际 °</th><th>速度 °/s</th><th>目标 °</th><th>误差 °</th></tr></thead><tbody id="joints"></tbody></table></div>
+            <p id="joints-note" class="source-note">显示真实反馈，缺失值不补零。</p>
+          </section>
         </div>
+
+        <div class="vision-tool-grid">
+          <section class="panel vision-panel" aria-labelledby="vision-title">
+            <div class="panel-heading"><div><h2 id="vision-title">RGB-D 与电池识别</h2><p>观察相机画面、检测对象和任务目标</p></div><span id="perception-quality" class="tag">等待数据</span></div>
+            <div id="live-view" class="live-view">
+              <div class="camera-toolbar"><label for="camera-stream">相机观察</label><select id="camera-stream"><option value="color">RGB 彩色</option><option value="depth">深度伪彩</option></select><span id="camera-quality" class="tag">等待数据</span></div>
+              <div class="live-image"><img id="camera-image" alt="ROS 相机实时画面" hidden><div id="camera-empty" class="camera-empty"><strong>等待相机数据</strong><p id="camera-message">连接后显示相机原始画面</p><a href="#connections">查看接入状态</a></div></div>
+              <p class="source-note" id="camera-note">来源 — · 图像时间 —</p>
+            </div>
+
+            <div class="detection-heading"><h3 id="perception-target">等待任务目标 ID</h3><span>检测坐标系 <code id="perception-frame">未提供</code></span></div>
+            <div class="table-scroll"><table class="detection-table"><thead><tr><th>电池 ID</th><th>颜色</th><th>置信度</th><th>主体位置 xyz</th><th>提环位置 xyz</th><th>ring_pose_valid</th></tr></thead><tbody id="detections"></tbody></table></div>
+            <p id="perception-empty" class="observation-empty">等待有效检测帧</p>
+            <p id="perception-target-note" class="source-note"></p><p id="perception-source" class="source-note">等待检测消息</p>
+            <p class="source-note">当前接口提供三维位姿；二维框与 RGB 叠图待视觉模块提供像素坐标和帧对应关系。</p>
+          </section>
+          <section class="panel tool-panel" aria-labelledby="tool-title">
+            <div class="panel-heading"><div><h2 id="tool-title">工具与挂载证据</h2><p>接合指令、工具估计与验证结果分别显示</p></div><span id="tool-quality" class="tag">等待数据</span></div>
+            <dl class="tool-facts"><div class="wide"><dt>当前工具类型</dt><dd id="tool-type">未提供</dd></div><div><dt>工具状态（估计）</dt><dd id="tool-estimate">未提供</dd></div><div><dt>关联电池 ID</dt><dd id="tool-object">未提供</dd></div><div><dt>当前状态 verified</dt><dd id="tool-independent">未提供</dd></div><div><dt>挂载证据等级</dt><dd id="tool-evidence-level">未提供</dd></div></dl>
+            <div class="mount-proof"><span>独立挂载确认</span><strong id="tool-mounted">未知</strong><p id="tool-detail" class="source-note">等待工具反馈</p></div>
+            <dl class="verification-list"><div><dt>试提验证</dt><dd id="test-lift-verified">未提供</dd><p id="test-lift-source" class="source-note">等待独立验证证据</p></div><div><dt>落座验证</dt><dd id="seated-verified">未提供</dd><p id="seated-source" class="source-note">等待独立验证证据</p></div></dl>
+            <p id="tool-proof-context" class="source-note"></p><p id="tool-source" class="source-note"></p><p id="tool-proof-source" class="source-note"></p>
+          </section>
+        </div>
+        <section class="panel planner-panel" aria-labelledby="planner-title">
+          <div class="panel-heading"><div><h2 id="planner-title">MoveIt 规划状态</h2><p>每次规划的轨迹摘要、检查结果与原始失败原因</p></div><strong id="planner-state" class="tag">等待数据</strong></div>
+          <dl class="planner-facts"><div><dt>Motion Primitive</dt><dd id="planner-primitive">未提供</dd></div><div><dt>plan_id</dt><dd id="planner-id">未提供</dd></div><div><dt>task_id</dt><dd id="planner-task">未提供</dd></div><div><dt>command_id</dt><dd id="planner-command">未提供</dd></div><div><dt>trajectory_id</dt><dd id="planner-trajectory">未提供</dd></div><div><dt>轨迹点数</dt><dd id="planner-points">未提供</dd></div><div><dt>预计执行时长</dt><dd id="planner-duration">未提供</dd></div><div><dt>错误码</dt><dd id="planner-code">未提供</dd></div></dl>
+          <dl class="planner-checks"><div><dt>关节限位检查</dt><dd id="planner-limits">未报告</dd></div><div><dt>碰撞检查</dt><dd id="planner-collision">未报告</dd></div><div><dt>起点一致性检查</dt><dd id="planner-start">未报告</dd></div></dl>
+          <p id="planner-reason" class="result neutral">未提供</p><p id="planner-association" class="source-note"></p><p id="planner-source" class="source-note"></p>
+        </section>
+
+        <section class="panel system-panel" id="system-health" aria-labelledby="system-title">
+          <div class="panel-heading"><div><h2 id="system-title">ROS 2 系统状态</h2><p>服务发现、状态反馈与检查结果分别核对</p></div><strong id="system-summary" class="muted">等待数据</strong></div>
+          <div class="table-scroll"><table class="system-table"><thead><tr><th>模块</th><th>状态 / 在线证据</th><th>当前状态</th><th>数据来源 / 新鲜度</th></tr></thead><tbody id="system-modules"></tbody></table></div>
+          <p class="source-note">正常、异常、未知三态；缺失或过期反馈保持未知。TF 可查询与标定有效分开判断；Cancel ACK 不等于 StopConfirmed。</p>
+          <div class="failure-strip"><h3>最近一次失败 <small>历史事件</small></h3><p id="latest-failure" class="result neutral">尚未记录</p><a href="#records" class="button quiet small">查询执行记录</a></div>
+        </section>
+        <section class="panel fsm-panel" aria-label="FSM 执行流程">
+            <div class="fsm-diagrams">
+              <div class="fsm-heading"><h3>Task FSM</h3><span>任务流程</span></div>
+              <ol id="task-flow" class="fsm-flow task-flow" aria-label="Task FSM 当前阶段"></ol>
+              <div class="fsm-heading"><h3>PickPlace FSM</h3><span>单块执行流程</span></div>
+              <ol id="pick-flow" class="fsm-flow pick-flow" aria-label="PickPlace FSM 当前阶段"></ol>
+              <p id="fsm-flow-note" class="source-note">按真实状态反馈高亮当前阶段</p>
+            </div>
+        </section>
 
         <section class="panel events-panel" aria-labelledby="events-title"><div class="panel-heading compact"><div class="inline-title"><h2 id="events-title">事件时间线</h2><span id="event-count" class="muted">0 条</span></div><div class="event-tools"><label for="event-filter" class="sr-only">时间线范围</label><select id="event-filter"><option value="current">当前任务</option><option value="all">整个会话</option><option value="errors">警告与错误</option></select><a class="button quiet small" href="/api/export" download>导出会话</a></div></div><ol id="events" class="events"></ol><p class="source-note">事件按 task / goal ID 关联；保留失败记录。</p></section>
       </section>
 
       <section id="view-records" class="view" aria-label="任务记录" hidden>
+        <section class="panel trace-panel" aria-labelledby="trace-title">
+          <div class="panel-heading"><div><h2 id="trace-title">日志与 Goal 追踪</h2><p>查询本会话的完整已记录事件；支持父子 Goal 显式关联</p></div><a id="trace-export" class="button quiet" href="/api/export" download>导出查询记录</a></div>
+          <form id="trace-form" class="trace-form">
+            <label>任务 ID<input id="trace-task" type="text" maxlength="2000" placeholder="全部任务" autocomplete="off"></label>
+            <label>Goal UUID<input id="trace-goal" type="text" maxlength="36" placeholder="ExecuteTask / PickPlace / FJT" autocomplete="off"></label>
+            <label>模块<select id="trace-module"><option value="">全部模块</option><option value="task">Task Server</option><option value="pickplace">PickPlace FSM</option><option value="vision">Vision</option><option value="calibration">Calibration / TF</option><option value="planner">MoveIt Planner</option><option value="execution">FJT Execution</option><option value="tool">Tool Manager</option><option value="robot">Robot / Controller</option><option value="system">系统</option></select></label>
+            <label>事件类型<select id="trace-kind"><option value="">全部事件</option><option value="transitions">状态转换</option><option value="errors">警告与错误</option></select></label>
+            <div class="trace-actions"><button class="button primary" type="submit">查询</button><button id="trace-reset" class="button quiet" type="button">清空筛选</button></div>
+          </form>
+          <p id="trace-status" class="source-note" role="status">输入任务 ID 或 Goal UUID 查询；留空显示本会话。</p>
+          <p id="trace-failure" class="result neutral">查询后显示最近失败原因</p>
+          <div class="trace-graph"><h3>ExecuteTask → PickPlace → FJT</h3><div id="trace-nodes" class="trace-nodes"></div><ul id="trace-links" class="trace-links"></ul><p id="trace-note" class="source-note">缺少显式关联的 Goal 保持未关联。</p></div>
+          <ol id="trace-events" class="events trace-events" aria-label="执行记录时间线"></ol>
+          <div class="trace-more"><button id="trace-more" class="button quiet" type="button" hidden>加载更早事件</button><span id="trace-count" class="muted"></span></div>
+        </section>
         <section class="panel"><div class="panel-heading"><div><h2>本次会话的任务</h2><p>成功、失败与取消记录均保留；可下载完整事件和结果。</p></div><a class="button quiet" href="/api/export" download>导出全部记录</a></div><div class="table-scroll"><table><thead><tr><th>任务 ID / 创建时间</th><th>结果</th><th>完成数</th><th>错误码</th><th>操作</th></tr></thead><tbody id="history"></tbody></table></div><div id="history-empty" class="empty-state"><strong>还没有任务记录</strong><p>提交任务后，可在这里检查真实 Action 回执和结果。</p><a href="#console" class="button quiet">前往任务操作台</a></div></section>
         <section id="record-detail" class="panel record-detail" hidden><div class="panel-heading"><div><h2 id="record-detail-title">任务详情</h2><p id="record-detail-subtitle"></p></div><button id="close-record" class="button quiet" type="button">关闭详情</button></div><pre id="record-json"></pre></section>
         <p class="page-note">服务器重启会创建新的会话；此前原始记录保留在 outputs/webui-*，不会覆盖。</p>

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 setup(name="mtc_cpp_mock_bringup", version="0.1.0", packages=find_packages(),
       data_files=[("share/ament_index/resource_index/packages", ["resource/mtc_cpp_mock_bringup"]),
                   ("share/mtc_cpp_mock_bringup", ["package.xml", "README.md", "provenance.json"])],
-      package_data={"mtc_webui": ["static/*", "provenance.json", "connection.example.json"]},
+      package_data={"mtc_webui": ["static/*", "provenance.json", "connection.example.json", "README.md", "telemetry-contract.md", "p1-contract.md", "p2-contract.md"]},
       entry_points={"console_scripts": [
         "mock_stack = mtc_cpp_mock_bringup.bringup:main",
         "mock_check = mtc_cpp_mock_bringup.check:main",

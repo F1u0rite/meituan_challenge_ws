@@ -55,6 +55,41 @@
       "repository": "https://github.com/F1u0rite/meituan_challenge_ws",
       "license": "MIT, Copyright (c) 2026 Fluorite",
       "scope": "使用工作空间编译生成的 IDL 类型，不归档上游实现"
+    },
+    {
+      "name": "control_msgs",
+      "tested_version": "5.10.0",
+      "repository": "https://github.com/ros-controls/control_msgs",
+      "license": "BSD-3-Clause",
+      "scope": "Jazzy JointTrajectoryControllerState、FollowJointTrajectory 只读消息和结果"
+    },
+    {
+      "name": "action_msgs",
+      "tested_version": "2.0.4",
+      "repository": "https://github.com/ros2/rcl_interfaces",
+      "license": "Apache License 2.0",
+      "scope": "GoalStatusArray，未修改实现"
+    },
+    {
+      "name": "std_msgs",
+      "tested_version": "5.3.8",
+      "repository": "https://github.com/ros2/common_interfaces",
+      "license": "Apache License 2.0",
+      "scope": "可选 Planner/工具验证/执行遥测 String 类型"
+    },
+    {
+      "name": "geometry_msgs",
+      "tested_version": "5.3.8",
+      "repository": "https://github.com/ros2/common_interfaces",
+      "license": "Apache License 2.0",
+      "scope": "BatteryDetection 中原生 PoseStamped 字段；未修改消息定义"
+    },
+    {
+      "name": "tf2_ros_py",
+      "tested_version": "0.36.22",
+      "repository": "https://github.com/ros2/geometry2",
+      "license": "安装 package.xml 声明 BSD",
+      "scope": "只读 Buffer / TransformListener，未复制或修改实现"
     }
   ],
   "external_assets": [],
@@ -79,7 +114,7 @@
   },
   "ai_assistance": {
     "tool": "OpenAI Codex",
-    "date": "2026-10-11",
+    "date": "2026-10-13",
     "scope": "页面设计、Python/HTML/CSS/JavaScript 编写、行为测试、浏览器 QA、接口文档及来源同步"
   },
   "limitations": [
@@ -87,9 +122,15 @@
     "隔离 ROS fixture 包含门禁测试用 simulation_mode=false，不是实体硬件证据",
     "上游完整任务阻断 B03/B05/B06 尚未解决",
     "相机真值/单位/标定、检测叠图和任务录像未验收",
-    "Web 服务仅监听 loopback，远程访问经 SSH 隧道；不是公网服务"
+    "Web 服务仅监听 loopback，远程访问经 SSH 隧道；不是公网服务",
+    "P0 的 Motion Primitive/command_id/trajectory_id/总时长/进度接收器已实现，上游发布器待交付；缺失时不推算",
+    "PR #8 C1 正常 Mock 延迟取消 ABORTED/520 未关闭；本轮仅以注入终态测试 UI 展示",
+    "P0 54 Python / 12 Node / 5 Jazzy 检查与历史 33/9 分开；当前隔离镜像无 OpenCV，不重跑历史相机验收",
+    "P1 真实 D435i、二维框/图像帧同步与 RViz/3D 未验收",
+    "P1 Planner 和试提/落座遥测消费者已实现，发布端须由模块负责人提供",
+    "P1 合成图像/检测/错误/验证事件仅用于 UI 接口检查，独立于上游功能或实机验证"
   ],
-  "user_scope_source": "USER-HW-20261011-07",
+  "user_scope_source": "USER-HW-20261013-05",
   "api_references": [
     {
       "url": "https://github.com/ros2/rclpy/blob/jazzy/rclpy/rclpy/action/client.py",
@@ -102,7 +143,68 @@
       "accessed_on": "2026-10-11",
       "version_note": "浏览官方 jazzy 源码；实际 7.1.12 的 MessageInfo 字典无逐消息 publisher_gid，取唯一发布端后按节点名核对",
       "source_id": "ROS2-RCLPY-20261011"
+    },
+    {
+      "url": "https://github.com/ros-controls/control_msgs/tree/jazzy/control_msgs",
+      "accessed_on": "2026-10-13",
+      "version_note": "官方 Jazzy IDL；测试实际安装 control_msgs 5.10.0",
+      "source_id": "ROS2-CONTROLMSGS-20261013"
     }
   ],
-  "dependency_version_evidence": "docs/experiments/webui-ros-20261011/logs/jazzy-runtime-versions.log 和 ros-package-licenses.log；为测试环境观测，不代表 NUC 安装版本"
+  "dependency_version_evidence": "docs/experiments/webui-ros-20261011/logs/jazzy-runtime-versions.log 和 ros-package-licenses.log；为测试环境观测，不代表 NUC 安装版本；P0 新依赖见 docs/experiments/webui-p0-20261013/logs/p0-runtime-v2.log；P1 新相机/观察验证见 docs/experiments/webui-p1-20261013/logs/runtime-versions.log；P2 tf2/SQLite 见 docs/experiments/webui-p2-20261013/logs/dependencies-final.log",
+  "updated_on": "2026-10-13",
+  "p0_update": {
+    "source_ids": [
+      "USER-HW-20261013-06",
+      "TEAMMATE-WEBUI-P0-20261013",
+      "ENV-WEBUI-P0-20261013",
+      "ROS2-CONTROLMSGS-20261013"
+    ],
+    "imported_cpp_mock_compatibility_from": "7da43228d602a6b23571bfc599d69529ef7bea23",
+    "imported_path": "src/mtc_cpp_mock_bringup/mtc_webui",
+    "scope": "复用此前自编的 C++ Mock Web 适配与启动支持，新增只读 FJT/控制器观察、可选遥测契约、任务流程图及独立停止证据。未修改 FSM/Action/Motion/IDL。",
+    "phase2c_reference": "22b0607948c3e58568870da866287d23c135a9fb",
+    "formal_baseline_unchanged": "1d940f7c5f12561fed6641457c0b4b630a282b05",
+    "license_note": "上游 MIT 及原作者声明保留；本次引用包 API 和已获授权转移的自编 UI，不重新授权其他依赖。"
+  },
+  "p1_update": {
+    "source_ids": [
+      "USER-HW-20261013-02",
+      "TEAMMATE-WEBUI-P1-20261013",
+      "ENV-WEBUI-P1-20261013"
+    ],
+    "scope": "原生 BatteryDetectionArray 观察、精确同帧图像元数据、Planner/工具验证可选 JSON 消费与独立证据显示；不修改上游 IDL、FSM、Planner、工具 IO 或控制内核",
+    "planner_reference": "943bf37bec8fc35b510abe56a6844b3f6280cce4",
+    "vision_reference": "dc76a0bf0a43f9110f3d24cfa38a2b3478f48dcd",
+    "package_candidate_base": "7da43228d602a6b23571bfc599d69529ef7bea23",
+    "formal_baseline_unchanged": "1d940f7c5f12561fed6641457c0b4b630a282b05",
+    "contract_note": "p1-contract.md 是新增 Web 消费约定，真实 Planner/试提/落座发布器未交付；不得当作现有上游 IDL",
+    "camera_test_runtime": "从此前停止的 mtc-webui-20261011 只读快照创建新的隔离容器；OpenCV 4.6.0、NumPy 1.26.4。apt/pip 下载超时未用于测试。"
+  },
+  "p2_update": {
+    "source_ids": [
+      "USER-HW-20261013-04",
+      "TEAMMATE-WEBUI-P2-20261013",
+      "ENV-WEBUI-P2-20261013"
+    ],
+    "scope": "八模块三态、只读原生 PickPlace / TF、可选标定与显式 Goal 关联消费者、SQLite/JSONL 完整事件查询导出；不修改 FSM/Cancel/Motion 内核",
+    "package_candidate_base": "8f11750e0bd2e485826acb904fd31382945ba0b9",
+    "calibration_reference": "b4185155383541e1a4161587c4049a162f74b36d",
+    "phase2c_reference": "22b0607948c3e58568870da866287d23c135a9fb",
+    "formal_baseline_unchanged": "1d940f7c5f12561fed6641457c0b4b630a282b05",
+    "missing_producers": "Calibration 有效性 / 跨层 FJT trace 为新增消费契约，真实发布器待交付；TF pairs 须现场配置",
+    "record_scope": "会话开始后的已接收已记录事件；非 ROS bag，无启动前/未接收信息，不按时间猜测 Goal 归属",
+    "validation_scope": "独立 Jazzy ROS 夹具，不代表 NUC、上游完整模块或实物测量"
+  },
+  "interface_boundary_update": {
+    "source_ids": [
+      "USER-HW-20261013-05",
+      "ENV-WEBUI-API-20261013"
+    ],
+    "scope": "保留 HTTP v1 请求及核心响应，恢复导出 note / tasks[].events / 原附件名，补充同一导出快照与事件的一致性；无新增低层控制",
+    "state_contracts": "可选状态 JSON 是已实现消费侧预留，正式接口由模块负责人确认",
+    "joint_validation_scope": "C++ Mock / GenericSystem Fake Hardware only; no real arm control",
+    "validation": "76 offline Python checks, including 3 new compatibility cases; no ROS or hardware run this increment",
+    "ai_assistance": "OpenAI Codex：审计、兼容性修正、测试和文档同步"
+  }
 }
