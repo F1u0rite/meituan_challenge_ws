@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="15" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.981" name="AllTests">
+  <testsuite name="ToolStrategyV1" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.981">
+    <testcase name="TypeAndPrimitives" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="40" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV1" />
+    <testcase name="SharedPrimitives" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="59" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV1" />
+    <testcase name="ContactPrimitivesAreMarkedAndSlow" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="82" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV1" />
+    <testcase name="PrimitivePreservesSixDofTargetPose" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="97" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV1" />
+    <testcase name="NoUnlockPulseAndNoIoChannels" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="111" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV1" />
+  </testsuite>
+  <testsuite name="ToolStrategyV2" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.981">
+    <testcase name="TypeAndPrimitives" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="132" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+    <testcase name="RequiresUnlockAndDeclaresIoChannel" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="152" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+    <testcase name="UnlockRejectedWhenSeatNotVerified" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="161" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+    <testcase name="UnlockRejectedWhenNotUnloaded" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="170" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+    <testcase name="UnlockAllowedOnlyWhenBothConditionsHold" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="179" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+    <testcase name="SeatedFalseUnloadedFalseStillRejectsSeatedFirst" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="189" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyV2" />
+  </testsuite>
+  <testsuite name="ToolStrategyFactory" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.981">
+    <testcase name="CreatesBothGenerations" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="202" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyFactory" />
+    <testcase name="UnknownTypeThrows" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="215" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyFactory" />
+    <testcase name="EmptyStringThrows" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="222" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategyFactory" />
+  </testsuite>
+  <testsuite name="ToolStrategy" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.981">
+    <testcase name="PrimitiveWithoutUsableRingPoseHasNoTargetPose" file="/candidate/src/mtc_manipulation_cpp/test/test_tool_strategy.cpp" line="231" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.981" classname="mtc_manipulation_cpp.ToolStrategy" />
+  </testsuite>
+</testsuites>

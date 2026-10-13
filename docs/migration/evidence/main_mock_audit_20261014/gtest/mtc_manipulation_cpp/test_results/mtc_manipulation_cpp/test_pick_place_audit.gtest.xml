@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="16" failures="0" disabled="0" errors="0" time="0.005" timestamp="2026-10-13T20:17:37.283" name="AllTests">
+  <testsuite name="PlacementAudit" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0.003" timestamp="2026-10-13T20:17:37.283">
+    <testcase name="NewFramesMustCoverFullThreeSeconds" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="62" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.283" classname="mtc_manipulation_cpp.PlacementAudit" />
+    <testcase name="FrozenTimestampCannotSucceedForFiveSeconds" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="74" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.284" classname="mtc_manipulation_cpp.PlacementAudit" />
+    <testcase name="InvalidOrStaleFrameInterruptsWindow" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="84" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.285" classname="mtc_manipulation_cpp.PlacementAudit" />
+    <testcase name="PerceptionStopsUpdatingCannotAccumulateTime" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="108" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.285" classname="mtc_manipulation_cpp.PlacementAudit" />
+    <testcase name="FutureBackwardsAndNonFiniteStampsInterrupt" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="122" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.286" classname="mtc_manipulation_cpp.PlacementAudit" />
+    <testcase name="GapBetweenFreshFramesInterruptsContinuity" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="136" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.286" classname="mtc_manipulation_cpp.PlacementAudit" />
+  </testsuite>
+  <testsuite name="PlanningAudit" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:37.287">
+    <testcase name="NonZeroPlannerTargetsAndFullPoseReachAdapter" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="147" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.287" classname="mtc_manipulation_cpp.PlanningAudit" />
+    <testcase name="MissingOutputDoesNotReachMockAdapter" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="168" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.287" classname="mtc_manipulation_cpp.PlanningAudit" />
+    <testcase name="WholeTimedTrajectoryIsNeverSplit" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="180" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.287" classname="mtc_manipulation_cpp.PlanningAudit" />
+    <testcase name="MalformedPlanCannotExecute" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="198" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.287" classname="mtc_manipulation_cpp.PlanningAudit" />
+  </testsuite>
+  <testsuite name="CommandIdAudit" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:37.287">
+    <testcase name="LongAndRepeatedRequestsRemainUniqueAcrossInstances" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="207" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.287" classname="mtc_manipulation_cpp.CommandIdAudit" />
+  </testsuite>
+  <testsuite name="WatchdogAudit" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:37.288">
+    <testcase name="LoadedContextCannotRecoverAndFaultCannotRestart" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="228" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.288" classname="mtc_manipulation_cpp.WatchdogAudit" />
+    <testcase name="InvalidStabilityNeverStartsMotion" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="245" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.288" classname="mtc_manipulation_cpp.WatchdogAudit" />
+  </testsuite>
+  <testsuite name="PlacementGate" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:37.288">
+    <testcase name="ZeroStabilityRejectedBeforeFirstFrame" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="256" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.288" classname="mtc_manipulation_cpp.PlacementGate" />
+    <testcase name="PositiveWindowNeedsTwoDistinctObservations" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="268" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.289" classname="mtc_manipulation_cpp.PlacementGate" />
+    <testcase name="InvalidConfiguredStabilityNeverStartsMotion" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_audit.cpp" line="280" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:37.289" classname="mtc_manipulation_cpp.PlacementGate" />
+  </testsuite>
+</testsuites>

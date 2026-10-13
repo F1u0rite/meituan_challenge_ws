@@ -1,0 +1,7 @@
+Python 3.12.3
+ros-jazzy-moveit	2.12.4-1noble.20260921.025955
+ros-jazzy-moveit-msgs	2.6.0-1noble.20260911.142759
+ros-jazzy-rclcpp	28.1.22-1noble.20260902.055335
+ros-jazzy-rclpy	7.1.12-1noble.20260902.053513
+ros-jazzy-rmw-fastrtps-cpp	8.4.4-1noble.20260902.041916
+PASS installed/source bringup/WebUI identity 23

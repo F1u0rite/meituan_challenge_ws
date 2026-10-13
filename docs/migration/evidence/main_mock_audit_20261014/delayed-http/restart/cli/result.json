@@ -1,0 +1,13 @@
+{
+  "goal_id": "69d2635da73e492ba770694a1b376a3a",
+  "status": 4,
+  "result": {
+    "success": true,
+    "completed_count": 1,
+    "completed_slots": [
+      "T0"
+    ],
+    "error_code": 0,
+    "message": "task finished: T0"
+  }
+}

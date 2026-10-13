@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="26" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.555" name="AllTests">
+  <testsuite name="TaskValidation" tests="19" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.555">
+    <testcase name="BasicModeAccepted" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="41" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="SequenceModeMapsSlotsInOrder" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="51" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="EmptyTaskIdRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="61" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="UnknownModeRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="71" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="EmptyColorsRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="80" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="BasicModeRequiresExactlyOneColor" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="89" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="SequenceModeRequiresExactlyThreeColors" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="98" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ColorZeroUnknownIsIllegal" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="107" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ColorOutOfRangeIsIllegal" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="117" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="DuplicateColorsRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="126" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ZeroTimeoutRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="135" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="NegativeStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="144" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ExplicitSlotMustMatchDerivedSlot" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="153" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ExplicitSlotMustBeAllowed" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="162" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ExplicitSlotMatchingDerivedIsAccepted" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="171" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="SlotNameValidation" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="179" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ExpectedSlotForIndex" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="188" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="TaskRequestHelpers" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="205" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+    <testcase name="ModeNameOfUnknownMode" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="222" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidation" />
+  </testsuite>
+  <testsuite name="TaskValidationAudit" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.555">
+    <testcase name="NonFiniteStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="227" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.TaskValidationAudit" />
+  </testsuite>
+  <testsuite name="StabilityGate" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.555">
+    <testcase name="ZeroStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="237" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+    <testcase name="NegativeStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="242" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+    <testcase name="NaNStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="247" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+    <testcase name="InfiniteStabilityRejected" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="252" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+    <testcase name="PositiveStabilityAccepted" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="259" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+    <testcase name="DefaultStabilityRemainsThreeSeconds" file="/candidate/src/mtc_task_cpp/test/test_task_validation.cpp" line="266" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.555" classname="mtc_task_cpp.StabilityGate" />
+  </testsuite>
+</testsuites>

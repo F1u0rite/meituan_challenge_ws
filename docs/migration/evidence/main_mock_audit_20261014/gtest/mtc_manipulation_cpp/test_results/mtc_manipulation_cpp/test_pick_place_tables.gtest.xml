@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="20" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.911" name="AllTests">
+  <testsuite name="PickPlaceTables" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.911">
+    <testcase name="VerifyTablesReportsNoProblem" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="64" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.911" classname="mtc_manipulation_cpp.PickPlaceTables" />
+    <testcase name="EveryStateHasHandler" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="73" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTables" />
+    <testcase name="StateNamesMatchPythonValues" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="80" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTables" />
+    <testcase name="PipelineMatchesDesignOrder" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="93" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTables" />
+    <testcase name="TerminalAndMotionInFlightSets" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="118" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTables" />
+    <testcase name="DefaultTimeoutsCoverMotionStates" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="141" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTables" />
+  </testsuite>
+  <testsuite name="PickPlaceStart" tests="7" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.912">
+    <testcase name="IllegalTargetSlotFailsImmediatelyWithInvalidTask" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="154" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="AllowedSlotsAreAccepted" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="170" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="ToolTypeMismatchThrows" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="183" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="RequiredConfigFieldsAreRecorded" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="201" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="ConfigStabilityUsedWhenGoalOmitsIt" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="218" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="PlacementVerifiedStartsFalseAndIsReadOnly" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="229" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+    <testcase name="MotionResendAllowedStartsTrue" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="240" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceStart" />
+  </testsuite>
+  <testsuite name="PickPlaceFeedback" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.912">
+    <testcase name="FeedbackCarriesSubstateAndProgress" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="254" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceFeedback" />
+    <testcase name="ProgressReachesOneOnlyAtSuccess" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="272" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceFeedback" />
+    <testcase name="StateHistoryRecordsEnteredStates" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="285" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceFeedback" />
+    <testcase name="EventCallbackReceivesStateEntered" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="299" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceFeedback" />
+    <testcase name="CallbackExceptionDoesNotBreakSequencing" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="315" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceFeedback" />
+  </testsuite>
+  <testsuite name="PickPlaceTerminal" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:36.912">
+    <testcase name="StepAtTerminalIsIdempotent" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="333" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTerminal" />
+    <testcase name="ForceFaultOnTerminalKeepsOriginalState" file="/candidate/src/mtc_manipulation_cpp/test/test_pick_place_tables.cpp" line="352" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:36.912" classname="mtc_manipulation_cpp.PickPlaceTerminal" />
+  </testsuite>
+</testsuites>

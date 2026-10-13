@@ -1,0 +1,3 @@
+[INFO] [1791923127.965146719] [cpp_accept_cancel_unconfirmed.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=5c81570cb6693ee3ec72b1e4fb7b9db3 request="http_cancel_unconfirmed_12e94793#0/attempt-1"
+[INFO] [1791923128.035977699] [cpp_accept_cancel_unconfirmed.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=5c81570cb6693ee3ec72b1e4fb7b9db3 state=FAULT error=520 executions=1 stops=1
+[INFO] [1791923128.382399008] [rclcpp]: signal_handler(SIGINT/SIGTERM)

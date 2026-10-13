@@ -1,0 +1,5 @@
+[INFO] [1791923332.159534289] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=17e684e21eab71dab4193d881907a726 request="delayed_cancel#0/attempt-1"
+[INFO] [1791923332.630642710] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=17e684e21eab71dab4193d881907a726 state=CANCELLED error=0 executions=1 stops=1
+[INFO] [1791923332.759476385] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=76a38181a5a44644d3eec2514263bf12 request="same_stack_next#0/attempt-2"
+[INFO] [1791923339.369683368] [monitor_main_mock.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=76a38181a5a44644d3eec2514263bf12 state=SUCCESS error=0 executions=8 stops=1
+[INFO] [1791923339.439921430] [rclcpp]: signal_handler(SIGINT/SIGTERM)

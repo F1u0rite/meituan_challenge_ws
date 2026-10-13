@@ -1,0 +1,122 @@
+{
+  "files": {
+    "mtc_cpp_mock_bringup/acceptance.py": {
+      "source_sha256": "7e69f1f9d1f0eaa16c8cb9010989d326b760af4d2927279425ef9262880b4395",
+      "installed_sha256": "7e69f1f9d1f0eaa16c8cb9010989d326b760af4d2927279425ef9262880b4395",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/acceptance.py"
+    },
+    "mtc_cpp_mock_bringup/graph.py": {
+      "source_sha256": "7db4972ad37c79a0727d526af9bd930506d6f094ba80754503984a5d04db8ea7",
+      "installed_sha256": "7db4972ad37c79a0727d526af9bd930506d6f094ba80754503984a5d04db8ea7",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/graph.py"
+    },
+    "mtc_cpp_mock_bringup/__init__.py": {
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/__init__.py"
+    },
+    "mtc_cpp_mock_bringup/client.py": {
+      "source_sha256": "fd2c2fdb33b9b723667d0b8647ff98f229e8feaf1e24cbaa8f6980b018b6d7e4",
+      "installed_sha256": "fd2c2fdb33b9b723667d0b8647ff98f229e8feaf1e24cbaa8f6980b018b6d7e4",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/client.py"
+    },
+    "mtc_cpp_mock_bringup/check.py": {
+      "source_sha256": "82eeefde967f0ec68f9951d3909e9fbf4af9077738892c1c1e0ac33dd3b48ff5",
+      "installed_sha256": "82eeefde967f0ec68f9951d3909e9fbf4af9077738892c1c1e0ac33dd3b48ff5",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/check.py"
+    },
+    "mtc_cpp_mock_bringup/bringup.py": {
+      "source_sha256": "a6add97c46535fc4c7e125cc9fa906b77aae7f05edce37ec750ed047c852b469",
+      "installed_sha256": "a6add97c46535fc4c7e125cc9fa906b77aae7f05edce37ec750ed047c852b469",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/bringup.py"
+    },
+    "mtc_webui/mock_backend.py": {
+      "source_sha256": "8968e85ac2e526bce5c9acd18f05b6caf79336e650c5eaa9c01058c254e9d6f5",
+      "installed_sha256": "8968e85ac2e526bce5c9acd18f05b6caf79336e650c5eaa9c01058c254e9d6f5",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/mock_backend.py"
+    },
+    "mtc_webui/__init__.py": {
+      "source_sha256": "3aca5545b424f135fff74819b578943d1b58c0127865259487cf22d3dd0dd095",
+      "installed_sha256": "3aca5545b424f135fff74819b578943d1b58c0127865259487cf22d3dd0dd095",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/__init__.py"
+    },
+    "mtc_webui/server.py": {
+      "source_sha256": "a92bcefc50de024f6173241d4494f3c48ec570170b5b0f231a3f0c5f88de3daf",
+      "installed_sha256": "a92bcefc50de024f6173241d4494f3c48ec570170b5b0f231a3f0c5f88de3daf",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/server.py"
+    },
+    "mtc_webui/test_cpp_mock.py": {
+      "source_sha256": "315214a2d2fb76b3d7ffd5c632b4b690381995f4fd5deab8b2799ce63b46288c",
+      "installed_sha256": "315214a2d2fb76b3d7ffd5c632b4b690381995f4fd5deab8b2799ce63b46288c",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/test_cpp_mock.py"
+    },
+    "mtc_webui/ros_integration_check.py": {
+      "source_sha256": "ae1797c314fff3226b73294e8b52b358831a9c148b31a3323c90ab091be9bf4e",
+      "installed_sha256": "ae1797c314fff3226b73294e8b52b358831a9c148b31a3323c90ab091be9bf4e",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/ros_integration_check.py"
+    },
+    "mtc_webui/ros_backend.py": {
+      "source_sha256": "cc7fdcd6f3f97193165a0ba51c97cc55f8a7b2de696c6a0ec7317807b56b6e3a",
+      "installed_sha256": "cc7fdcd6f3f97193165a0ba51c97cc55f8a7b2de696c6a0ec7317807b56b6e3a",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/ros_backend.py"
+    },
+    "mtc_webui/config.py": {
+      "source_sha256": "1c2c31118adf9b8973dae379114dbc637215fbba86808031dc21ab3f97bfc087",
+      "installed_sha256": "1c2c31118adf9b8973dae379114dbc637215fbba86808031dc21ab3f97bfc087",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/config.py"
+    },
+    "mtc_webui/test_ros_backend.py": {
+      "source_sha256": "fc4842ebbd7048cf4027a3fdd5053f42159e3eda91848dd27c1dc669db4980d6",
+      "installed_sha256": "fc4842ebbd7048cf4027a3fdd5053f42159e3eda91848dd27c1dc669db4980d6",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/test_ros_backend.py"
+    },
+    "mtc_webui/test_mock_backend.py": {
+      "source_sha256": "88ddc162ec04fabd42f1e486705e3c2d45ebe30e85951794d08b5c3865c50b7e",
+      "installed_sha256": "88ddc162ec04fabd42f1e486705e3c2d45ebe30e85951794d08b5c3865c50b7e",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/test_mock_backend.py"
+    },
+    "mtc_webui/connection.example.json": {
+      "source_sha256": "0dc6c8fddfc0132c634c0a50d15123ad14044062ea3b436e793c21bbc2591442",
+      "installed_sha256": "0dc6c8fddfc0132c634c0a50d15123ad14044062ea3b436e793c21bbc2591442",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/connection.example.json"
+    },
+    "mtc_webui/ros_transport.py": {
+      "source_sha256": "70b78484c06cd84e666ad6921a9fcfb4704324bb7631cca318ad412329a1f582",
+      "installed_sha256": "70b78484c06cd84e666ad6921a9fcfb4704324bb7631cca318ad412329a1f582",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/ros_transport.py"
+    },
+    "mtc_webui/cpp_mock.py": {
+      "source_sha256": "13798ec67ca3b6df312b731fcc18cb6df964a8cfb3950deed7589c4752f10933",
+      "installed_sha256": "13798ec67ca3b6df312b731fcc18cb6df964a8cfb3950deed7589c4752f10933",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/cpp_mock.py"
+    },
+    "mtc_webui/provenance.json": {
+      "source_sha256": "3bc10a631d81fbc44f4c62c70322994d558e66b362e9baca61c1d9625a4d5e3c",
+      "installed_sha256": "3bc10a631d81fbc44f4c62c70322994d558e66b362e9baca61c1d9625a4d5e3c",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/provenance.json"
+    },
+    "mtc_webui/static/favicon.svg": {
+      "source_sha256": "926554080f4b882f38d4f5c0b8ad3592cd47c61b2aa671edbf2979449bf8dccd",
+      "installed_sha256": "926554080f4b882f38d4f5c0b8ad3592cd47c61b2aa671edbf2979449bf8dccd",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/static/favicon.svg"
+    },
+    "mtc_webui/static/styles.css": {
+      "source_sha256": "58ef9797cd86a2c569c7f605efb8a2ce025ddf30a4965fc712b336d8284c8af1",
+      "installed_sha256": "58ef9797cd86a2c569c7f605efb8a2ce025ddf30a4965fc712b336d8284c8af1",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/static/styles.css"
+    },
+    "mtc_webui/static/index.html": {
+      "source_sha256": "6618cc67efabb14d9fae78631d11f6cffc0e8b0039fcd4aa619e8a667a97e248",
+      "installed_sha256": "6618cc67efabb14d9fae78631d11f6cffc0e8b0039fcd4aa619e8a667a97e248",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/static/index.html"
+    },
+    "mtc_webui/static/app.js": {
+      "source_sha256": "0d90211bf9ccc22eb08e116da1aa8d0bd75ccc41041219ddcf75bc787274456c",
+      "installed_sha256": "0d90211bf9ccc22eb08e116da1aa8d0bd75ccc41041219ddcf75bc787274456c",
+      "installed_path": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/static/app.js"
+    }
+  },
+  "bringup": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_cpp_mock_bringup/bringup.py",
+  "webui": "/candidate-install/mtc_cpp_mock_bringup/lib/python3.12/site-packages/mtc_webui/server.py",
+  "interfaces": "/candidate-install/mtc_interfaces"
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "scenario": "valid",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-adun4rnb"
+    ],
+    "exit_code": 0,
+    "expected_success": true,
+    "passed": true
+  },
+  {
+    "scenario": "valid",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-adun4rnb"
+    ],
+    "exit_code": 0,
+    "expected_success": true,
+    "passed": true
+  },
+  {
+    "scenario": "missing_xml",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-bxgrm2h5"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "missing_xml",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-bxgrm2h5"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "renamed_xml",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-t89cunek"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "renamed_xml",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-t89cunek"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "unexpected_xml",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-2lomutm2"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "unexpected_xml",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-2lomutm2"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "missing_case",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-169rop69"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "missing_case",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-169rop69"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "duplicate_case",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-575iqtcu"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "duplicate_case",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-575iqtcu"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "unexpected_case",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-wrvu_khe"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "unexpected_case",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-wrvu_khe"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "failure",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-pk2z0wcy"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "failure",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-pk2z0wcy"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "error",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-x_h4o9fq"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "error",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-x_h4o9fq"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "skipped",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-21eza9b6"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "skipped",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-21eza9b6"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "not_run",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-m5xx41ye"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "not_run",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-m5xx41ye"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "not_completed",
+    "verifier": "legacy",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/tests/verify_cpp_audit_results.py",
+      "--baseline",
+      "1d940f7c5f12561fed6641457c0b4b630a282b05",
+      "--baseline-count",
+      "318",
+      "--build-base",
+      "/tmp/cpp-audit-6hkd14ri"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  },
+  {
+    "scenario": "not_completed",
+    "verifier": "action",
+    "argv": [
+      "/usr/bin/python3",
+      "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py",
+      "--build-base",
+      "/tmp/cpp-audit-6hkd14ri"
+    ],
+    "exit_code": 1,
+    "expected_success": false,
+    "passed": true
+  }
+]

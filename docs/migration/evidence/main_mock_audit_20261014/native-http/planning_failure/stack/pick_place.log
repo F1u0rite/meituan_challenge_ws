@@ -1,0 +1,5 @@
+[INFO] [1791923118.979766080] [cpp_accept_planning_failure.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=30de6c8a51b0069728d40ba6e0997f10 request="http_planning_failure_190c5334#0/attempt-1"
+[INFO] [1791923119.030699668] [cpp_accept_planning_failure.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=30de6c8a51b0069728d40ba6e0997f10 state=FAILED error=200 executions=0 stops=0
+[INFO] [1791923119.049740543] [cpp_accept_planning_failure.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=2818e8ca1a5dc8220b3ca081ff92e21b request="http_planning_failure_190c5334#0/attempt-2"
+[INFO] [1791923119.100525064] [cpp_accept_planning_failure.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=2818e8ca1a5dc8220b3ca081ff92e21b state=FAILED error=200 executions=0 stops=0
+[INFO] [1791923119.532098657] [rclcpp]: signal_handler(SIGINT/SIGTERM)

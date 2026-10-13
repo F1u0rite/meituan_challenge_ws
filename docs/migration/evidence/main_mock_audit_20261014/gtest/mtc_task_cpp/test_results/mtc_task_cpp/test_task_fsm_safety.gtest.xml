@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="40" failures="0" disabled="0" errors="0" time="0.003" timestamp="2026-10-13T20:17:35.710" name="AllTests">
+  <testsuite name="TaskFsmConcurrency" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.710">
+    <testcase name="SecondGoalRejectedInEveryActiveState" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="90" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.710" classname="mtc_task_cpp.TaskFsmConcurrency" />
+    <testcase name="MissingGoalPayloadRejected" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="157" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmConcurrency" />
+    <testcase name="UnparsableGoalRejected" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="170" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmConcurrency" />
+    <testcase name="EmptyTaskIdRejected" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="183" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmConcurrency" />
+    <testcase name="RejectionDoesNotQueueSecondGoal" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="197" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmConcurrency" />
+  </testsuite>
+  <testsuite name="TaskFsmTimeout" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.711">
+    <testcase name="WaitTaskAndTerminalStatesHaveNoTimeout" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="219" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="ValidateTaskTimeoutGoesToTaskFailedWithInvalidTask" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="228" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="ScanSceneTimeoutGoesToRecoveryWithTargetNotFound" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="243" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="ExecuteItemTimeoutGoesToFaultAndDoesNotAutoResend" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="257" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.711" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="RecordResultTimeoutMapsToPlacementFailed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="282" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="RecoveryTimeoutGoesToTaskFailed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="297" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="CustomTimeoutsAreInjectible" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="312" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmTimeout" />
+    <testcase name="TimeoutTimerResetsOnEffectiveProgress" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="330" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmTimeout" />
+  </testsuite>
+  <testsuite name="TaskFsmDeadline" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.712">
+    <testcase name="DeadlineExceededGoesToFaultWithMotionTimeout" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="347" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmDeadline" />
+    <testcase name="NoDeadlineWithoutActiveTask" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="366" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmDeadline" />
+    <testcase name="ElapsedTaskTimeTracksInProgressTask" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="374" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmDeadline" />
+  </testsuite>
+  <testsuite name="TaskFsmCancel" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.712">
+    <testcase name="CancelFromScanSceneEntersCancelPendingWithChildCancel" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="391" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="ConfirmedStopLeadsToCancelled" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="408" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="UnconfirmedStopTimesOutToFault520" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="424" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="LateStopConfirmationAfterFaultDoesNotBecomeCancelled" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="446" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="CancelFromExecuteItemIsAllowed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="461" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="CancelFromRecoveryIsAllowed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="473" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="ItemUnsafeInCancelPendingGoesToFault" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="483" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+    <testcase name="CancelInTerminalStateIsIgnored" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="496" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmCancel" />
+  </testsuite>
+  <testsuite name="TaskFsmRecovery" tests="7" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.712">
+    <testcase name="TargetNotFoundRetryReturnsToScanScene" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="512" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.712" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="RetryBudgetExhaustionGoesToTaskFailed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="528" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="DenyRetryGoesToTaskFailed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="545" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="PlanningFailureIsRecoverable" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="557" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="PoseStaleIsRecoverable" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="569" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="ExecutionRejectedIsRecoverable" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="580" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+    <testcase name="RecoveryAttemptsResetAfterCompletedItem" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="591" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmRecovery" />
+  </testsuite>
+  <testsuite name="TaskFsmUnsafeErrors" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.713">
+    <testcase name="MotionStatusUnknownGoesToFaultWithRealCode" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="618" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+    <testcase name="NonRecoverableCodesAllGoToFault" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="635" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+    <testcase name="RecoverableWhitelistIsConservative" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="662" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+    <testcase name="FaultWithoutSpecificCodeDegradesToHardwareFault" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="676" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.713" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+    <testcase name="FaultKeepsSpecificCodeWhenPresent" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="692" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.714" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+    <testcase name="ItemFailureWithZeroCodeDefaultsToPlacementFailed" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="704" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.714" classname="mtc_task_cpp.TaskFsmUnsafeErrors" />
+  </testsuite>
+  <testsuite name="TaskFsmSafety" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.714">
+    <testcase name="RepeatedStepsInFaultProduceNoActions" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="719" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.714" classname="mtc_task_cpp.TaskFsmSafety" />
+    <testcase name="GoalAfterTerminalRequiresReset" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="737" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.714" classname="mtc_task_cpp.TaskFsmSafety" />
+  </testsuite>
+  <testsuite name="TaskFaultAudit" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T20:17:35.714">
+    <testcase name="ActionFinishesButOrdinaryResetAndNewTasksStayLocked" file="/candidate/src/mtc_task_cpp/test/test_task_fsm_safety.cpp" line="755" status="run" result="completed" time="0." timestamp="2026-10-13T20:17:35.714" classname="mtc_task_cpp.TaskFaultAudit" />
+  </testsuite>
+</testsuites>

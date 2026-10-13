@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="8" failures="0" disabled="0" errors="0" time="1.587" timestamp="2026-10-13T20:18:06.212" name="AllTests">
+  <testsuite name="MotionAction" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="1.586" timestamp="2026-10-13T20:18:06.213">
+    <testcase name="LegalNonzeroGoalAndFeedbackUseExecutorResult" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="42" status="run" result="completed" time="0.149" timestamp="2026-10-13T20:18:06.213" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="IllegalGoalRejectedWithoutBackendCall" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="53" status="run" result="completed" time="0.018" timestamp="2026-10-13T20:18:06.362" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="ConcurrentGoalIsRejectedAndFirstCompletes" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="62" status="run" result="completed" time="0.134" timestamp="2026-10-13T20:18:06.381" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="MatchingCancelStopsExactlyOnce" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="69" status="run" result="completed" time="0.045" timestamp="2026-10-13T20:18:06.515" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="UnconfirmedCancelAborts520AndLocks" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="81" status="run" result="completed" time="0.044" timestamp="2026-10-13T20:18:06.560" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="StaleCancelCannotReachBackendOrInterruptNewOwner" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="94" status="run" result="completed" time="0.235" timestamp="2026-10-13T20:18:06.605" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="ExecutorTimeoutKeepsOriginal220AndRejectsNewMotion" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="110" status="run" result="completed" time="0.124" timestamp="2026-10-13T20:18:06.840" classname="mtc_ros2_action_cpp.MotionAction" />
+    <testcase name="RosDeadlineIndependentlyRequestsAssociatedStop" file="/candidate/src/mtc_ros2_action_cpp/test/test_motion_action.cpp" line="121" status="run" result="completed" time="0.834" timestamp="2026-10-13T20:18:06.965" classname="mtc_ros2_action_cpp.MotionAction" />
+  </testsuite>
+</testsuites>

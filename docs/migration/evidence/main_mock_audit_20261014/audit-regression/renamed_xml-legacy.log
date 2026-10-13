@@ -1,0 +1,1 @@
+FAIL: missing=[]; unexpected=[]; duplicates=[]; bad=[]; executables=22; missing_xml=['mtc_core_cpp/test_results/mtc_core_cpp/test_core_types.gtest.xml']; unexpected_xml=['mtc_core_cpp/test_results/mtc_core_cpp/test_unregistered.gtest.xml']

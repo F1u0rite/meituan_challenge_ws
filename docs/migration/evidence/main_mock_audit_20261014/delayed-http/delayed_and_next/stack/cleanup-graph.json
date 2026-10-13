@@ -1,0 +1,206 @@
+{
+  "ok": true,
+  "expectation": "empty",
+  "snapshot": {
+    "schema_version": 1,
+    "mode": "cpp_mock",
+    "session_id": "bc1ae585-c43d-4ebf-8850-c90ff9ad60c4",
+    "snapshot_seq": 22,
+    "event_seq": 2,
+    "generated_at": "2026-10-13T20:29:01.618+00:00",
+    "freshness_limit_ms": 3000,
+    "task": null,
+    "task_state": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "external_task": null,
+    "robot": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "tool": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "joints": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "camera": {
+      "color": {
+        "available": false,
+        "data": null,
+        "source": null,
+        "received_at": null,
+        "age_ms": null
+      },
+      "depth": {
+        "available": false,
+        "data": null,
+        "source": null,
+        "received_at": null,
+        "age_ms": null
+      }
+    },
+    "connection": {
+      "connected": true,
+      "reason": "C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果",
+      "action_ready": false,
+      "stop_ready": false,
+      "publishers": {
+        "cpp_task": {
+          "topic": "/monitor_main_mock/mtc_mock_task/integration_state",
+          "expected_node": "/monitor_main_mock/mtc_mock_task",
+          "candidates": [],
+          "selected": null,
+          "attribution": "unique topic publisher; graph GID, not per-message GID"
+        },
+        "cpp_pick": {
+          "topic": "/monitor_main_mock/mtc_mock_pick_place/integration_state",
+          "expected_node": "/monitor_main_mock/mtc_mock_pick_place",
+          "candidates": [],
+          "selected": null,
+          "attribution": "unique topic publisher; graph GID, not per-message GID"
+        }
+      },
+      "image_topics": [],
+      "child_ready": false,
+      "action_servers": [],
+      "graph": {
+        "valid": false,
+        "issues": [
+          "Missing, conflicting or wrong source/type: /monitor_main_mock/task/execute",
+          "Missing, conflicting or wrong source/type: /monitor_main_mock/manipulation/pick_place",
+          "Missing or duplicate node: /monitor_main_mock/mtc_mock_task",
+          "Missing or duplicate node: /monitor_main_mock/mtc_mock_pick_place",
+          "C++ Task child ActionClient missing"
+        ],
+        "nodes": [
+          "/monitor_main_mock/mtc_web_console_bc1ae585"
+        ],
+        "servers": [],
+        "clients": [
+          {
+            "node": "/monitor_main_mock/mtc_web_console_bc1ae585",
+            "action": "/monitor_main_mock/task/execute",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask"
+            ]
+          }
+        ],
+        "topics": [
+          {
+            "name": "/monitor_main_mock/mtc_mock_pick_place/integration_state",
+            "types": [
+              "std_msgs/msg/String"
+            ],
+            "publishers": []
+          },
+          {
+            "name": "/monitor_main_mock/mtc_mock_task/integration_state",
+            "types": [
+              "std_msgs/msg/String"
+            ],
+            "publishers": []
+          },
+          {
+            "name": "/monitor_main_mock/task/execute/_action/feedback",
+            "types": [
+              "mtc_interfaces/action/ExecuteTask_FeedbackMessage"
+            ],
+            "publishers": []
+          },
+          {
+            "name": "/monitor_main_mock/task/execute/_action/status",
+            "types": [
+              "action_msgs/msg/GoalStatusArray"
+            ],
+            "publishers": []
+          }
+        ],
+        "task_servers": []
+      }
+    },
+    "config": {
+      "domain_id": 219,
+      "read_only": false,
+      "task_action": "/monitor_main_mock/task/execute",
+      "task_topic": "/monitor_main_mock/task/state",
+      "task_publisher": "/monitor_main_mock/mtc_mock_task",
+      "robot_topic": "/mtc/robot/state",
+      "robot_publisher": "/mtc_aubo_bridge",
+      "tool_topic": "/mtc/tool/state",
+      "tool_publisher": "",
+      "joint_topic": "/joint_states",
+      "joint_publisher": "",
+      "stop_service": "/mtc/bridge/request_stop",
+      "color_topic": "",
+      "depth_topic": "",
+      "freshness_ms": 3000,
+      "cpp_namespace": "/monitor_main_mock"
+    },
+    "stop_request": null,
+    "operations": {
+      "submit": false,
+      "cancel": false,
+      "stop": false,
+      "confirm_mock_stop": false,
+      "reasons": [
+        "C++ Task/PickPlace 服务未就绪、来源不符或图中存在冲突",
+        "C++ Task 就绪状态缺失或过期",
+        "C++ PickPlace 就绪状态缺失或过期"
+      ]
+    },
+    "history": [],
+    "events": [
+      {
+        "seq": 1,
+        "at": "2026-10-13T20:28:59.604+00:00",
+        "kind": "SESSION_STARTED",
+        "message": "C++ Mock ROS 操作台；软件 Mock，无硬件、MoveIt、独立停稳传感器",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      },
+      {
+        "seq": 2,
+        "at": "2026-10-13T20:28:59.816+00:00",
+        "kind": "ROS_CONNECTION",
+        "message": "C++ Mock ROS 已连接；仅使用 C++ 节点就绪状态与 Action 结果",
+        "level": "info",
+        "mode": "cpp_mock",
+        "task_id": null,
+        "goal_id": null
+      }
+    ],
+    "cpp_task": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "cpp_pick": {
+      "available": false,
+      "data": null,
+      "source": null,
+      "received_at": null,
+      "age_ms": null
+    },
+    "cpp_pick_action": "/monitor_main_mock/manipulation/pick_place"
+  }
+}

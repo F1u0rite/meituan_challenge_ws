@@ -1,0 +1,3 @@
+[INFO] [1791923137.158761251] [cpp_accept_status_unknown.mtc_mock_pick_place]: MTC_TRACE event=pick_start child=9ce517af49cabeac6b15b9beea280857 request="http_status_unknown_aa781beb#0/attempt-1"
+[INFO] [1791923137.539784363] [cpp_accept_status_unknown.mtc_mock_pick_place]: MTC_TRACE event=pick_result child=9ce517af49cabeac6b15b9beea280857 state=FAULT error=230 executions=1 stops=0
+[INFO] [1791923137.993218718] [rclcpp]: signal_handler(SIGINT/SIGTERM)

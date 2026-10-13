@@ -1,0 +1,6 @@
+[INFO] [1791923078.085140591] [cpp_accept_basic.mtc_mock_task]: MTC_TRACE event=task_start parent=4aafaa44271d49ffb9563db130209024 task="http_basic_d8d8418d"
+[INFO] [1791923078.086494372] [cpp_accept_basic.mtc_mock_task]: MTC_TRACE event=child_send parent=4aafaa44271d49ffb9563db130209024 request="http_basic_d8d8418d#0/attempt-1"
+[INFO] [1791923078.088322382] [cpp_accept_basic.mtc_mock_task]: MTC_TRACE event=child_response parent=4aafaa44271d49ffb9563db130209024 child=5efa7c527bd7c34127ea7f845007fbc6 accepted=1 request="http_basic_d8d8418d#0/attempt-1"
+[INFO] [1791923082.262586649] [cpp_accept_basic.mtc_mock_task]: MTC_TRACE event=child_result parent=4aafaa44271d49ffb9563db130209024 child=5efa7c527bd7c34127ea7f845007fbc6 status=4 error=0
+[INFO] [1791923082.264304258] [cpp_accept_basic.mtc_mock_task]: MTC_TRACE event=task_result parent=4aafaa44271d49ffb9563db130209024 state=FINISHED error=0 completed=1
+[INFO] [1791923082.660587133] [rclcpp]: signal_handler(SIGINT/SIGTERM)

@@ -1,0 +1,76 @@
+{
+  "supervisor_pid": 2211,
+  "started_at": "2026-10-13T20:28:46.199693+00:00",
+  "namespace": "/monitor_main_mock",
+  "domain_id": 219,
+  "profile": "success",
+  "result_delay_ms": 700,
+  "scope": "cpp_mock; real ROS Actions, software-only ports; no hardware/MoveIt",
+  "processes": [
+    {
+      "label": "pick_place",
+      "pid": 2238,
+      "argv": [
+        "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_pick_place_server",
+        "--ros-args",
+        "-r",
+        "__ns:=/monitor_main_mock",
+        "-r",
+        "/mtc/task/execute:=/monitor_main_mock/task/execute",
+        "-r",
+        "/mtc/manipulation/pick_place:=/monitor_main_mock/manipulation/pick_place",
+        "-p",
+        "mock.result_delay_ms:=700",
+        "-p",
+        "mock.plan_available:=true",
+        "-p",
+        "mock.stop_evidence_available:=true",
+        "-p",
+        "mock.status_unknown:=false"
+      ],
+      "executable": "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_pick_place_server"
+    },
+    {
+      "label": "task",
+      "pid": 2239,
+      "argv": [
+        "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_task_server",
+        "--ros-args",
+        "-r",
+        "__ns:=/monitor_main_mock",
+        "-r",
+        "/mtc/task/execute:=/monitor_main_mock/task/execute",
+        "-r",
+        "/mtc/manipulation/pick_place:=/monitor_main_mock/manipulation/pick_place"
+      ],
+      "executable": "/candidate-install/mtc_ros2_action_cpp/lib/mtc_ros2_action_cpp/mock_task_server"
+    },
+    {
+      "label": "web",
+      "pid": 2276,
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "mtc_webui.server",
+        "--cpp-mock",
+        "--cpp-namespace",
+        "/monitor_main_mock",
+        "--ros-domain-id",
+        "219",
+        "--port",
+        "8768",
+        "--output-dir",
+        "/review-evidence/delayed-http/delayed_and_next/stack/web-session"
+      ],
+      "executable": "/usr/bin/python3.12"
+    }
+  ],
+  "returncodes": {
+    "pick_place": 0,
+    "task": 0,
+    "web": 0
+  },
+  "ended_at": "2026-10-13T20:29:01.641470+00:00",
+  "cleanup_ok": true,
+  "exit_code": 0
+}

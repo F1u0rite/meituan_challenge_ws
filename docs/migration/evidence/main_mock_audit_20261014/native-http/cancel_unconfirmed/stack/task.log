@@ -1,0 +1,7 @@
+[INFO] [1791923127.959945570] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=task_start parent=49645d42985d4dc99c9fe21f8092b495 task="http_cancel_unconfirmed_12e94793"
+[INFO] [1791923127.961277022] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=child_send parent=49645d42985d4dc99c9fe21f8092b495 request="http_cancel_unconfirmed_12e94793#0/attempt-1"
+[INFO] [1791923127.963099606] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=child_response parent=49645d42985d4dc99c9fe21f8092b495 child=5c81570cb6693ee3ec72b1e4fb7b9db3 accepted=1 request="http_cancel_unconfirmed_12e94793#0/attempt-1"
+[INFO] [1791923128.017371165] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=child_cancel child=5c81570cb6693ee3ec72b1e4fb7b9db3
+[INFO] [1791923128.036037794] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=child_result parent=49645d42985d4dc99c9fe21f8092b495 child=5c81570cb6693ee3ec72b1e4fb7b9db3 status=6 error=520
+[INFO] [1791923128.037637846] [cpp_accept_cancel_unconfirmed.mtc_mock_task]: MTC_TRACE event=task_result parent=49645d42985d4dc99c9fe21f8092b495 state=FAULT error=520 completed=0
+[INFO] [1791923128.382362501] [rclcpp]: signal_handler(SIGINT/SIGTERM)

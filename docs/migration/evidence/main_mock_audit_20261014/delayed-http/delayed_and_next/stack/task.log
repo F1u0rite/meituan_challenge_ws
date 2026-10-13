@@ -1,0 +1,12 @@
+[INFO] [1791923332.151734568] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=task_start parent=3135e3b430544d0d8a645fa952c763eb task="delayed_cancel"
+[INFO] [1791923332.152825361] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_send parent=3135e3b430544d0d8a645fa952c763eb request="delayed_cancel#0/attempt-1"
+[INFO] [1791923332.154451800] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_response parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 accepted=1 request="delayed_cancel#0/attempt-1"
+[INFO] [1791923332.611736876] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_cancel child=17e684e21eab71dab4193d881907a726
+[INFO] [1791923332.631024676] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_result parent=3135e3b430544d0d8a645fa952c763eb child=17e684e21eab71dab4193d881907a726 status=5 error=0
+[INFO] [1791923332.631817625] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=task_result parent=3135e3b430544d0d8a645fa952c763eb state=CANCELLED error=0 completed=0
+[INFO] [1791923332.751659021] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=task_start parent=a3189cf768aa4e24964c16f0d50e3e66 task="same_stack_next"
+[INFO] [1791923332.751956063] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_send parent=a3189cf768aa4e24964c16f0d50e3e66 request="same_stack_next#0/attempt-2"
+[INFO] [1791923332.752830118] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_response parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 accepted=1 request="same_stack_next#0/attempt-2"
+[INFO] [1791923339.370008965] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=child_result parent=a3189cf768aa4e24964c16f0d50e3e66 child=76a38181a5a44644d3eec2514263bf12 status=4 error=0
+[INFO] [1791923339.372416460] [monitor_main_mock.mtc_mock_task]: MTC_TRACE event=task_result parent=a3189cf768aa4e24964c16f0d50e3e66 state=FINISHED error=0 completed=1
+[INFO] [1791923339.439892161] [rclcpp]: signal_handler(SIGINT/SIGTERM)

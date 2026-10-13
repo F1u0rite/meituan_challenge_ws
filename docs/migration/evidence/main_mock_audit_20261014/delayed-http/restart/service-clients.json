@@ -1,0 +1,60 @@
+[
+  {
+    "node": "mtc_chain_recorder",
+    "namespace": "/mtc_cpp_mock_observers",
+    "clients": []
+  },
+  {
+    "node": "mtc_mock_pick_place",
+    "namespace": "/monitor_main_mock",
+    "clients": []
+  },
+  {
+    "node": "mtc_mock_task",
+    "namespace": "/monitor_main_mock",
+    "clients": [
+      [
+        "/monitor_main_mock/manipulation/pick_place/_action/cancel_goal",
+        [
+          "action_msgs/srv/CancelGoal"
+        ]
+      ],
+      [
+        "/monitor_main_mock/manipulation/pick_place/_action/get_result",
+        [
+          "mtc_interfaces/action/PickPlace_GetResult"
+        ]
+      ],
+      [
+        "/monitor_main_mock/manipulation/pick_place/_action/send_goal",
+        [
+          "mtc_interfaces/action/PickPlace_SendGoal"
+        ]
+      ]
+    ]
+  },
+  {
+    "node": "mtc_web_console_313eeec6",
+    "namespace": "/monitor_main_mock",
+    "clients": [
+      [
+        "/monitor_main_mock/task/execute/_action/cancel_goal",
+        [
+          "action_msgs/srv/CancelGoal"
+        ]
+      ],
+      [
+        "/monitor_main_mock/task/execute/_action/get_result",
+        [
+          "mtc_interfaces/action/ExecuteTask_GetResult"
+        ]
+      ],
+      [
+        "/monitor_main_mock/task/execute/_action/send_goal",
+        [
+          "mtc_interfaces/action/ExecuteTask_SendGoal"
+        ]
+      ]
+    ]
+  }
+]

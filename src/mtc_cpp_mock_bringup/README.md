@@ -2,7 +2,7 @@
 
 本入口把实际 C++ `TaskServer`、C++ `PickPlaceServer` 与网页放在同一 ROS 2 命名空间。网页经 rclpy 发送 `ExecuteTask`；Task 经已有 C++ `rclcpp_action::Client<PickPlace>` 调用下游。不是 Python Action Server 或网页定时演示器。
 
-候选起点：`F1u0rite/meituan_challenge_ws@f7eaa2c0d2887aeada4fd635112c63c237962ff7`（2026-10-12 08:00 北京时间截止时的 main）。没有合入未合并的轨迹执行、视觉、标定或 Planning Scene 分支。本轮只增加启动、参数、只读观测、UUID 日志和 Web 接入；不改 FSM、ActionSlot、Cancel 判断或 Motion Execution 内核。正式项目 pin `1d940f7…` 不因本 PR 推进。
+历史候选起点（PR #8）：`F1u0rite/meituan_challenge_ws@f7eaa2c0d2887aeada4fd635112c63c237962ff7`（2026-10-12 08:00 北京时间截止时的 main）。没有合入未合并的轨迹执行、视觉、标定或 Planning Scene 分支。本轮只增加启动、参数、只读观测、UUID 日志和 Web 接入；不改 FSM、ActionSlot、Cancel 判断或 Motion Execution 内核。正式项目 pin `1d940f7…` 不因本 PR 推进。
 
 本候选与验收源版本、PR、日志索引的对应关系见 [本轮验收报告](https://github.com/AfonsoZhang/meituan-robotics-challenge-2026/blob/main/docs/cpp-mock-webui-acceptance.md)。报告在独立验收仓库归档，原始失败日志保留。
 
@@ -77,7 +77,7 @@ ros2 run mtc_cpp_mock_bringup mock_task --namespace /mtc_cpp_mock \
 
 网页 Cancel 只取消本会话拥有的 Goal UUID。刷新不会重新发 Goal；重启 Web 会话没有旧 Goal 的句柄，不能代替原会话取消或恢复任务。Cancel ACK 与最终 Result 分开显示；Task 只有收到关联 PickPlace 的实际终态才作原内核判定。`CANCELED/0` 为软件 Mock 取消完成；`ABORTED/520` 为取消证据不足，不能当作停稳。错误 230/520 后的 admission lock 不由网页清除；转交孙嘉明处理内核恢复契约。本工具不会自动重启服务来绕过锁。
 
-> 已知未通过：正常 Mock 配置下，浏览器可见 MOVE_PRE_ALIGN 后较晚取消会得到 ABORTED/520；及时 HTTP 取消有 CANCELED/0 正例。详见 [C1 最小复现和负责人交接](../../docs/migration/CPP_MOCK_WEBUI_REVIEW_20261012.md)。这限制了本轮取消完成结论，不能据此宣称完整通过。
+> 历史 C1：PR #8 候选中，正常 Mock 在 MOVE_PRE_ALIGN 后较晚取消曾返回 ABORTED/520，原始[失败与交接](../../docs/migration/CPP_MOCK_WEBUI_REVIEW_20261012.md)保留。PR #15 已随后合入 main；在固定 `80863656368e063d31cf236492d47780f4429126` 上，经实际 HTTP→C++ Task→PickPlace 链路，以 700 ms Mock 延时、MOVE_PRE_ALIGN 后等待约 400 ms 再取消，父子均得到 CANCELED/0，同一进程内下一任务及停止后重启任务成功。见[本次固定版本复验、核验脚本修复和冻结证据](../../docs/migration/MERGED_MAIN_MOCK_AUDIT_20261014.md)。这只关闭该软件 Mock 场景的 C1 缺口；缺停稳证据仍应 ABORTED/520、状态未知仍应 ABORTED/230，并保持 admission lock。HTTP 链路测试不代替浏览器渲染、完整 FSM/FJT 或实机验收。
 
 ## 日志与停止、重启
 

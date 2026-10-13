@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py", line 72, in <module>
+    main()
+  File "/review-fix/src/mtc_ros2_action_cpp/test/verify_results.py", line 55, in main
+    assert case.get("result") == "completed", key
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CoreErrorCodes.ValuesMatchFrozenInterfaceNumbers
