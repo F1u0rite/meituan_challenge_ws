@@ -1,0 +1,5 @@
+fatal: cannot change to '/unused/src/aubo_ros2_driver': No such file or directory
+fatal: cannot change to '/unused/src/aubo_ros2_driver/aubo_description': No such file or directory
+sha256sum: /unused/src/aubo_ros2_driver/aubo_description/urdf/xacro/inc/aubo.ros2_control.xacro: No such file or directory
+fatal: cannot change to '/unused': No such file or directory
+fatal: cannot change to '/unused': No such file or directory

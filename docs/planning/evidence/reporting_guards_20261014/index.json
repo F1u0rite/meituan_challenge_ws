@@ -1,0 +1,291 @@
+{
+  "source_sha": "b07ccc701eb451d3851c282096ce49ef8bd1eca0",
+  "created_at": "2026-10-13T21:21:22.399908+00:00",
+  "files": [
+    {
+      "path": "planning-default/SUMMARY.txt",
+      "sha256": "c66760beb8ccd71974bc5b0b75cedf176821827e9a26d5aba664bd71b45c45f0",
+      "bytes": 2145
+    },
+    {
+      "path": "planning-default/plan_fixed_pose.log",
+      "sha256": "4b2229357f74cf7bdd544124dde6712125c555bbceca8ec37033724093469273",
+      "bytes": 1605
+    },
+    {
+      "path": "planning-default/collision_probe.log",
+      "sha256": "4f9de83c8d8e7ae6317d80f9c84537c32e0098c6cd3bc39da750726fb25656f3",
+      "bytes": 4290
+    },
+    {
+      "path": "planning-default/tool_collision_probe.log",
+      "sha256": "fd3855f77a1c9ce856b879d234cfb084c02bf8a7461c570323622132072dd071",
+      "bytes": 1401
+    },
+    {
+      "path": "planning-default/plan_battery_sequence_v1.log",
+      "sha256": "c465a612610f59457a9272e4b0f5044140381ce94e634d2fa30e55803f6b3277",
+      "bytes": 1336
+    },
+    {
+      "path": "planning-default/plan_battery_sequence_v2.log",
+      "sha256": "1b4034b692c2ef3ac71f872a21252790b370d39c45a797d954ef4af27da2a20d",
+      "bytes": 3632
+    },
+    {
+      "path": "planning-default/move_group_launch_shutdown.txt",
+      "sha256": "b4750ff76de0c156d157bc459f07f18cfab19f8eb034b8198ed8fe58729346dd",
+      "bytes": 286
+    },
+    {
+      "path": "planning-default/control_launch_shutdown.txt",
+      "sha256": "b2c7f23cdc3916983c0606a3d0319cc343883b03e03df5695622d2b6581602ae",
+      "bytes": 59
+    },
+    {
+      "path": "planning-retained/SUMMARY.txt",
+      "sha256": "4c14b070750b55cc918d756ea846259d0768a4f95d15f566bde70028e7fd2a28",
+      "bytes": 2014
+    },
+    {
+      "path": "planning-retained/plan_fixed_pose.log",
+      "sha256": "bbf03ae83a987ab5030759f883e91314229af4c0e35a9ade61ee15c3d8790089",
+      "bytes": 1285
+    },
+    {
+      "path": "planning-retained/collision_probe.log",
+      "sha256": "2bb4201ba70e8477147370819dc07eb42561d44a7f8942955bad33fb360abcd8",
+      "bytes": 1399
+    },
+    {
+      "path": "planning-retained/tool_collision_probe.log",
+      "sha256": "6bca6aec15b47bc354321db49fb1ed2abbe3a225f54dd1a0740910c011d57d81",
+      "bytes": 1400
+    },
+    {
+      "path": "planning-retained/plan_battery_sequence_v1.log",
+      "sha256": "e510b96f1c6763474301f27a5817a2eb1f01f2872d00296ab595ec8649847e58",
+      "bytes": 1338
+    },
+    {
+      "path": "planning-retained/plan_battery_sequence_v2.log",
+      "sha256": "f665a9c163faa44f1abdcbc40387eb5c96f41d064f5d9b3fe9bc9c02c0451612",
+      "bytes": 1449
+    },
+    {
+      "path": "planning-retained/move_group_launch_shutdown.txt",
+      "sha256": "b2c7f23cdc3916983c0606a3d0319cc343883b03e03df5695622d2b6581602ae",
+      "bytes": 59
+    },
+    {
+      "path": "planning-retained/control_launch_shutdown.txt",
+      "sha256": "b2c7f23cdc3916983c0606a3d0319cc343883b03e03df5695622d2b6581602ae",
+      "bytes": 59
+    },
+    {
+      "path": "planning-repaired/SUMMARY.txt",
+      "sha256": "236e7d30bfbab359ced0b7738103d541f64bdbc6140d7a0962a120b1ee00edcf",
+      "bytes": 2403
+    },
+    {
+      "path": "planning-repaired/plan_fixed_pose.log",
+      "sha256": "0ee1f89b2a3d60baebc6b6a2141fa087cd8647b08a82ecc870282f7562191ca7",
+      "bytes": 1279
+    },
+    {
+      "path": "planning-repaired/collision_probe.log",
+      "sha256": "8f2719566340e4f1aafd16f0f67390534b81a8b636c0d0268eb8e9aaf4e64a60",
+      "bytes": 1389
+    },
+    {
+      "path": "planning-repaired/tool_collision_probe.log",
+      "sha256": "f4a3563e00bdd6d4ac58ac034e29d21ab136dd9384ca77f72801afb2ca8a1da3",
+      "bytes": 4374
+    },
+    {
+      "path": "planning-repaired/plan_battery_sequence_v1.log",
+      "sha256": "b4b28a03c9303e984072561ac074aa9ecba9df537abbc1e4de4660877829824d",
+      "bytes": 1328
+    },
+    {
+      "path": "planning-repaired/plan_battery_sequence_v2.log",
+      "sha256": "99245b851c70208c7c20e422d4330e67a46bf6715b4ddd04591cc543338c433c",
+      "bytes": 1440
+    },
+    {
+      "path": "planning-repaired/move_group_launch_shutdown.txt",
+      "sha256": "b2c7f23cdc3916983c0606a3d0319cc343883b03e03df5695622d2b6581602ae",
+      "bytes": 59
+    },
+    {
+      "path": "planning-repaired/control_launch_shutdown.txt",
+      "sha256": "b2c7f23cdc3916983c0606a3d0319cc343883b03e03df5695622d2b6581602ae",
+      "bytes": 59
+    },
+    {
+      "path": "overwrite-before/stderr.log",
+      "sha256": "1fd42ac0379746f2a10a9005ec55226c0ff22cc6a17264e524fc93fec129d788",
+      "bytes": 426
+    },
+    {
+      "path": "overwrite-before/stdout.log",
+      "sha256": "745433fdd9fb9544956c73326fbd65700920de9a8f35b99b23e996ec0bd21936",
+      "bytes": 304
+    },
+    {
+      "path": "overwrite-before/env.sh",
+      "sha256": "c43e7fb1659303989b52d55f912da1e7feffcc069872fc2b9f0105d7e9315bd7",
+      "bytes": 183
+    },
+    {
+      "path": "overwrite-before/run.sh",
+      "sha256": "aeaddffd76b54ba40fcfdf0adaac12cc557823aa0098582761594e61ffef96db",
+      "bytes": 11019
+    },
+    {
+      "path": "overwrite-before/old output/SUMMARY.txt",
+      "sha256": "745433fdd9fb9544956c73326fbd65700920de9a8f35b99b23e996ec0bd21936",
+      "bytes": 304
+    },
+    {
+      "path": "overwrite-after/stderr.log",
+      "sha256": "fc041e5ad5022d601848d2d5e8f05162c9092cd74217edd8ea6edd571170a17c",
+      "bytes": 186
+    },
+    {
+      "path": "overwrite-after/stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "overwrite-after/env.sh",
+      "sha256": "c43e7fb1659303989b52d55f912da1e7feffcc069872fc2b9f0105d7e9315bd7",
+      "bytes": 183
+    },
+    {
+      "path": "overwrite-after/run.sh",
+      "sha256": "f248ddf5ffd1bb33e9fd84fa9e8217004ad09697be2107f0e4b1bb5e4d8dd668",
+      "bytes": 10975
+    },
+    {
+      "path": "overwrite-after/old output/SUMMARY.txt",
+      "sha256": "15bca2464637b3b63bf80694fd66b00e9ed43d617a12b6d2611dfa7b88d490aa",
+      "bytes": 30
+    },
+    {
+      "path": "evidence-regression.json",
+      "sha256": "ad0d692b3cd698b53d97f7ca26d21d04d8385af4310a887bf5ff1474f783106b",
+      "bytes": 3121
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_ee_limited_retiming.gtest.xml",
+      "sha256": "0d96e25fe34858153b8e8fc0a5d1f0354114acf14d77cb4f62333db5b58002db",
+      "bytes": 1447
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_fsm_accepts_planner_output.gtest.xml",
+      "sha256": "491eba8fb0005c89e2ec1f9033194281f3a76affc3b2af4a897ef60196784f12",
+      "bytes": 1512
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_moveit_planner_port.gtest.xml",
+      "sha256": "d18d74aa40acf33984aadba1d7a701500267f3f68c0a0015e38267080da9ca59",
+      "bytes": 6782
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_planning_evidence.xunit.xml",
+      "sha256": "4172f3a90cfb2c581c5ca27ffaa8e813144780f0dc6aaff9fbf7554e3288987e",
+      "bytes": 1991
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_pose_math.gtest.xml",
+      "sha256": "decee3c6b091a5e84e650210a57399c34ed1f1a1d42b5e0ef0b3deae72075018",
+      "bytes": 1569
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_scene_ids.gtest.xml",
+      "sha256": "e4ab233f31e9b63a4d3c94e2fc360539176d51c223209e16b64c4a752996ac61",
+      "bytes": 1093
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_shutdown_evidence.xunit.xml",
+      "sha256": "2eaf6172559a47c5541dfc2963c11b5f519650618af17fa7d70a53b435171a8d",
+      "bytes": 968
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_start_consistency.gtest.xml",
+      "sha256": "da9b292ef98142f7fba84fda7af85727e91cca33cbcc2774f0149181c223f705",
+      "bytes": 1683
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_tool_model.gtest.xml",
+      "sha256": "43a1163581de2122ab63a25fc102bc2c4e91548972eaedce752b1ae028269a0d",
+      "bytes": 1648
+    },
+    {
+      "path": "test-results/mtc_moveit_planner/test_trajectory_conversion.gtest.xml",
+      "sha256": "50279db60b61717995181d442dcc684c9928c2e3952017ea1423a4cde33c48ca",
+      "bytes": 1439
+    },
+    {
+      "path": "logs/repair-build.log",
+      "sha256": "e1b930a28d06c089d95d4f2fe2fb74900660650c0d0e783902711ec0db825e27",
+      "bytes": 109
+    },
+    {
+      "path": "commands/repair-build.json",
+      "sha256": "3b44c1f30e53ac75364be368b163928c27bdc8fe4297a164e9ee2f4e48bea4bb",
+      "bytes": 1254
+    },
+    {
+      "path": "logs/repair-test.log",
+      "sha256": "3e2ec6a35c75cbf2becea0aa94cac53c5e0e5dae39a6d57a1f4d71c8260225ff",
+      "bytes": 1664
+    },
+    {
+      "path": "commands/repair-test.json",
+      "sha256": "0da3f1133f7c6f6d145738aeb253254a1cdeaa669867eb5443ccf86361c970d6",
+      "bytes": 1268
+    },
+    {
+      "path": "logs/evidence-regression.log",
+      "sha256": "a152dfe50031217a5e6c9ec6fbf7a7ab896574088e1415f08f963912f65c5ed3",
+      "bytes": 360
+    },
+    {
+      "path": "commands/evidence-regression.json",
+      "sha256": "dafd7328fde1727c2e646b5a8604cbf28bdbdea69b9d7c189bee3d91b9c34e98",
+      "bytes": 972
+    },
+    {
+      "path": "logs/planning-repaired.log",
+      "sha256": "236e7d30bfbab359ced0b7738103d541f64bdbc6140d7a0962a120b1ee00edcf",
+      "bytes": 2403
+    },
+    {
+      "path": "commands/planning-repaired.json",
+      "sha256": "2d0212450830fcee3c0dedfc84812e246e5855e206c1c9e66d7bab1bf64ce3e0",
+      "bytes": 1168
+    },
+    {
+      "path": "evidence_regression.py",
+      "sha256": "a2f8d186a33c940a0566178552f95a6c2a26aa36076910ffe6dc8b4a9bbeb92a",
+      "bytes": 2777
+    },
+    {
+      "path": "empty-domain-221.json",
+      "sha256": "47177a7f11eb60dae5301f6a3252d585a72cfdce2e65cd1ebdf93dc4a6a55e91",
+      "bytes": 35
+    },
+    {
+      "path": "empty-domain-222.json",
+      "sha256": "b1bc715a43ea5ec11c51edaae0fbee42fc17ac6e712c295102bde2d592de76ca",
+      "bytes": 29
+    },
+    {
+      "path": "inputs.json",
+      "sha256": "781588d7e097f5ee18e98a352bb284de48a9bcd5e0de0288e29c03a2bed13c64",
+      "bytes": 4998
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+[INFO] [launch]: All log files can be found below /review-evidence/roslogs/2026-10-13-21-13-49-480356-3a569817b73b-1137
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [plan_battery_sequence-1]: process started with pid [1140]
+[plan_battery_sequence-1] [INFO] [1791926029.745338814] [moveit_1342289898.moveit.ros.rdf_loader]: Loaded robot model in 0.0061183 seconds
+[plan_battery_sequence-1] [INFO] [1791926029.745601276] [moveit_1342289898.moveit.core.robot_model]: Loading robot model 'aubo_robot'...
+[plan_battery_sequence-1] [INFO] [1791926029.757242101] [moveit_1342289898.moveit.kinematics.kdl_kinematics_plugin]: Joint weights for group 'manipulator': 1 1 1 1 1 1
+[plan_battery_sequence-1] [INFO] [1791926029.941716789] [moveit_1342289898.moveit.ros.move_group_interface]: Ready to take commands for planning group manipulator.
+[plan_battery_sequence-1] [ERROR] [1791926030.474747109] [mtc_plan_battery_sequence]: failed to apply planning scene obstacles
+[ERROR] [plan_battery_sequence-1]: process has died [pid 1140, exit code 2, cmd '/candidate-install/mtc_moveit_planner/lib/mtc_moveit_planner/plan_battery_sequence --ros-args --params-file /tmp/launch_params_0svlsah_ --params-file /candidate-install/mtc_moveit_planner/share/mtc_moveit_planner/config/planner.yaml --params-file /tmp/launch_params_2vie3yfu'].

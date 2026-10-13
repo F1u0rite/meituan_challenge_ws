@@ -97,3 +97,12 @@ bash src/mtc_moveit_planner/scripts/run_planning_evidence.sh
 2. V1 TCP 按 CAD 估计，安装方向和贴合面待实测；V2 TCP 仍为单位变换（PLACEHOLDER）。
 3. `test_lift` / `retreat` 起点依赖对 ToolPort 动作的假设；执行端必须核对起点偏差。
 4. 只读 Fake 环境中验证；不调用 execute()，不发送 FollowJointTrajectory。
+
+
+### 规划验收摘要的证据门禁（2026-10-14）
+
+`run_planning_evidence.sh` 只接受**尚不存在的新输出目录**；重复路径（包括空目录、文件、符号链接）在加载 ROS 和写入日志前以 exit 2 拒绝，保留旧证据。普通正例要求工具报告 `PLAN OK` / `SEQUENCE PLAN OK`，且同一次 launch 的每个子进程都有对应 PID 的正常退出记录。
+
+初始化失败或没有结论行显示 `NO_PLANNING_RESULT`，不再误报目标已被接受。碰撞探针的 `PLAN FAILED [NO_PLAN]` 只说明观察到规划拒绝，不能区分 IK、起点、超时或碰撞原因；摘要明确标记 `collision cause UNVERIFIED`，整体验收保持非零。尚需由规划负责人补足独立的目标/工具碰撞归因证据；本次修复没有新增该证明，也没有改变任何规划、FSM、Action、Cancel 或 Motion 内核。原生 MoveIt 退出问题与显式插件保留诊断的边界保持不变。
+
+离线回归已注册为 `test_planning_evidence`（通过 `colcon test --packages-select mtc_moveit_planner` 执行），覆盖无结果、错误拒绝归因、成功后崩溃、PID不符、多个/冲突结论和旧输出保护。脚本及测试由 OpenAI Codex 协助编写，现有 MIT 许可声明不变。

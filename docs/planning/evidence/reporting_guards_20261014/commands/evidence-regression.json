@@ -1,0 +1,16 @@
+{
+  "name": "evidence-regression",
+  "started_at": "2026-10-13T21:17:09.065735+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-planner-shutdown-review-b07ccc7",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=221 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; python3 /review-tools/evidence_regression.py\n"
+  ],
+  "timeout_seconds": 30,
+  "pid": 79738,
+  "exit_code": 0,
+  "ended_at": "2026-10-13T21:17:09.985789+00:00"
+}

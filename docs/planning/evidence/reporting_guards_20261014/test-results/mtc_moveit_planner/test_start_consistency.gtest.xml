@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="5" failures="0" disabled="0" errors="0" time="0." timestamp="2026-10-13T21:16:56.732" name="AllTests">
+  <testsuite name="StartConsistency" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-13T21:16:56.732">
+    <testcase name="MatchesByNameNotIndex" file="/repair-source/src/mtc_moveit_planner/test/test_start_consistency.cpp" line="25" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.732" classname="mtc_moveit_planner.StartConsistency" />
+    <testcase name="DeviationAboveToleranceIsRejected" file="/repair-source/src/mtc_moveit_planner/test/test_start_consistency.cpp" line="35" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.732" classname="mtc_moveit_planner.StartConsistency" />
+    <testcase name="MissingJointNanAndEmptyTrajectoryAreRejected" file="/repair-source/src/mtc_moveit_planner/test/test_start_consistency.cpp" line="44" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.732" classname="mtc_moveit_planner.StartConsistency" />
+    <testcase name="DuplicateOrEmptyJointNamesAreRejected" file="/repair-source/src/mtc_moveit_planner/test/test_start_consistency.cpp" line="58" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.732" classname="mtc_moveit_planner.StartConsistency" />
+    <testcase name="EmptyJointSetsAreRejected" file="/repair-source/src/mtc_moveit_planner/test/test_start_consistency.cpp" line="91" status="run" result="completed" time="0." timestamp="2026-10-13T21:16:56.732" classname="mtc_moveit_planner.StartConsistency" />
+  </testsuite>
+</testsuites>

@@ -11,11 +11,16 @@
 set -uo pipefail
 set -m   # 每个后台 launch 自成进程组：PGID == $!，退出时只结束自己的进程组
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUT="${1:-${MTC_WS:-$HOME/meituan/meituan_challenge_ws}/docs/planning/evidence/$(date +%Y%m%d_%H%M%S)}"
+# The final directory must be new. Atomic mkdir also rejects files/symlinks and
+# competing collectors, before sourcing ROS or truncating any prior evidence.
+if ! mkdir -p -- "$(dirname -- "$OUT")" || ! mkdir -- "$OUT"; then
+  echo "ABORT: evidence output must be a new directory: $OUT" >&2
+  exit 2
+fi
+OUT="$(cd "$OUT" && pwd)"
 # shellcheck source=env.sh
 source "$SCRIPT_DIR/env.sh"
-OUT="${1:-$MTC_WS/docs/planning/evidence/$(date +%Y%m%d_%H%M%S)}"
-mkdir -p "$OUT"
-OUT="$(cd "$OUT" && pwd)"
 SUMMARY="$OUT/SUMMARY.txt"
 : > "$SUMMARY"
 note() { echo "$*" | tee -a "$SUMMARY"; }
@@ -145,11 +150,16 @@ ls "$OUT"/frames_*.pdf >/dev/null 2>&1 && note "PASS TF graph exported: $(basena
 run_tool() {
   local name="$1"; shift
   ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT" "$@" > "$OUT/$name.log" 2>&1
-  # ros2 launch 的返回码不反映节点结果，以工具自身的结论行为准。
-  if grep -qE "PLAN OK|SEQUENCE PLAN OK" "$OUT/$name.log"; then
-    note "PASS $name"
+  record_planning "$name"
+}
+record_planning() {
+  local name="$1" detail; shift
+  # Launch exit zero alone cannot prove the child succeeded. Initialization
+  # failures are not accepted/rejected goals, and NO_PLAN is not a collision ID.
+  if detail="$(python3 "$SCRIPT_DIR/check_planning_evidence.py" "$OUT/$name.log" "$@")"; then
+    note "PASS $name: $detail"
   else
-    note "FAIL $name: $(grep -oE "PLAN FAILED.*|SEQUENCE PLAN FAILED.*|\[(ACQUIRE|TRANSPORT)\] ok=false.*" "$OUT/$name.log" | head -2 | tr '\n' ' ')"
+    note "FAIL $name: $detail (see $name.log)"
   fi
 }
 # 场景 ID 隔离反证：先写入其他模块的同名对象与本模块遗留对象，再由规划工具 apply_scene。
@@ -161,24 +171,16 @@ else
   note "FAIL scene_isolation (see scene_isolation.log)"
 fi
 timeout 60 python3 "$SCRIPT_DIR/scene_isolation_probe.py" cleanup >> "$OUT/scene_isolation.log" 2>&1
-# 碰撞反证：目标在桌面内部，必须失败（失败 = PASS）。
+# 碰撞探针：记录规划结果；普通失败不足以证明由目标碰撞导致。
 ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/collision_probe" program:=plan_fixed_pose \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/collision_probe_override.yaml" \
   > "$OUT/collision_probe.log" 2>&1
-if grep -q "PLAN FAILED" "$OUT/collision_probe.log"; then
-  note "PASS collision_probe: goal inside table rejected ($(grep -oE 'PLAN FAILED \[[A-Z_]*\][^>]*' "$OUT/collision_probe.log" | head -1 | cut -c1-160))"
-else
-  note "FAIL collision_probe: goal inside table was NOT rejected"
-fi
-# 工具碰撞反证：法兰离桌面 9 cm、舌规会插入桌面；工具模型生效时必须失败（失败 = PASS）。
+record_planning collision_probe --collision-probe
+# 工具碰撞探针：独立的工具/桌面碰撞归因仍需补充，不能从 NO_PLAN 推断。
 ros2 launch mtc_moveit_planner plan_tool.launch.py output_dir:="$OUT/tool_collision_probe" program:=plan_fixed_pose \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/tool_collision_probe_override.yaml" \
   > "$OUT/tool_collision_probe.log" 2>&1
-if grep -q "PLAN FAILED" "$OUT/tool_collision_probe.log"; then
-  note "PASS tool_collision_probe: hook tool would enter the table and the goal was rejected"
-else
-  note "FAIL tool_collision_probe: goal accepted although the hook tool would enter the table"
-fi
+record_planning tool_collision_probe --collision-probe
 run_tool plan_battery_sequence_v1 program:=plan_battery_sequence
 run_tool plan_battery_sequence_v2 program:=plan_battery_sequence \
   extra_params_file:="$(ros2 pkg prefix mtc_moveit_planner)/share/mtc_moveit_planner/config/sequence_v2_override.yaml"

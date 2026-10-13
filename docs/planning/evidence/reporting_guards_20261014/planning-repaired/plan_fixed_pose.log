@@ -1,0 +1,9 @@
+[INFO] [launch]: All log files can be found below /review-evidence/roslogs/2026-10-13-21-18-00-711482-3a569817b73b-2387
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [plan_fixed_pose-1]: process started with pid [2390]
+[plan_fixed_pose-1] [INFO] [1791926280.970625007] [moveit_3407235150.moveit.ros.rdf_loader]: Loaded robot model in 0.00391272 seconds
+[plan_fixed_pose-1] [INFO] [1791926280.970817325] [moveit_3407235150.moveit.core.robot_model]: Loading robot model 'aubo_robot'...
+[plan_fixed_pose-1] [INFO] [1791926280.980296946] [moveit_3407235150.moveit.kinematics.kdl_kinematics_plugin]: Joint weights for group 'manipulator': 1 1 1 1 1 1
+[plan_fixed_pose-1] [INFO] [1791926283.584682762] [moveit_3407235150.moveit.ros.move_group_interface]: Ready to take commands for planning group manipulator.
+[plan_fixed_pose-1] [ERROR] [1791926284.108857149] [mtc_plan_fixed_pose]: failed to apply planning scene obstacles
+[ERROR] [plan_fixed_pose-1]: process has died [pid 2390, exit code 2, cmd '/repair-install/mtc_moveit_planner/lib/mtc_moveit_planner/plan_fixed_pose --ros-args --params-file /tmp/launch_params_qtuy5t28 --params-file /repair-install/mtc_moveit_planner/share/mtc_moveit_planner/config/planner.yaml --params-file /tmp/launch_params_rrx8800r'].

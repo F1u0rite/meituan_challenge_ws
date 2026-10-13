@@ -1,0 +1,1 @@
+{"passed": true, "actual_logs": 10, "overwrite_before_after": [{"case": "before", "exit_code": 1, "evidence_preserved": false, "after_sha256": "745433fdd9fb9544956c73326fbd65700920de9a8f35b99b23e996ec0bd21936"}, {"case": "after", "exit_code": 2, "evidence_preserved": true, "after_sha256": "15bca2464637b3b63bf80694fd66b00e9ed43d617a12b6d2611dfa7b88d490aa"}]}
