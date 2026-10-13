@@ -72,7 +72,10 @@ class TopBarPoseEstimation:
         inside=cv2.erode(mask.astype(np.uint8),np.ones((edge*2+1,edge*2+1),np.uint8)).astype(bool)
         usable=inside&(z>=self.config['min_depth_m'])&(z<=self.config['max_depth_m'])
         if usable.sum()<self.config['min_points']:out['reasons']=['INSUFFICIENT_CURRENT_DEPTH'];return out
-        v,u=np.where(usable);depth=z[v,u];med=np.median(depth);mad=np.median(abs(depth-med))
+        v,u=np.where(usable);depth=z[v,u];training_depth=depth[(u+v)%2==0]
+        if len(training_depth)<100:out['reasons']=['INSUFFICIENT_TRAIN_DEPTH'];return out
+        # Holdout depths must not choose the seed filtering statistics.
+        med=np.median(training_depth);mad=np.median(abs(training_depth-med))
         keep=abs(depth-med)<=max(self.config['depth_outlier_floor_m'],3*1.4826*mad)
         v,u=v[keep],u[keep];points=deproject_pixels(np.column_stack((u,v)),z[v,u],frame.intrinsics)
         train=(u+v)%2==0;indices=np.flatnonzero(train)
@@ -147,6 +150,39 @@ class TopBarPoseEstimation:
             # Pixel region is fixed by proposal geometry before holdout residual
             # tests. All eligible holdout pixels count, not just plane inliers.
             rv,ru=np.where((region>0)&silhouette.astype(bool));rv+=y0;ru+=x0
+            # Independent split fixed by image parity, before depth residuals.
+            tv,tu=rv[(ru+rv)%2==0],ru[(ru+rv)%2==0]
+            train_valid=(z[tv,tu]>=self.config['min_depth_m'])&(z[tv,tu]<=self.config['max_depth_m'])
+            tv,tu=tv[train_valid],tu[train_valid]
+            local_train=deproject_pixels(np.column_stack((tu,tv)),z[tv,tu],frame.intrinsics) if len(tv) else np.empty((0,3))
+            fitted=fit_plane_ransac(local_train,threshold_m=self.config['max_plane_residual_m'],min_inliers=60) if len(local_train)>=60 else None
+            if fitted is None:
+                record['reasons'].append('INSUFFICIENT_LOCAL_TRAIN_PLANE');continue
+            seed_normal=n.copy()
+            origin=np.asarray(fitted['point_camera_m']);n=np.asarray(fitted['normal_camera_xyz'])
+            if n@origin>0:n=-n
+            # Reproject unchanged observed corners onto the refitted plane.
+            rays=deproject_pixels(poly,np.ones(4),frame.intrinsics)
+            denom=rays@n
+            if np.any(abs(denom)<1e-6):
+                record['reasons'].append('INVALID_TOP_PROJECTION');continue
+            corners=rays*((origin@n)/denom)[:,None]
+            if np.any(corners[:,2]<=0):
+                record['reasons'].append('INVALID_TOP_PROJECTION');continue
+            center=corners.mean(0)
+            sides=np.roll(corners,-1,axis=0)-corners
+            lengths=np.linalg.norm(sides,axis=1)
+            span=np.sort(np.array([(lengths[0]+lengths[2])/2,(lengths[1]+lengths[3])/2]))[::-1]
+            if not np.all(abs(span-nominal)<=np.maximum(.003,nominal*.10)):
+                record['reasons'].append('NOT_MEASURED_TOP_CAP_DIMENSIONS_AFTER_LOCAL_REFIT');continue
+            expected=np.array([nominal[0],nominal[1],nominal[0],nominal[1]]) if lengths[0]>lengths[1] else np.array([nominal[1],nominal[0],nominal[1],nominal[0]])
+            if np.any(abs(lengths-expected)>np.maximum(.003,expected*.10)):
+                record['reasons'].append('NOT_MEASURED_TOP_CAP_DIMENSIONS_AFTER_LOCAL_REFIT');continue
+            long=sides[int(np.argmax(lengths))];long/=np.linalg.norm(long)
+            record.update(local_train_points=len(local_train),local_train_inliers=fitted['inlier_count'],
+                local_refit_normal_change_deg=float(np.degrees(np.arccos(np.clip(seed_normal@n,-1,1)))),
+                span_m=span.tolist(),validation_population='ALL_VALID_ODD_PIXELS_IN_UNCHANGED_PROPOSAL',
+                refit_corner_camera_m=corners.tolist())
             hold=(ru+rv)%2==1;rv,ru=rv[hold],ru[hold]
             all_count=len(rv);valid=(z[rv,ru]>=self.config['min_depth_m'])&(z[rv,ru]<=self.config['max_depth_m'])
             valid_ratio=float(valid.sum()/max(all_count,1));rv,ru=rv[valid],ru[valid]

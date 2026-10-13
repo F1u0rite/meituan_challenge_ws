@@ -91,9 +91,51 @@ def test_layout_is_observed_only_without_color_slot_order():
     assert not out['motion_usable']
 
 
-def test_multiple_supported_plane_orientations_are_not_chosen_arbitrarily():
+def test_seed_normal_ambiguity_is_resolved_only_with_full_local_evidence():
+    # The analytic cap has one true normal. Old seed windows differed by 6 deg;
+    # refitting the same observed cap must agree with the known normal.
     f,mask=rendered(33.);p=SimplifiedPerception();top=TopBarPoseEstimation(p.config,geometry())
     out=top.estimate(f,mask,True)
-    assert any(not c['reasons'] for c in out['candidates'])
+    normal=np.array([0,-np.sin(np.deg2rad(33)),-np.cos(np.deg2rad(33))])
+    assert out['top_geometry_valid']
+    assert np.degrees(np.arccos(np.clip(np.dot(out['top_normal_candidate'],normal),-1,1)))<2
+    assert not out['body_pose_valid'] and not out['ring_pose_valid']
+
+
+@pytest.mark.parametrize('theta_deg',[33.,40.,50.,60.])
+def test_independent_holdout_depth_corruption_rejected(theta_deg):
+    f,mask=rendered(theta_deg);p=SimplifiedPerception();top=TopBarPoseEstimation(p.config,geometry())
+    yy,xx=np.indices(mask.shape);odd=mask&((xx+yy)%2==1)
+    f.aligned_depth[odd]+=12
+    result=top.estimate(f,mask,True)
+    assert not result['top_geometry_valid']
+
+
+@pytest.mark.parametrize('fault',['all_zero','constant_surface','wrong_pair','half_mask','wrong_cad'])
+def test_contradictory_geometry_never_valid(fault):
+    f,mask=rendered(50.);p=SimplifiedPerception();g=geometry();qualified=True
+    if fault=='all_zero':f.aligned_depth[:]=0
+    if fault=='constant_surface':f.aligned_depth[mask]=400
+    if fault=='wrong_pair':qualified=False
+    if fault=='half_mask':mask[:,:320]=False
+    if fault=='wrong_cad':g['battery']['planar_faces'][0]['bbox_mm']=[-45,-11,-30,45,11,-30];g['battery']['planar_faces'][0]['area_mm2']=1980
+    result=TopBarPoseEstimation(p.config,g).estimate(f,mask,qualified)
+    assert not result['top_geometry_valid']
+
+
+def test_two_distinct_observed_planes_are_not_a_unique_top():
+    f1,m1=rendered(40.);f2,m2=rendered(60.)
+    f1.color_bgr=np.roll(f1.color_bgr,-110,axis=1)
+    f1.aligned_depth=np.roll(f1.aligned_depth,-110,axis=1);m1=np.roll(m1,-110,axis=1)
+    f2.color_bgr=np.roll(f2.color_bgr,110,axis=1)
+    f2.aligned_depth=np.roll(f2.aligned_depth,110,axis=1);m2=np.roll(m2,110,axis=1)
+    f1.color_bgr[m2]=f2.color_bgr[m2];f1.aligned_depth[m2]=f2.aligned_depth[m2]
+    p=SimplifiedPerception();out=TopBarPoseEstimation(p.config,geometry()).estimate(f1,m1|m2,True)
     assert not out['top_geometry_valid'] and out['ring_center_candidate'] is None
-    assert out['reasons']==['NO_UNIQUE_OBSERVED_TOP_CAP']
+
+
+def test_missing_training_depth_does_not_use_holdout_for_fit():
+    f,mask=rendered(50.);yy,xx=np.indices(mask.shape);f.aligned_depth[(xx+yy)%2==0]=0
+    p=SimplifiedPerception();out=TopBarPoseEstimation(p.config,geometry()).estimate(f,mask,True)
+    assert out['reasons']==['INSUFFICIENT_TRAIN_DEPTH']
+    assert not out['top_geometry_valid']

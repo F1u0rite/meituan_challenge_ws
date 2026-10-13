@@ -140,3 +140,23 @@ To retain V4.5-B/C geometry on this branch, set `enable_top_cad: false` in
 `--perception-pipeline legacy` in the existing native entry. The original V4.5-B
 branch/commit remains available; the four V4.5-C diagnostic lines are preserved
 in this delivery. No reset, merge or push is required for comparison.
+
+
+### V4.5-E local plane consistency
+
+Seed windows and the global residual band propose an observed pixel rectangle;
+they do not supply the final normal. The final plane is robustly refit using
+range-valid even-parity pixels inside that unchanged automatic rectangle and
+current object mask. Seed depth median/MAD statistics also use training pixels
+only. Odd-parity pixels are held out before fitting: all range-valid holdout
+pixels count, including non-inliers, with the existing 70% support and 3 mm P95
+requirements. The holdout area is not eroded, cropped to inliers, or selected by
+residual. Adjacent pixels share sensor correlations; this split is independent
+of fitting membership, not proof of statistical independence or true accuracy.
+
+Observed corner rays are intersected with the refitted plane. All four measured
+sides must still match the CAD 66 x 22 mm cap with the existing dimensional
+tolerances; RGB boundaries, depth coverage, object extremality and uniqueness
+remain required. Diagnostics expose local training count, inlier count, normal
+change and holdout population. No temporal state, fixed camera ROI, pose validity
+or execution authorization is added. Ring centers remain CAD-derived candidates.
