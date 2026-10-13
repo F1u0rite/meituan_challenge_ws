@@ -1,0 +1,44 @@
+{
+  "mtc_vision_adapter.automatic_top_result_publisher": {
+    "path": "/fix-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/automatic_top_result_publisher.py",
+    "sha256": "8ba7e32aecc66268268fe600404f7050e701417649ae472a4f57f01a2f2ab199"
+  },
+  "mtc_vision_adapter.rgb_image_publisher": {
+    "path": "/fix-install/mtc_vision_adapter/lib/python3.12/site-packages/mtc_vision_adapter/rgb_image_publisher.py",
+    "sha256": "0447bdf314bfdaee4f8110354bf5e30ed9d82ee12ff18e2255c0bbced5653340"
+  },
+  "mtc_interfaces": {
+    "path": "/candidate-install/mtc_interfaces/lib/python3.12/site-packages/mtc_interfaces/__init__.py",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "perception.height_constraint": {
+    "path": "/candidate/vision_core/perception/height_constraint.py",
+    "sha256": "d9aa181a68f835a0c8cdf175f1f7f9e7ee168f315b3df70aa5b7446c830e4f4c"
+  },
+  "rclpy": {
+    "path": "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py",
+    "sha256": "15b5665a97a688645545e704a6111a5be5f5b2d147cfcf099e2f92aabcbdf00f"
+  },
+  "pytest": {
+    "path": "/review-venv/lib/python3.12/site-packages/pytest/__init__.py",
+    "sha256": "8e6ea1d1910225d0d7957d22e45db498ddf2a55fbe4fba2c9ad307cf3cd8f2e8"
+  },
+  "cv2": {
+    "path": "/review-venv/lib/python3.12/site-packages/cv2/__init__.py",
+    "sha256": "d6d44be0f0f981cc057abc0c152377b496edb478d1fa6355ce035f711dc94b25"
+  },
+  "numpy": {
+    "path": "/usr/lib/python3/dist-packages/numpy/__init__.py",
+    "sha256": "22cd1535fa14d74ef6f457cca149ffdc80875f460be313b8f895273f78bc402e"
+  },
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "versions": {
+    "numpy": "1.26.4",
+    "scipy": "1.11.4",
+    "matplotlib": "3.8.4",
+    "pytest": "8.3.5",
+    "setuptools": "68.1.2",
+    "PyYAML": "6.0.2",
+    "opencv-python": "4.8.1.78"
+  }
+}

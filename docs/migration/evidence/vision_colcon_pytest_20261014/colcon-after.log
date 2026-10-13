@@ -1,0 +1,24 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.6.0
+cachedir: /fix-build/mtc_vision_adapter/.pytest_cache
+rootdir: /candidate/src/mtc_vision_adapter
+plugins: ament-xmllint-0.17.5, ament-pep257-0.17.5, ament-lint-0.17.5, launch-testing-ros-0.26.12, ament-copyright-0.17.5, launch-testing-3.4.11, ament-flake8-0.17.5, typeguard-4.1.5, colcon-core-0.21.3
+collected 159 items
+
+test/test_automatic_top_coordinates.py ............                      [  7%]
+test/test_live_bridge_process.py .                                       [  8%]
+test/test_live_protocol.py ............................................. [ 36%]
+.........                                                                [ 42%]
+test/test_live_transport.py ..                                           [ 43%]
+test/test_motion_safety.py ............................................. [ 71%]
+                                                                         [ 71%]
+test/test_motion_tf_buffer.py ...                                        [ 73%]
+test/test_native_detection_semantics.py ............                     [ 81%]
+test/test_native_result_publisher.py ...........                         [ 88%]
+test/test_native_rgbd.py ....                                            [ 90%]
+test/test_publisher_cleanup.py .....                                     [ 93%]
+test/test_replay_process.py ....                                         [ 96%]
+test/test_rgb_image_publisher.py ......                                  [100%]
+
+--------- generated xml file: /fix-build/mtc_vision_adapter/pytest.xml ---------
+============================= 159 passed in 21.26s =============================
