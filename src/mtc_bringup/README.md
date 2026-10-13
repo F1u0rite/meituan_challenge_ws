@@ -11,7 +11,7 @@
 | 路径 | 作用 |
 | --- | --- |
 | `launch/mock_bringup.launch.py` | 离线 Mock 组合启动；打印“Mock 模式，未连接真实 AUBO S3”告警 |
-| `launch/sim_bringup.launch.py` | 仿真组合**骨架**，标注 `NOT RUN`（缺 ROS 2 Jazzy / Gazebo） |
+| `launch/sim_bringup.launch.py` | V1 Gazebo 仿真入口，需构建 `mtc_simulation`，见该包 README |
 | `launch/real_bringup.launch.py` | 真实组合入口；除 `i_understand_real_robot_is_enabled:=true` 外一律拒绝启动，且**即使确认也不连接设备** |
 | `mtc_bringup/config_loader.py` | **纯 Python、不 import rclpy** 的配置加载与校验器 |
 | `mtc_bringup/validate_config.py` | 配置校验 CLI（退出码 0 通过 / 1 失败） |

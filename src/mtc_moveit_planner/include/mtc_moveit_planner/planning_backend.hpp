@@ -103,6 +103,9 @@ struct BackendRequest
   bool prefer_straight_line = false;
   /// 额外关节位置约束（rad）：作为 MoveIt 路径约束下发，使解落在控制器限位内。
   std::map<std::string, std::pair<double, double>> joint_bounds;
+  /// FREE_SPACE 的目标构型限制；不限制起点或中途构型。空表示不限。
+  /// 用于空载时回到后续笛卡尔运动所需的解支，不能扩大模型/控制器限位。
+  std::map<std::string, std::pair<double, double>> goal_joint_bounds;
 };
 
 struct BackendResult

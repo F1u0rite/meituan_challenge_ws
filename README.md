@@ -9,12 +9,19 @@
 **独立 ROS 2 Jazzy 驱动与 MoveIt 2 Mock 验证已完成；完整 FSM + MoveIt 2 集成仍在进行。**
 **Phase 2A C++ ROS 2 Action 已完成离线 Mock 验证，并合入 `main`（交接基线 `c0f7017`）。**
 Action 外壳复用现有 FSM；
-MoveIt 2 C++ Planner Adapter、FollowJointTrajectory 与 ros2_control Mock Hardware
-抓放闭环尚未完成。独立 Mock 成功不代表已完成这些集成，也不代表
+外层 ROS Action 与 MoveIt 2 C++ Planner Adapter、FollowJointTrajectory 之间的统一接线
+尚需验收。独立 Mock 成功不代表已完成这些集成，也不代表
 AUBO S3 实机抓放验收通过。
 
 开发环境：Ubuntu 24.04、ROS 2 Jazzy、C++17。当前只允许 Mock / Fake / 离线开发；
 构建和测试不授权连接控制柜、调用真实 RPC/RTDE、发送实机轨迹或触发实体工具 IO。
+
+本分支增加 [V1 Gazebo Harmonic 仿真](src/mtc_simulation/README.md)：保留原始电池 CAD、
+基础/顺序任务底图与点位，直接运行 C++ `PickPlaceFsm → MoveIt → FollowJointTrajectory →
+gz_ros2_control`。电池由舌规与把手的物理接触承托；输入位姿使用 Gazebo 真值。
+运行命令见该包说明，验证范围、证据与实机交接见 [V1 仿真报告](docs/simulation/V1_SIMULATION_REPORT.md)。
+外层 ROS Task/PickPlace Action 接线、真实视觉与实机标定
+仍需单独验收；这条仿真链路不替代它们。
 
 ## 1. 从这里开始
 
@@ -179,14 +186,16 @@ meituan_challenge_ws/
 │   ├── mtc_interfaces/          # 既有Action/Message/Service契约
 │   ├── mtc_task/、mtc_manipulation/、mtc_motion_execution/
 │   ├── mtc_tool/、mtc_safety/、mtc_aubo_bridge/、mtc_bringup/
-│   └── mtc_description/、mtc_motion_planning/、mtc_simulation/
+│   ├── mtc_moveit_planner/、mtc_trajectory_execution_cpp/
+│   ├── mtc_simulation/           # V1 物理场景、执行及独立验收
+│   └── mtc_description/、mtc_motion_planning/ # 保留入口
 ├── config/、scripts/、tests/
 ├── docs/                        # 架构、参考、迁移及验收证据
 └── build/、install/、log/        # 本地生成产物，不提交Git
 ```
 
-当前 `colcon list` 注册13个包；description/planning/simulation目录为保留入口，
-不计入该13包构建结果。官方驱动参考工作空间 `/home/aaet/aubo_driver_validation_ws`
+当前 `colcon list` 注册16个包；上文13包结果是 Phase 2A 的历史验收范围。
+description/planning 目录仍为保留入口。官方驱动参考工作空间 `/home/aaet/aubo_driver_validation_ws`
 已有独立的 Jazzy Mock Hardware / FollowJointTrajectory / MoveIt 验证记录，
 只读参考；这不等于本仓库的新 C++ FSM 已完成同一集成。
 
