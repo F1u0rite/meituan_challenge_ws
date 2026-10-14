@@ -1,0 +1,16 @@
+{
+  "name": "build",
+  "started_at": "2026-10-14T03:04:01.243751+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-aubo-fake-review-05a4ca9",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=232 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; mkdir -p /offline-json\nsha256sum /offline-inputs/nlohmann-json3-dev.deb\ndpkg-deb -x /offline-inputs/nlohmann-json3-dev.deb /offline-json\ncolcon --log-base /review-evidence/build-log build --build-base /candidate-build --install-base /candidate-install --packages-up-to mtc_aubo_fake_integration_cpp mtc_ros2_action_cpp --executor sequential --cmake-args -DCMAKE_PREFIX_PATH=/offline-json/usr\n"
+  ],
+  "timeout_seconds": 480,
+  "pid": 27153,
+  "exit_code": 0,
+  "ended_at": "2026-10-14T03:04:53.021353+00:00"
+}

@@ -1,0 +1,22 @@
+package format parse PASS; single rosdep key substitution only
+Starting >>> mtc_aubo_fake_integration_cpp
+[0.240s] WARNING:colcon.colcon_core.shell:The following packages are in the workspace but haven't been built:
+- mtc_trajectory_execution_cpp
+They are being used from the following locations instead:
+- /candidate-install/mtc_trajectory_execution_cpp
+To suppress this warning ignore these packages in the workspace:
+--packages-ignore mtc_trajectory_execution_cpp
+Finished <<< mtc_aubo_fake_integration_cpp [38.7s]
+
+Summary: 1 package finished [38.8s]
+Starting >>> mtc_aubo_fake_integration_cpp
+[0.289s] WARNING:colcon.colcon_core.shell:The following packages are in the workspace but haven't been built:
+- mtc_trajectory_execution_cpp
+They are being used from the following locations instead:
+- /candidate-install/mtc_trajectory_execution_cpp
+To suppress this warning ignore these packages in the workspace:
+--packages-ignore mtc_trajectory_execution_cpp
+Finished <<< mtc_aubo_fake_integration_cpp [27.7s]
+
+Summary: 1 package finished [27.9s]
+DEPENDENCY FIX 22 CASES PASS

@@ -1,0 +1,13 @@
+# AUBO Fake JSON dependency declaration repair (2026-10-14)
+
+A clean Noble/Jazzy environment cannot resolve the new package's `nlohmann_json` rosdep key. The fixed runner also lacks the JSON development package and stops at `find_package(nlohmann_json)`. This repair changes only the package manifest dependency to `nlohmann-json-dev`; CMake continues to use `nlohmann_json` and `nlohmann_json::nlohmann_json`.
+
+Validated source base: `05a4ca9fedc81eff3dbdcd3033b9198df6400adb` (`feature/pr14-aubo-fake-fjt`); repair code commit: `d68a69162aef8e52bab9d13c77b58a1c0abb7ee4`. The [official ROS dependency definition](https://github.com/ros/rosdistro/blob/555721de97bcb40ff12a370cfcd7b32941592b86/rosdep/base.yaml) maps the corrected key to Ubuntu `nlohmann-json3-dev`. The offline Jazzy cache independently resolves it to the same package. The initial exploratory check of the literal apt package name as a rosdep key also failed; it was never applied to source.
+
+The Ubuntu archive JSON 3.11.3-1 package was downloaded on the host, verified against cached APT SHA-256, then copied and extracted in the isolated container. No container network, devices, host mounts or ports; 2 CPU/4 GiB, cap-drop ALL and no-new-privileges. Runtime dependencies used the existing exact-SHA overlay. A first fresh-build validation omitted the explicitly required sibling `test/fake_controller.hpp`; its failure is retained. A fresh second validation restored that exact upstream source layout, built successfully and passed all **22** package cases. No upstream C++ or test implementation changed.
+
+The unmodified base was separately built as 9 packages and passed **553** independent C++ cases across **33** registered binaries, plus 5 planner Python tests. The native entrypoint was also exercised: functional 6/9 PASS; plan, mismatch and silence FAIL. All 9 runs retain `move_group` exit -11, so teardown and overall FAIL. Authority-loss/STOP_UNKNOWN and MoveIt lifetime work remain with their owners. This dependency repair does not claim to fix those failures, complete Task/PickPlace FSM, Gazebo or hardware acceptance.
+
+Commands, original failures, raw regression outputs and XML are in [frozen evidence](evidence/aubo_fake_json_rosdep_20261014/index.json), index SHA-256 `09b40d6aaee927a6db9daf9caae29f1d160e5e033cfba21cff586c5598625313`. The manifest change is a build metadata correction; ordinary installation still requires installing the resolved dependency. Review only; no main push, automatic merge or baseline advancement.
+
+OpenAI Codex assisted with reproduction, this minimal manifest edit, verification and provenance. Original upstream licensing is unchanged.

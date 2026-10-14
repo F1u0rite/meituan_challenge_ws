@@ -1,0 +1,54 @@
+85e4e95dc4bdc6034d593e1933ee88e085319fee36cae83c178e8ddc1a66e8fd  /offline-inputs/nlohmann-json3-dev.deb
+Starting >>> mtc_core_cpp
+--- stderr: mtc_core_cpp
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_PREFIX_PATH
+
+
+---
+Finished <<< mtc_core_cpp [0.95s]
+Starting >>> mtc_interfaces
+Finished <<< mtc_interfaces [3.98s]
+Starting >>> mtc_motion_execution_cpp
+--- stderr: mtc_motion_execution_cpp
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_PREFIX_PATH
+
+
+---
+Finished <<< mtc_motion_execution_cpp [0.79s]
+Starting >>> mtc_task_cpp
+Finished <<< mtc_task_cpp [0.78s]
+--- stderr: mtc_task_cpp
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_PREFIX_PATH
+
+
+---
+Starting >>> mtc_manipulation_cpp
+--- stderr: mtc_manipulation_cpp
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_PREFIX_PATH
+
+
+---
+Finished <<< mtc_manipulation_cpp [0.91s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [2.92s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [3.93s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_trajectory_execution_cpp [1.33s]
+Starting >>> mtc_aubo_fake_integration_cpp
+Finished <<< mtc_aubo_fake_integration_cpp [33.7s]
+
+Summary: 9 packages finished [49.6s]
+  4 packages had stderr output: mtc_core_cpp mtc_manipulation_cpp mtc_motion_execution_cpp mtc_task_cpp

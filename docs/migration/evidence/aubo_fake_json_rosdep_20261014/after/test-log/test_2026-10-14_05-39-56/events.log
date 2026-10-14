@@ -1,0 +1,391 @@
+[0.000000] (-) TimerEvent: {}
+[0.000103] (mtc_aubo_fake_integration_cpp) JobQueued: {'identifier': 'mtc_aubo_fake_integration_cpp', 'dependencies': OrderedDict({'mtc_trajectory_execution_cpp': '/fix-install-v2/mtc_trajectory_execution_cpp', 'mtc_aubo_fake_integration_cpp': '/fix-install-v2/mtc_aubo_fake_integration_cpp'})}
+[0.000640] (mtc_aubo_fake_integration_cpp) JobStarted: {'identifier': 'mtc_aubo_fake_integration_cpp'}
+[0.041426] (mtc_aubo_fake_integration_cpp) Command: {'cmd': ['/usr/bin/ctest', '-C', 'Release', '-D', 'ExperimentalTest', '--no-compress-output', '-V', '--force-new-ctest-process'], 'cwd': '/fix-build-v2/mtc_aubo_fake_integration_cpp', 'env': OrderedDict({'GZ_CONFIG_PATH': '/opt/ros/jazzy/opt/sdformat_vendor/share/gz', 'HOSTNAME': '2680a2d061b8', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib:/candidate-install/mtc_aubo_fake_integration_cpp/lib:/candidate-install/mtc_trajectory_execution_cpp/lib:/candidate-install/mtc_ros2_action_cpp/lib:/candidate-install/mtc_task_cpp/lib:/candidate-install/mtc_moveit_planner/lib:/candidate-install/mtc_manipulation_cpp/lib:/candidate-install/mtc_motion_execution_cpp/lib:/candidate-install/mtc_interfaces/lib:/candidate-install/mtc_core_cpp/lib:/driver_work/install/aubo_ros2_driver/lib:/driver_work/install/aubo_msgs/lib:/driver_work/install/aubo_dashboard_msgs/lib:/opt/ros/jazzy/opt/sdformat_vendor/lib:/opt/ros/jazzy/opt/rviz_ogre_vendor/lib:/opt/ros/jazzy/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_math_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_tools_vendor/lib:/opt/ros/jazzy/opt/gz_cmake_vendor/lib:/opt/ros/jazzy/lib', 'HOME': '/root', 'GIT_CONFIG_COUNT': '1', 'OLDPWD': '/', 'ROS_PYTHON_VERSION': '3', 'ROS_LOG_DIR': '/review-evidence/roslogs', 'COLCON_PREFIX_PATH': '/fix-install-v2:/candidate-install:/driver_work/install', 'ROS_DISTRO': 'jazzy', 'PYTHONDONTWRITEBYTECODE': '1', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'GIT_CONFIG_VALUE_0': '/candidate', 'PATH': '/opt/ros/jazzy/opt/gz_tools_vendor/bin:/opt/ros/jazzy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'LANG': 'C.UTF-8', 'RMW_IMPLEMENTATION': 'rmw_fastrtps_cpp', 'XML_CATALOG_FILES': '/acceptance-tools/offline-schema/catalog.xml', 'ROS_DOMAIN_ID': '232', 'AMENT_PREFIX_PATH': '/fix-install-v2/mtc_aubo_fake_integration_cpp:/candidate-install/mtc_aubo_fake_integration_cpp:/candidate-install/mtc_trajectory_execution_cpp:/candidate-install/mtc_tool:/candidate-install/mtc_ros2_action_cpp:/candidate-install/mtc_task_cpp:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_moveit_planner:/candidate-install/mtc_manipulation_cpp:/candidate-install/mtc_motion_execution_cpp:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/candidate-install/mtc_interfaces:/candidate-install/mtc_core_cpp:/driver_work/install/aubo_ros2_driver:/driver_work/install/aubo_msgs:/driver_work/install/aubo_moveit_config:/driver_work/install/aubo_description:/driver_work/install/aubo_dashboard_msgs:/opt/ros/jazzy', 'GIT_CONFIG_KEY_0': 'safe.directory', 'ROS_AUTOMATIC_DISCOVERY_RANGE': 'LOCALHOST', 'PWD': '/fix-build-v2/mtc_aubo_fake_integration_cpp', 'LC_ALL': 'C.UTF-8', 'PYTHONPATH': '/candidate-install/mtc_tool/lib/python3.12/site-packages:/candidate-install/mtc_task/lib/python3.12/site-packages:/candidate-install/mtc_safety/lib/python3.12/site-packages:/candidate-install/mtc_motion_execution/lib/python3.12/site-packages:/candidate-install/mtc_manipulation/lib/python3.12/site-packages:/candidate-install/mtc_aubo_bridge/lib/python3.12/site-packages:/candidate-install/mtc_interfaces/lib/python3.12/site-packages:/driver_work/install/aubo_ros2_driver/lib/python3.12/site-packages:/driver_work/install/aubo_msgs/lib/python3.12/site-packages:/driver_work/install/aubo_dashboard_msgs/lib/python3.12/site-packages:/opt/ros/jazzy/opt/sdformat_vendor/lib/python:/opt/ros/jazzy/opt/gz_math_vendor/lib/python:/opt/ros/jazzy/lib/python3.12/site-packages', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/fix-install-v2/mtc_aubo_fake_integration_cpp:/candidate-install/mtc_aubo_fake_integration_cpp:/candidate-install/mtc_trajectory_execution_cpp:/candidate-install/mtc_ros2_action_cpp:/candidate-install/mtc_task_cpp:/candidate-install/mtc_moveit_planner:/candidate-install/mtc_manipulation_cpp:/candidate-install/mtc_motion_execution_cpp:/candidate-install/mtc_interfaces:/candidate-install/mtc_core_cpp:/driver_work/install/aubo_ros2_driver:/driver_work/install/aubo_msgs:/driver_work/install/aubo_moveit_config:/driver_work/install/aubo_description:/driver_work/install/aubo_dashboard_msgs:/opt/ros/jazzy/opt/sdformat_vendor:/opt/ros/jazzy/opt/gz_math_vendor:/opt/ros/jazzy/opt/gz_utils_vendor:/opt/ros/jazzy/opt/gz_tools_vendor:/opt/ros/jazzy/opt/gz_cmake_vendor'}), 'shell': False}
+[0.056291] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'UpdateCTestConfiguration  from :/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini\n'}
+[0.056767] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Parse Config file:/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini\n'}
+[0.057325] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'   Site: 2680a2d061b8\n'}
+[0.057728] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'   Build name: (empty)\n'}
+[0.057797] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b' Add coverage exclude regular expressions.\n'}
+[0.057860] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Create new tag: 20261014-0539 - Experimental\n'}
+[0.057901] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'UpdateCTestConfiguration  from :/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini\n'}
+[0.057938] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Parse Config file:/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini\n'}
+[0.057974] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Test project /fix-build-v2/mtc_aubo_fake_integration_cpp\n'}
+[0.058010] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Constructing a list of tests\n'}
+[0.058045] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Done constructing a list of tests\n'}
+[0.058116] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Updating test list for fixtures\n'}
+[0.058154] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Added 0 tests to meet fixture requirements\n'}
+[0.058191] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Checking test dependency graph...\n'}
+[0.058226] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Checking test dependency graph end\n'}
+[0.058260] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'test 1\n'}
+[0.058295] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'    Start 1: test_aubo_command\n'}
+[0.058330] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'\n'}
+[0.058365] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml" "--package-name" "mtc_aubo_fake_integration_cpp" "--output-file" "/fix-build-v2/mtc_aubo_fake_integration_cpp/ament_cmake_gtest/test_aubo_command.txt" "--command" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_command" "--gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml"\n'}
+[0.058409] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: Working Directory: /fix-build-v2/mtc_aubo_fake_integration_cpp\n'}
+[0.058448] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: Test timeout computed to be: 30\n'}
+[0.099760] (-) TimerEvent: {}
+[0.122053] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"1: -- run_test.py: invoking following command in '/fix-build-v2/mtc_aubo_fake_integration_cpp':\n"}
+[0.122298] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1:  - /fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_command --gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml\n'}
+[0.185030] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc\n'}
+[0.185238] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [==========] Running 14 tests from 1 test suite.\n'}
+[0.185305] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [----------] Global test environment set-up.\n'}
+[0.185366] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [----------] 14 tests from AuboCommand\n'}
+[0.185479] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.CompleteSixJointTrajectoryPreserved\n'}
+[0.185821] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.CompleteSixJointTrajectoryPreserved (0 ms)\n'}
+[0.186533] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.NamesAreMappedNotAssumed\n'}
+[0.186723] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.NamesAreMappedNotAssumed (0 ms)\n'}
+[0.186840] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.ExplicitSlowdownPreservesSourceAndScalesDerivatives\n'}
+[0.187016] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.ExplicitSlowdownPreservesSourceAndScalesDerivatives (0 ms)\n'}
+[0.187363] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.EmptyTrajectoryRejected\n'}
+[0.187412] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.EmptyTrajectoryRejected (0 ms)\n'}
+[0.187451] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.EndpointOnlyRejected\n'}
+[0.187489] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.EndpointOnlyRejected (0 ms)\n'}
+[0.187524] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.RepeatedJointRejected\n'}
+[0.187561] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.RepeatedJointRejected (0 ms)\n'}
+[0.187596] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.NonzeroFirstTimeRejected\n'}
+[0.187630] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.NonzeroFirstTimeRejected (0 ms)\n'}
+[0.187666] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.NonIncreasingTimeRejected\n'}
+[0.187699] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.NonIncreasingTimeRejected (0 ms)\n'}
+[0.187733] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.NanRejected\n'}
+[0.187767] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.NanRejected (0 ms)\n'}
+[0.187801] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.SplineLimitsCannotBeBypassed\n'}
+[0.187894] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.SplineLimitsCannotBeBypassed (0 ms)\n'}
+[0.187958] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.AccelerationScalingPreserved\n'}
+[0.188001] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.AccelerationScalingPreserved (0 ms)\n'}
+[0.188039] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.MissingFrameOrIdentityRejected\n'}
+[0.188076] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.MissingFrameOrIdentityRejected (0 ms)\n'}
+[0.188113] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.UnsafeRetimingRejected\n'}
+[0.188170] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.UnsafeRetimingRejected (0 ms)\n'}
+[0.188216] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [ RUN      ] AuboCommand.ExpiredOrUnverifiedPlanTimeRejected\n'}
+[0.188252] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [       OK ] AuboCommand.ExpiredOrUnverifiedPlanTimeRejected (0 ms)\n'}
+[0.188293] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [----------] 14 tests from AuboCommand (1 ms total)\n'}
+[0.188327] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: \n'}
+[0.188361] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [----------] Global test environment tear-down\n'}
+[0.188396] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [==========] 14 tests from 1 test suite ran. (1 ms total)\n'}
+[0.188431] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: [  PASSED  ] 14 tests.\n'}
+[0.191966] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1: -- run_test.py: return code 0\n'}
+[0.192274] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"1: -- run_test.py: inject classname prefix into gtest result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml'\n"}
+[0.192608] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"1: -- run_test.py: verify result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml'\n"}
+[0.199905] (-) TimerEvent: {}
+[0.203230] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'1/2 Test #1: test_aubo_command ................   Passed    0.15 sec\n'}
+[0.203681] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'test 2\n'}
+[0.203807] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'    Start 2: test_aubo_action\n'}
+[0.203881] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'\n'}
+[0.203943] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml" "--package-name" "mtc_aubo_fake_integration_cpp" "--output-file" "/fix-build-v2/mtc_aubo_fake_integration_cpp/ament_cmake_gtest/test_aubo_action.txt" "--command" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_action" "--gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml"\n'}
+[0.204011] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: Working Directory: /fix-build-v2/mtc_aubo_fake_integration_cpp\n'}
+[0.204070] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: Test timeout computed to be: 90\n'}
+[0.270970] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"2: -- run_test.py: invoking following command in '/fix-build-v2/mtc_aubo_fake_integration_cpp':\n"}
+[0.271143] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2:  - /fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_action --gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml\n'}
+[0.300068] (-) TimerEvent: {}
+[0.311056] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc\n'}
+[0.311274] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [==========] Running 8 tests from 1 test suite.\n'}
+[0.311330] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [----------] Global test environment set-up.\n'}
+[0.311384] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [----------] 8 tests from AuboAction\n'}
+[0.311427] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.FullTrajectoryAndIndependentStopEvidence\n'}
+[0.400224] (-) TimerEvent: {}
+[0.500471] (-) TimerEvent: {}
+[0.600723] (-) TimerEvent: {}
+[0.700978] (-) TimerEvent: {}
+[0.801249] (-) TimerEvent: {}
+[0.901493] (-) TimerEvent: {}
+[1.001783] (-) TimerEvent: {}
+[1.102127] (-) TimerEvent: {}
+[1.202396] (-) TimerEvent: {}
+[1.302689] (-) TimerEvent: {}
+[1.402949] (-) TimerEvent: {}
+[1.503167] (-) TimerEvent: {}
+[1.603417] (-) TimerEvent: {}
+[1.703640] (-) TimerEvent: {}
+[1.803901] (-) TimerEvent: {}
+[1.904205] (-) TimerEvent: {}
+[2.004484] (-) TimerEvent: {}
+[2.104711] (-) TimerEvent: {}
+[2.204924] (-) TimerEvent: {}
+[2.305209] (-) TimerEvent: {}
+[2.405459] (-) TimerEvent: {}
+[2.505720] (-) TimerEvent: {}
+[2.605942] (-) TimerEvent: {}
+[2.706200] (-) TimerEvent: {}
+[2.806450] (-) TimerEvent: {}
+[2.906646] (-) TimerEvent: {}
+[3.006826] (-) TimerEvent: {}
+[3.107096] (-) TimerEvent: {}
+[3.207353] (-) TimerEvent: {}
+[3.307609] (-) TimerEvent: {}
+[3.407843] (-) TimerEvent: {}
+[3.508076] (-) TimerEvent: {}
+[3.608318] (-) TimerEvent: {}
+[3.708557] (-) TimerEvent: {}
+[3.708884] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.FullTrajectoryAndIndependentStopEvidence (3397 ms)\n'}
+[3.709073] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.CancelBeforeResponsePreservesOwnUuid\n'}
+[3.808718] (-) TimerEvent: {}
+[3.908997] (-) TimerEvent: {}
+[4.009253] (-) TimerEvent: {}
+[4.109508] (-) TimerEvent: {}
+[4.209760] (-) TimerEvent: {}
+[4.310058] (-) TimerEvent: {}
+[4.410390] (-) TimerEvent: {}
+[4.510731] (-) TimerEvent: {}
+[4.610977] (-) TimerEvent: {}
+[4.711214] (-) TimerEvent: {}
+[4.811470] (-) TimerEvent: {}
+[4.911731] (-) TimerEvent: {}
+[5.011969] (-) TimerEvent: {}
+[5.112222] (-) TimerEvent: {}
+[5.212464] (-) TimerEvent: {}
+[5.312745] (-) TimerEvent: {}
+[5.413030] (-) TimerEvent: {}
+[5.513269] (-) TimerEvent: {}
+[5.613519] (-) TimerEvent: {}
+[5.713768] (-) TimerEvent: {}
+[5.814018] (-) TimerEvent: {}
+[5.914369] (-) TimerEvent: {}
+[6.014629] (-) TimerEvent: {}
+[6.114879] (-) TimerEvent: {}
+[6.215180] (-) TimerEvent: {}
+[6.315492] (-) TimerEvent: {}
+[6.415786] (-) TimerEvent: {}
+[6.516046] (-) TimerEvent: {}
+[6.616354] (-) TimerEvent: {}
+[6.716596] (-) TimerEvent: {}
+[6.816807] (-) TimerEvent: {}
+[6.915349] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.CancelBeforeResponsePreservesOwnUuid (3206 ms)\n'}
+[6.915560] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock\n'}
+[6.916915] (-) TimerEvent: {}
+[7.017126] (-) TimerEvent: {}
+[7.117385] (-) TimerEvent: {}
+[7.217684] (-) TimerEvent: {}
+[7.317953] (-) TimerEvent: {}
+[7.418205] (-) TimerEvent: {}
+[7.518454] (-) TimerEvent: {}
+[7.618706] (-) TimerEvent: {}
+[7.718948] (-) TimerEvent: {}
+[7.819252] (-) TimerEvent: {}
+[7.919505] (-) TimerEvent: {}
+[8.019781] (-) TimerEvent: {}
+[8.120049] (-) TimerEvent: {}
+[8.220292] (-) TimerEvent: {}
+[8.320530] (-) TimerEvent: {}
+[8.420765] (-) TimerEvent: {}
+[8.521031] (-) TimerEvent: {}
+[8.621294] (-) TimerEvent: {}
+[8.721545] (-) TimerEvent: {}
+[8.821761] (-) TimerEvent: {}
+[8.922032] (-) TimerEvent: {}
+[9.022349] (-) TimerEvent: {}
+[9.122605] (-) TimerEvent: {}
+[9.222882] (-) TimerEvent: {}
+[9.323129] (-) TimerEvent: {}
+[9.423383] (-) TimerEvent: {}
+[9.523650] (-) TimerEvent: {}
+[9.623893] (-) TimerEvent: {}
+[9.724129] (-) TimerEvent: {}
+[9.824372] (-) TimerEvent: {}
+[9.924595] (-) TimerEvent: {}
+[10.024866] (-) TimerEvent: {}
+[10.125125] (-) TimerEvent: {}
+[10.225346] (-) TimerEvent: {}
+[10.325578] (-) TimerEvent: {}
+[10.425842] (-) TimerEvent: {}
+[10.526105] (-) TimerEvent: {}
+[10.626360] (-) TimerEvent: {}
+[10.650981] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock (3735 ms)\n'}
+[10.651172] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.CancelAcknowledgementWhileMovingCannotConfirmStop\n'}
+[10.726532] (-) TimerEvent: {}
+[10.826868] (-) TimerEvent: {}
+[10.927108] (-) TimerEvent: {}
+[11.027362] (-) TimerEvent: {}
+[11.127647] (-) TimerEvent: {}
+[11.227921] (-) TimerEvent: {}
+[11.328175] (-) TimerEvent: {}
+[11.428431] (-) TimerEvent: {}
+[11.528708] (-) TimerEvent: {}
+[11.628954] (-) TimerEvent: {}
+[11.729202] (-) TimerEvent: {}
+[11.829445] (-) TimerEvent: {}
+[11.929684] (-) TimerEvent: {}
+[12.029943] (-) TimerEvent: {}
+[12.130221] (-) TimerEvent: {}
+[12.230463] (-) TimerEvent: {}
+[12.330714] (-) TimerEvent: {}
+[12.430979] (-) TimerEvent: {}
+[12.531266] (-) TimerEvent: {}
+[12.631503] (-) TimerEvent: {}
+[12.731759] (-) TimerEvent: {}
+[12.832022] (-) TimerEvent: {}
+[12.932256] (-) TimerEvent: {}
+[13.032581] (-) TimerEvent: {}
+[13.132773] (-) TimerEvent: {}
+[13.233061] (-) TimerEvent: {}
+[13.333311] (-) TimerEvent: {}
+[13.433513] (-) TimerEvent: {}
+[13.533724] (-) TimerEvent: {}
+[13.633928] (-) TimerEvent: {}
+[13.734174] (-) TimerEvent: {}
+[13.834438] (-) TimerEvent: {}
+[13.934692] (-) TimerEvent: {}
+[14.034932] (-) TimerEvent: {}
+[14.135173] (-) TimerEvent: {}
+[14.235422] (-) TimerEvent: {}
+[14.335708] (-) TimerEvent: {}
+[14.435951] (-) TimerEvent: {}
+[14.536140] (-) TimerEvent: {}
+[14.627470] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.CancelAcknowledgementWhileMovingCannotConfirmStop (3976 ms)\n'}
+[14.627639] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.StaleJointStatePreventsGoal\n'}
+[14.636265] (-) TimerEvent: {}
+[14.736477] (-) TimerEvent: {}
+[14.836729] (-) TimerEvent: {}
+[14.937017] (-) TimerEvent: {}
+[15.037293] (-) TimerEvent: {}
+[15.137623] (-) TimerEvent: {}
+[15.237876] (-) TimerEvent: {}
+[15.338192] (-) TimerEvent: {}
+[15.438450] (-) TimerEvent: {}
+[15.538731] (-) TimerEvent: {}
+[15.639009] (-) TimerEvent: {}
+[15.739363] (-) TimerEvent: {}
+[15.839651] (-) TimerEvent: {}
+[15.939928] (-) TimerEvent: {}
+[16.040209] (-) TimerEvent: {}
+[16.140466] (-) TimerEvent: {}
+[16.240730] (-) TimerEvent: {}
+[16.341054] (-) TimerEvent: {}
+[16.441347] (-) TimerEvent: {}
+[16.541607] (-) TimerEvent: {}
+[16.641834] (-) TimerEvent: {}
+[16.742102] (-) TimerEvent: {}
+[16.842346] (-) TimerEvent: {}
+[16.942600] (-) TimerEvent: {}
+[17.042839] (-) TimerEvent: {}
+[17.143101] (-) TimerEvent: {}
+[17.243349] (-) TimerEvent: {}
+[17.343569] (-) TimerEvent: {}
+[17.443797] (-) TimerEvent: {}
+[17.544033] (-) TimerEvent: {}
+[17.644263] (-) TimerEvent: {}
+[17.744496] (-) TimerEvent: {}
+[17.749142] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.StaleJointStatePreventsGoal (3121 ms)\n'}
+[17.749394] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.ChangedCompletedIdentityNeverSendsAgain\n'}
+[17.844633] (-) TimerEvent: {}
+[17.944905] (-) TimerEvent: {}
+[18.045218] (-) TimerEvent: {}
+[18.145488] (-) TimerEvent: {}
+[18.245753] (-) TimerEvent: {}
+[18.346021] (-) TimerEvent: {}
+[18.446340] (-) TimerEvent: {}
+[18.546625] (-) TimerEvent: {}
+[18.646940] (-) TimerEvent: {}
+[18.747260] (-) TimerEvent: {}
+[18.848107] (-) TimerEvent: {}
+[18.948426] (-) TimerEvent: {}
+[19.048733] (-) TimerEvent: {}
+[19.148996] (-) TimerEvent: {}
+[19.249250] (-) TimerEvent: {}
+[19.349570] (-) TimerEvent: {}
+[19.449867] (-) TimerEvent: {}
+[19.550173] (-) TimerEvent: {}
+[19.650425] (-) TimerEvent: {}
+[19.750705] (-) TimerEvent: {}
+[19.850972] (-) TimerEvent: {}
+[19.951210] (-) TimerEvent: {}
+[20.051426] (-) TimerEvent: {}
+[20.151675] (-) TimerEvent: {}
+[20.251889] (-) TimerEvent: {}
+[20.352122] (-) TimerEvent: {}
+[20.452369] (-) TimerEvent: {}
+[20.552597] (-) TimerEvent: {}
+[20.652856] (-) TimerEvent: {}
+[20.753133] (-) TimerEvent: {}
+[20.853367] (-) TimerEvent: {}
+[20.953586] (-) TimerEvent: {}
+[21.053818] (-) TimerEvent: {}
+[21.110323] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.ChangedCompletedIdentityNeverSendsAgain (3361 ms)\n'}
+[21.110494] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.WrongFrameAndStartDoNotSendGoal\n'}
+[21.153960] (-) TimerEvent: {}
+[21.254219] (-) TimerEvent: {}
+[21.354495] (-) TimerEvent: {}
+[21.454782] (-) TimerEvent: {}
+[21.555061] (-) TimerEvent: {}
+[21.655347] (-) TimerEvent: {}
+[21.755616] (-) TimerEvent: {}
+[21.855876] (-) TimerEvent: {}
+[21.956128] (-) TimerEvent: {}
+[22.056455] (-) TimerEvent: {}
+[22.156718] (-) TimerEvent: {}
+[22.256977] (-) TimerEvent: {}
+[22.357245] (-) TimerEvent: {}
+[22.457477] (-) TimerEvent: {}
+[22.557700] (-) TimerEvent: {}
+[22.657914] (-) TimerEvent: {}
+[22.758150] (-) TimerEvent: {}
+[22.858429] (-) TimerEvent: {}
+[22.958672] (-) TimerEvent: {}
+[23.058919] (-) TimerEvent: {}
+[23.159168] (-) TimerEvent: {}
+[23.259448] (-) TimerEvent: {}
+[23.359700] (-) TimerEvent: {}
+[23.459958] (-) TimerEvent: {}
+[23.560238] (-) TimerEvent: {}
+[23.660573] (-) TimerEvent: {}
+[23.760858] (-) TimerEvent: {}
+[23.861128] (-) TimerEvent: {}
+[23.961374] (-) TimerEvent: {}
+[24.061723] (-) TimerEvent: {}
+[24.162007] (-) TimerEvent: {}
+[24.221489] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.WrongFrameAndStartDoNotSendGoal (3111 ms)\n'}
+[24.221718] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [ RUN      ] AuboAction.ConcurrentRequestsHaveSingleOwner\n'}
+[24.262269] (-) TimerEvent: {}
+[24.362595] (-) TimerEvent: {}
+[24.462848] (-) TimerEvent: {}
+[24.563144] (-) TimerEvent: {}
+[24.663418] (-) TimerEvent: {}
+[24.763660] (-) TimerEvent: {}
+[24.863908] (-) TimerEvent: {}
+[24.964140] (-) TimerEvent: {}
+[25.064387] (-) TimerEvent: {}
+[25.164656] (-) TimerEvent: {}
+[25.264969] (-) TimerEvent: {}
+[25.365252] (-) TimerEvent: {}
+[25.465555] (-) TimerEvent: {}
+[25.565793] (-) TimerEvent: {}
+[25.666036] (-) TimerEvent: {}
+[25.766353] (-) TimerEvent: {}
+[25.866622] (-) TimerEvent: {}
+[25.966863] (-) TimerEvent: {}
+[26.067141] (-) TimerEvent: {}
+[26.167404] (-) TimerEvent: {}
+[26.267624] (-) TimerEvent: {}
+[26.367957] (-) TimerEvent: {}
+[26.468220] (-) TimerEvent: {}
+[26.568490] (-) TimerEvent: {}
+[26.668720] (-) TimerEvent: {}
+[26.768937] (-) TimerEvent: {}
+[26.869220] (-) TimerEvent: {}
+[26.969481] (-) TimerEvent: {}
+[27.069743] (-) TimerEvent: {}
+[27.170025] (-) TimerEvent: {}
+[27.270322] (-) TimerEvent: {}
+[27.370573] (-) TimerEvent: {}
+[27.470810] (-) TimerEvent: {}
+[27.571069] (-) TimerEvent: {}
+[27.580156] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [       OK ] AuboAction.ConcurrentRequestsHaveSingleOwner (3358 ms)\n'}
+[27.580544] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [----------] 8 tests from AuboAction (27269 ms total)\n'}
+[27.580626] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: \n'}
+[27.580690] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [----------] Global test environment tear-down\n'}
+[27.580748] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [==========] 8 tests from 1 test suite ran. (27269 ms total)\n'}
+[27.580891] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: [  PASSED  ] 8 tests.\n'}
+[27.671227] (-) TimerEvent: {}
+[27.688936] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2: -- run_test.py: return code 0\n'}
+[27.689359] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"2: -- run_test.py: inject classname prefix into gtest result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml'\n"}
+[27.689439] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b"2: -- run_test.py: verify result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml'\n"}
+[27.700504] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'2/2 Test #2: test_aubo_action .................   Passed   27.50 sec\n'}
+[27.700916] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'\n'}
+[27.701058] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'100% tests passed, 0 tests failed out of 2\n'}
+[27.701170] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'\n'}
+[27.701230] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Label Time Summary:\n'}
+[27.701280] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'gtest    =  27.64 sec*proc (2 tests)\n'}
+[27.701328] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'\n'}
+[27.701372] (mtc_aubo_fake_integration_cpp) StdoutLine: {'line': b'Total Test time (real) =  27.64 sec\n'}
+[27.709507] (mtc_aubo_fake_integration_cpp) CommandEnded: {'returncode': 0}
+[27.710270] (mtc_aubo_fake_integration_cpp) JobEnded: {'identifier': 'mtc_aubo_fake_integration_cpp', 'rc': 0}
+[27.711355] (-) EventReactorShutdown: {}

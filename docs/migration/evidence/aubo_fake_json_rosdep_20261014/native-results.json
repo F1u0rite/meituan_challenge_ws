@@ -1,0 +1,2753 @@
+{
+  "fault": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": true,
+        "cancel_count": 1,
+        "command_id": "fault/command/1",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 1,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "618d53ec79e6a955a6aecbb9b419acd9",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 1,
+        "stationary_seconds": 0.0,
+        "status_fresh": true,
+        "status_received": true,
+        "stop_confirmed": false,
+        "terminal_received": true
+      },
+      "execution_node": "aubo_fake_owner",
+      "final_error_rad": [
+        0.01999734085942446,
+        0.11288675744775968,
+        0.08047452546633457,
+        0.11756763202708939,
+        0.019997293725578333,
+        0.00999849510901292
+      ],
+      "final_positions": [
+        2.6616000031876874e-06,
+        -1.5024967374159781e-05,
+        -1.071097396115937e-05,
+        -1.5647980997963348e-05,
+        2.661593729781344e-06,
+        1.3307766668126285e-06
+      ],
+      "final_velocities": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "joint_range_rad": [
+        3.0762738084696653e-06,
+        1.736583767315979e-05,
+        1.2379729719136023e-05,
+        1.80859160060916e-05,
+        3.0762665576748047e-06,
+        1.5381099339251718e-06
+      ],
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "max_final_error_rad": 0.11756763202708939,
+      "max_reported_velocity_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956266898626623
+      },
+      "mode": "fault",
+      "native_status_goal_uuids": [
+        "618d53ec79e6a955a6aecbb9b419acd9"
+      ],
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.3592 s (rank 0.002486 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "result": {
+        "error_code": 230,
+        "final_positions": [],
+        "message": "controlled execution authority lost; restart is not an automatic reset",
+        "status_unknown": true,
+        "stop_confirmed": false,
+        "success": false,
+        "timed_out": false
+      },
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "fault",
+      "domain": 209,
+      "elapsed_seconds": 12.009038710966706
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 4864,
+        "pgid": 4864,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/fault/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 4882,
+        "pgid": 4882,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/fault/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956267.6200116
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 4883,
+        "pgid": 4883,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/fault/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956267.619976
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 4884,
+        "pgid": 4884,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956267.6199398
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 4885,
+        "pgid": 4885,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 4961,
+        "pgid": 4961,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 4984,
+        "pgid": 4984,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/fault/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956267.6198976
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "silence": {
+    "functional": {
+      "after_status_silence": {
+        "cancel_acknowledged": true,
+        "cancel_count": 1,
+        "command_id": "silence/command/1",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "2ca295c38669131de9cea9e9f9f717c3",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 162,
+        "stationary_seconds": 0.804965418,
+        "status_fresh": false,
+        "status_received": true,
+        "stop_confirmed": false,
+        "terminal_received": true
+      },
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "silence/command/1",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": false,
+        "terminal_received": false
+      },
+      "execution_node": "aubo_fake_owner",
+      "functional_result": "FAIL",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "joint_range_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "max_reported_velocity_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956252498613994
+      },
+      "mode": "silence",
+      "native_status_goal_uuids": [],
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.2957 s (rank 0.002082 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "result": {
+        "error_code": 230,
+        "final_positions": [],
+        "message": "controlled execution authority lost; restart is not an automatic reset",
+        "status_unknown": true,
+        "stop_confirmed": false,
+        "success": false,
+        "timed_out": false
+      },
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "FAIL",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [
+        "probe exit 2"
+      ],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "silence",
+      "domain": 208,
+      "elapsed_seconds": 12.859938620822504
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 4664,
+        "pgid": 4664,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/silence/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 2
+      },
+      {
+        "name": "controller",
+        "pid": 4682,
+        "pgid": 4682,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/silence/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956254.0701663
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 4683,
+        "pgid": 4683,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/silence/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956254.0701318
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 4684,
+        "pgid": 4684,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956254.0700703
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 4685,
+        "pgid": 4685,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 4761,
+        "pgid": 4761,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 4790,
+        "pgid": 4790,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/silence/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956254.0700352
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "plan": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "execution_node": "aubo_fake_owner",
+      "functional_result": "FAIL",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956107762664147
+      },
+      "mode": "plan",
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.2686 s (rank 0.002048 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "FAIL",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [
+        "probe exit 2"
+      ],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "plan",
+      "domain": 201,
+      "elapsed_seconds": 12.022192396922037
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 3288,
+        "pgid": 3288,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/plan/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 2
+      },
+      {
+        "name": "controller",
+        "pid": 3306,
+        "pgid": 3306,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/plan/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956108.226261
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 3307,
+        "pgid": 3307,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/plan/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956108.2262352
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 3308,
+        "pgid": 3308,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956108.2262096
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 3309,
+        "pgid": 3309,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 3385,
+        "pgid": 3385,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 3407,
+        "pgid": 3407,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/plan/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956108.2261772
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "foreign": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "execution_node": "aubo_fake_owner",
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956216054455961
+      },
+      "mode": "foreign",
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.312 s (rank 0.001955 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "foreign",
+      "domain": 206,
+      "elapsed_seconds": 12.148395505035296
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 4264,
+        "pgid": 4264,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/foreign/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 4288,
+        "pgid": 4288,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/foreign/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956216.6607292
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 4289,
+        "pgid": 4289,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/foreign/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956216.6607032
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 4290,
+        "pgid": 4290,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956216.6606824
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 4291,
+        "pgid": 4291,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 4367,
+        "pgid": 4367,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 4390,
+        "pgid": 4390,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/foreign/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956216.6606538
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "mismatch": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "controlled execution authority lost; restart is not an automatic reset",
+        "fault_locked": true,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": false,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "execution_node": "aubo_fake_owner",
+      "functional_result": "FAIL",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956189136172469
+      },
+      "mode": "mismatch",
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.5229 s (rank 0.002339 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "rejection": "fault locked; no automatic reset or resend",
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "FAIL",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [
+        "probe exit 2"
+      ],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "mismatch",
+      "domain": 204,
+      "elapsed_seconds": 12.529927985975519
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 3876,
+        "pgid": 3876,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/mismatch/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 2
+      },
+      {
+        "name": "controller",
+        "pid": 3894,
+        "pgid": 3894,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/mismatch/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956189.920136
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 3895,
+        "pgid": 3895,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/mismatch/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956189.920096
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 3896,
+        "pgid": 3896,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956189.920054
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 3897,
+        "pgid": 3897,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 3973,
+        "pgid": 3973,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 3996,
+        "pgid": 3996,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/mismatch/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956189.9200044
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "identity": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "identity/command/1",
+        "controller_verified": true,
+        "detail": "FJT successful; fresh post-terminal stationary interval and final joints verified",
+        "fault_locked": false,
+        "feedback_count": 181,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "340435d5b8a66cfc806734a5d168d4e9",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 51,
+        "stationary_seconds": 0.250147122,
+        "status_fresh": true,
+        "status_received": true,
+        "stop_confirmed": true,
+        "terminal_received": true
+      },
+      "execution_node": "aubo_fake_owner",
+      "final_error_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_positions": [
+        0.020000002459427648,
+        -0.11290178241513384,
+        -0.08048523644029573,
+        -0.11758328000808735,
+        0.019999955319308114,
+        0.009999825885679733
+      ],
+      "final_velocities": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "identity_rejection": "command identity reused with changed content",
+      "joint_range_rad": [
+        0.020000002459427648,
+        0.11290178241513384,
+        0.08048523644029573,
+        0.11758328000808735,
+        0.019999955319308114,
+        0.009999825885679733
+      ],
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "max_final_error_rad": 0.0,
+      "max_reported_velocity_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956229566918531
+      },
+      "mode": "identity",
+      "native_status_goal_uuids": [
+        "340435d5b8a66cfc806734a5d168d4e9"
+      ],
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.2749 s (rank 0.002218 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "result": {
+        "error_code": 0,
+        "final_positions": [
+          0.020000002459427648,
+          -0.11290178241513384,
+          -0.08048523644029573,
+          -0.11758328000808735,
+          0.019999955319308114,
+          0.009999825885679733
+        ],
+        "message": "FJT successful; fresh post-terminal stationary interval and final joints verified",
+        "status_unknown": false,
+        "stop_confirmed": true,
+        "success": true,
+        "timed_out": false
+      },
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "identity",
+      "domain": 207,
+      "elapsed_seconds": 21.43875032220967
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 4464,
+        "pgid": 4464,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/identity/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 4482,
+        "pgid": 4482,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/identity/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956239.4595628
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 4483,
+        "pgid": 4483,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/identity/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956239.459527
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 4484,
+        "pgid": 4484,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956239.4594922
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 4485,
+        "pgid": 4485,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 4561,
+        "pgid": 4561,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 4584,
+        "pgid": 4584,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/identity/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956239.459445
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "execute": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "execute/command/1",
+        "controller_verified": true,
+        "detail": "FJT successful; fresh post-terminal stationary interval and final joints verified",
+        "fault_locked": false,
+        "feedback_count": 181,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "8020d2d89d74b9a974bca731465a383d",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 54,
+        "stationary_seconds": 0.265641604,
+        "status_fresh": true,
+        "status_received": true,
+        "stop_confirmed": true,
+        "terminal_received": true
+      },
+      "execution_node": "aubo_fake_owner",
+      "final_error_rad": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "final_positions": [
+        0.020000002459427648,
+        -0.11290178241513384,
+        -0.08048523644029573,
+        -0.11758328000808735,
+        0.019999955319308114,
+        0.009999825885679733
+      ],
+      "final_velocities": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "joint_range_rad": [
+        0.020000002459427648,
+        0.11290178241513384,
+        0.08048523644029573,
+        0.11758328000808735,
+        0.019999955319308114,
+        0.009999825885679733
+      ],
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "max_final_error_rad": 0.0,
+      "max_reported_velocity_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956154184686112
+      },
+      "mode": "execute",
+      "native_status_goal_uuids": [
+        "8020d2d89d74b9a974bca731465a383d"
+      ],
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.3006 s (rank 0.002159 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "result": {
+        "error_code": 0,
+        "final_positions": [
+          0.020000002459427648,
+          -0.11290178241513384,
+          -0.08048523644029573,
+          -0.11758328000808735,
+          0.019999955319308114,
+          0.009999825885679733
+        ],
+        "message": "FJT successful; fresh post-terminal stationary interval and final joints verified",
+        "status_unknown": false,
+        "stop_confirmed": true,
+        "success": true,
+        "timed_out": false
+      },
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "execute",
+      "domain": 202,
+      "elapsed_seconds": 21.21908059786074
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 3488,
+        "pgid": 3488,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/execute/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 3506,
+        "pgid": 3506,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/execute/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956164.1167476
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 3507,
+        "pgid": 3507,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/execute/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956164.1167104
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 3508,
+        "pgid": 3508,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956164.1166763
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 3509,
+        "pgid": 3509,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 3585,
+        "pgid": 3585,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 3608,
+        "pgid": 3608,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/execute/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956164.1166375
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "cancel": {
+    "functional": {
+      "cancel_immediate": false,
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": true,
+        "cancel_count": 1,
+        "command_id": "cancel/command/1",
+        "controller_verified": true,
+        "detail": "owned Goal terminal CANCELED; independent stationary interval verified",
+        "fault_locked": false,
+        "feedback_count": 1,
+        "foreign_goals": 0,
+        "goal_count": 1,
+        "goal_uuid": "f53e620b78450078b3ca51865b126957",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 52,
+        "stationary_seconds": 0.255077725,
+        "status_fresh": true,
+        "status_received": true,
+        "stop_confirmed": true,
+        "terminal_received": true
+      },
+      "execution_node": "aubo_fake_owner",
+      "final_error_rad": [
+        0.019998092637163074,
+        0.11289100129957128,
+        0.08047755081641468,
+        0.11757205185116304,
+        0.019998045501545002,
+        0.00999887099129124
+      ],
+      "final_positions": [
+        1.9098222645743186e-06,
+        -1.0781115562558713e-05,
+        -7.685623881048463e-06,
+        -1.1228156924314102e-05,
+        1.9098177631123806e-06,
+        9.548943884922053e-07
+      ],
+      "final_velocities": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "joint_range_rad": [
+        2.2655657430165793e-06,
+        1.2789318955541714e-05,
+        9.117228603727981e-06,
+        1.3319630918959022e-05,
+        2.2655604030652393e-06,
+        1.1327630088388883e-06
+      ],
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "max_final_error_rad": 0.11757205185116304,
+      "max_reported_velocity_rad_s": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956175310927816
+      },
+      "mode": "cancel",
+      "native_status_goal_uuids": [
+        "f53e620b78450078b3ca51865b126957"
+      ],
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.2967 s (rank 0.002169 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "result": {
+        "error_code": 0,
+        "final_positions": [
+          1.9098222645743186e-06,
+          -1.0781115562558713e-05,
+          -7.685623881048463e-06,
+          -1.1228156924314102e-05,
+          1.9098177631123806e-06,
+          9.548943884922053e-07
+        ],
+        "message": "owned Goal terminal CANCELED; independent stationary interval verified",
+        "status_unknown": false,
+        "stop_confirmed": true,
+        "success": false,
+        "timed_out": false
+      },
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "cancel",
+      "domain": 203,
+      "elapsed_seconds": 12.08867602283135
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 3682,
+        "pgid": 3682,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/cancel/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 3700,
+        "pgid": 3700,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/cancel/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956176.217627
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 3701,
+        "pgid": 3701,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/cancel/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956176.2176008
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 3702,
+        "pgid": 3702,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956176.2175784
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 3703,
+        "pgid": 3703,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 3779,
+        "pgid": 3779,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 3802,
+        "pgid": 3802,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/cancel/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956176.2175474
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  },
+  "expired": {
+    "functional": {
+      "cold_start": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "contact_motion": false,
+      "duration_s": 9.079715376,
+      "execution": {
+        "cancel_acknowledged": false,
+        "cancel_count": 0,
+        "command_id": "",
+        "controller_verified": true,
+        "detail": "waiting for runtime Fake Hardware and state proofs",
+        "fault_locked": false,
+        "feedback_count": 0,
+        "foreign_goals": 0,
+        "goal_count": 0,
+        "goal_uuid": "",
+        "hardware_plugin": "mock_components/GenericSystem",
+        "hardware_verified": true,
+        "ready": true,
+        "stationary_samples": 0,
+        "stationary_seconds": 0.0,
+        "status_fresh": false,
+        "status_received": false,
+        "stop_confirmed": null,
+        "terminal_received": false
+      },
+      "execution_node": "aubo_fake_owner",
+      "expired_plan_record": {
+        "checked_monotonic_s": 1129292.427947702,
+        "generated_monotonic_s": 1129282.426846409,
+        "rejected": true
+      },
+      "functional_result": "PASS",
+      "graph": {
+        "direct_trajectory_publishers": 0,
+        "fjt_client_nodes": 1,
+        "fjt_servers": 1,
+        "joint_state_publishers": 1,
+        "limitation": "graph counts are deployment evidence, not authentication or cross-process atomic mutual exclusion"
+      },
+      "limits": {
+        "foreArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.41,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.41
+        },
+        "shoulder_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "upperArm_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 3.141592653589793,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -3.141592653589793
+        },
+        "wrist1_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.66,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.66
+        },
+        "wrist2_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 6.283185307179586,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -6.283185307179586
+        },
+        "wrist3_joint": {
+          "max_acceleration_rad_s2": 0.2,
+          "max_rad": 2.23,
+          "max_velocity_rad_s": 0.2,
+          "min_rad": -2.23
+        }
+      },
+      "measured_start": {
+        "names": [
+          "shoulder_joint",
+          "upperArm_joint",
+          "foreArm_joint",
+          "wrist1_joint",
+          "wrist2_joint",
+          "wrist3_joint"
+        ],
+        "positions": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stamp_ns": 1791956202904549273
+      },
+      "mode": "expired",
+      "optional_cartesian_preference": false,
+      "plan": {
+        "collision_check_enabled": true,
+        "message": "ik candidates=2 est_s/span_rad=[4.54/0.1176(seed_grid), 4.54/0.08002(seed_start)]; ik+rank 0.2707 s (rank 0.002346 s); chosen est 4.54 s, span 0.1176 rad (seed_grid); retiming=ee_limited; ok",
+        "method": "joint_interpolated_ik",
+        "ok": true,
+        "reason": ""
+      },
+      "planner_node": "aubo_fake_planner",
+      "planning_frame": "world",
+      "real_hardware": false,
+      "tcp": "ee_link (explicit bare-tool Fake FK; not calibrated V1 TCP)",
+      "trajectory_points": 7
+    },
+    "summary": {
+      "functional_result": "PASS",
+      "teardown_result": "FAIL",
+      "overall_result": "FAIL",
+      "errors": [],
+      "real_hardware": "NOT RUN",
+      "stop_confirmed_from_process_exit": false,
+      "mode": "expired",
+      "domain": 205,
+      "elapsed_seconds": 11.765629043104127
+    },
+    "teardown": [
+      {
+        "name": "probe",
+        "pid": 4070,
+        "pgid": 4070,
+        "command": [
+          "/candidate-install/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/expired/probe.yaml"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "controller",
+        "pid": 4088,
+        "pgid": 4088,
+        "command": [
+          "/opt/ros/jazzy/lib/controller_manager/ros2_control_node",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/expired/model.yaml",
+          "--params-file",
+          "/driver_work/install/aubo_ros2_driver/share/aubo_ros2_driver/config/aubo_controllers.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956203.4151332
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "state_publisher",
+        "pid": 4089,
+        "pgid": 4089,
+        "command": [
+          "/opt/ros/jazzy/lib/robot_state_publisher/robot_state_publisher",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/expired/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956203.4150977
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "world_tf",
+        "pid": 4090,
+        "pgid": 4090,
+        "command": [
+          "/opt/ros/jazzy/lib/tf2_ros/static_transform_publisher",
+          "--x",
+          "0",
+          "--y",
+          "0",
+          "--z",
+          "0",
+          "--roll",
+          "0",
+          "--pitch",
+          "0",
+          "--yaw",
+          "0",
+          "--frame-id",
+          "world",
+          "--child-frame-id",
+          "base_link"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956203.4150639
+          }
+        ],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_state_broadcaster",
+        "pid": 4091,
+        "pgid": 4091,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_state_broadcaster",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "spawn_joint_trajectory_controller",
+        "pid": 4167,
+        "pgid": 4167,
+        "command": [
+          "ros2",
+          "run",
+          "controller_manager",
+          "spawner",
+          "joint_trajectory_controller",
+          "--controller-manager-timeout",
+          "15"
+        ],
+        "signals": [],
+        "exit_code": 0
+      },
+      {
+        "name": "move_group",
+        "pid": 4190,
+        "pgid": 4190,
+        "command": [
+          "/opt/ros/jazzy/lib/moveit_ros_move_group/move_group",
+          "--ros-args",
+          "--params-file",
+          "/review-evidence/native/expired/model.yaml"
+        ],
+        "signals": [
+          {
+            "signal": "SIGINT",
+            "at": 1791956203.4150198
+          }
+        ],
+        "exit_code": -11
+      }
+    ]
+  }
+}

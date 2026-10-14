@@ -1,0 +1,18 @@
+Starting >>> mtc_core_cpp
+Finished <<< mtc_core_cpp [0.29s]
+Starting >>> mtc_motion_execution_cpp
+Finished <<< mtc_motion_execution_cpp [0.48s]
+Starting >>> mtc_task_cpp
+Finished <<< mtc_task_cpp [0.32s]
+Starting >>> mtc_manipulation_cpp
+Finished <<< mtc_manipulation_cpp [0.60s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [1.60s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [18.1s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_trajectory_execution_cpp [54.9s]
+Starting >>> mtc_aubo_fake_integration_cpp
+Finished <<< mtc_aubo_fake_integration_cpp [28.2s]
+
+Summary: 8 packages finished [1min 45s]

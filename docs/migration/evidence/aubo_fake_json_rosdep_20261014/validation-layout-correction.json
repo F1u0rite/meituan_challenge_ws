@@ -1,0 +1,6 @@
+{
+  "first_attempt": "fix-validate",
+  "result": "build failure before tests",
+  "cause": "Harness copied only the new package, omitting its explicitly referenced sibling test/fake_controller.hpp",
+  "correction": "Copy exact upstream mtc_trajectory_execution_cpp sibling; keep source/kernel unchanged, fresh build/install/log bases; retain all first failure files"
+}

@@ -1,0 +1,4 @@
+ERROR: no rosdep rule for 'nlohmann_json'
+original_rc=1
+ERROR: no rosdep rule for 'nlohmann-json3-dev'
+corrected_rc=1

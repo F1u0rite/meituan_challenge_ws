@@ -1,0 +1,140 @@
+[0.135s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', '--log-base', '/review-evidence/dependency-fix-v2/build-log', 'build', '--base-paths', '/fix-source', '--build-base', '/fix-build-v2', '--install-base', '/fix-install-v2', '--packages-select', 'mtc_aubo_fake_integration_cpp', '--executor', 'sequential', '--cmake-args', '-DCMAKE_PREFIX_PATH=/offline-json/usr']
+[0.135s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base='/review-evidence/dependency-fix-v2/build-log', log_level=None, verb_name='build', build_base='/fix-build-v2', install_base='/fix-install-v2', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='sequential', parallel_workers=16, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['/fix-source'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['mtc_aubo_fake_integration_cpp'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, cmake_args=['-DCMAKE_PREFIX_PATH=/offline-json/usr'], cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x718e6f0203b0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x718e6efeb8f0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x718e6efeb8f0>>, mixin_verb=('build',))
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.181s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/Gazebo.meta'
+[0.181s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/fastdds.meta'
+[0.181s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/fastrtps.meta'
+[0.181s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.181s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.181s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.181s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.182s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/fix-source'
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['ignore', 'ignore_ament_install']
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ignore'
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ignore_ament_install'
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['colcon_pkg']
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'colcon_pkg'
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['colcon_meta']
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'colcon_meta'
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['ros']
+[0.182s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ros'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['cmake', 'python']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'cmake'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'python'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['python_setup_py']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'python_setup_py'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ignore'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ignore_ament_install'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['colcon_pkg']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'colcon_pkg'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['colcon_meta']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'colcon_meta'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['ros']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ros'
+[0.210s] DEBUG:colcon.colcon_core.package_identification:Package '/fix-source/mtc_aubo_fake_integration_cpp' with type 'ros.ament_cmake' and name 'mtc_aubo_fake_integration_cpp'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ignore'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ignore_ament_install'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['colcon_pkg']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'colcon_pkg'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['colcon_meta']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'colcon_meta'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['ros']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ros'
+[0.211s] DEBUG:colcon.colcon_core.package_identification:Package '/fix-source/mtc_trajectory_execution_cpp' with type 'ros.ament_cmake' and name 'mtc_trajectory_execution_cpp'
+[0.211s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.229s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'mtc_trajectory_execution_cpp' in '/fix-source/mtc_trajectory_execution_cpp'
+[0.229s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_args' from command line to '['-DCMAKE_PREFIX_PATH=/offline-json/usr']'
+[0.229s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_target' from command line to 'None'
+[0.229s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.229s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_clean_cache' from command line to 'False'
+[0.230s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_clean_first' from command line to 'False'
+[0.230s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'cmake_force_configure' from command line to 'False'
+[0.230s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'ament_cmake_args' from command line to 'None'
+[0.230s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'catkin_cmake_args' from command line to 'None'
+[0.230s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.230s] DEBUG:colcon.colcon_core.verb:Building package 'mtc_aubo_fake_integration_cpp' with the following arguments: {'ament_cmake_args': None, 'build_base': '/fix-build-v2/mtc_aubo_fake_integration_cpp', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': ['-DCMAKE_PREFIX_PATH=/offline-json/usr'], 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/fix-install-v2/mtc_aubo_fake_integration_cpp', 'merge_install': False, 'path': '/fix-source/mtc_aubo_fake_integration_cpp', 'symlink_install': False, 'test_result_base': None}
+[0.230s] INFO:colcon.colcon_core.executor:Executing jobs using 'sequential' executor
+[0.231s] DEBUG:colcon.colcon_core.executor.sequential:run_until_complete 'mtc_aubo_fake_integration_cpp'
+[0.231s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/fix-source/mtc_aubo_fake_integration_cpp' with build type 'ament_cmake'
+[0.231s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/fix-source/mtc_aubo_fake_integration_cpp'
+[0.234s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.234s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.234s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.240s] WARNING:colcon.colcon_core.shell:The following packages are in the workspace but haven't been built:
+- mtc_trajectory_execution_cpp
+They are being used from the following locations instead:
+- /candidate-install/mtc_trajectory_execution_cpp
+To suppress this warning ignore these packages in the workspace:
+--packages-ignore mtc_trajectory_execution_cpp
+[0.253s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake /fix-source/mtc_aubo_fake_integration_cpp -DCMAKE_PREFIX_PATH=/offline-json/usr -DCMAKE_INSTALL_PREFIX=/fix-install-v2/mtc_aubo_fake_integration_cpp
+[4.000s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake /fix-source/mtc_aubo_fake_integration_cpp -DCMAKE_PREFIX_PATH=/offline-json/usr -DCMAKE_INSTALL_PREFIX=/fix-install-v2/mtc_aubo_fake_integration_cpp
+[4.002s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --build /fix-build-v2/mtc_aubo_fake_integration_cpp -- -j16 -l16
+[38.688s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --build /fix-build-v2/mtc_aubo_fake_integration_cpp -- -j16 -l16
+[38.705s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --install /fix-build-v2/mtc_aubo_fake_integration_cpp
+[38.763s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(mtc_aubo_fake_integration_cpp)
+[38.763s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --install /fix-build-v2/mtc_aubo_fake_integration_cpp
+[38.768s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp' for CMake module files
+[38.768s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp' for CMake config files
+[38.769s] Level 1:colcon.colcon_core.shell:create_environment_hook('mtc_aubo_fake_integration_cpp', 'cmake_prefix_path')
+[38.769s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.ps1'
+[38.771s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.dsv'
+[38.771s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.sh'
+[38.772s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib'
+[38.772s] Level 1:colcon.colcon_core.shell:create_environment_hook('mtc_aubo_fake_integration_cpp', 'ld_library_path_lib')
+[38.772s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.ps1'
+[38.773s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.dsv'
+[38.773s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.sh'
+[38.774s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/bin'
+[38.774s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/pkgconfig/mtc_aubo_fake_integration_cpp.pc'
+[38.776s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/python3.12/site-packages'
+[38.776s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/bin'
+[38.776s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.ps1'
+[38.777s] INFO:colcon.colcon_core.shell:Creating package descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.dsv'
+[38.778s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.sh'
+[38.779s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.bash'
+[38.779s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.zsh'
+[38.780s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/fix-install-v2/mtc_aubo_fake_integration_cpp/share/colcon-core/packages/mtc_aubo_fake_integration_cpp)
+[38.782s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(mtc_aubo_fake_integration_cpp)
+[38.782s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp' for CMake module files
+[38.783s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp' for CMake config files
+[38.783s] Level 1:colcon.colcon_core.shell:create_environment_hook('mtc_aubo_fake_integration_cpp', 'cmake_prefix_path')
+[38.783s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.ps1'
+[38.784s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.dsv'
+[38.784s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/cmake_prefix_path.sh'
+[38.784s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib'
+[38.785s] Level 1:colcon.colcon_core.shell:create_environment_hook('mtc_aubo_fake_integration_cpp', 'ld_library_path_lib')
+[38.785s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.ps1'
+[38.785s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.dsv'
+[38.785s] INFO:colcon.colcon_core.shell:Creating environment hook '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/hook/ld_library_path_lib.sh'
+[38.785s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/bin'
+[38.786s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/pkgconfig/mtc_aubo_fake_integration_cpp.pc'
+[38.786s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/python3.12/site-packages'
+[38.786s] Level 1:colcon.colcon_core.environment:checking '/fix-install-v2/mtc_aubo_fake_integration_cpp/bin'
+[38.786s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.ps1'
+[38.787s] INFO:colcon.colcon_core.shell:Creating package descriptor '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.dsv'
+[38.787s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.sh'
+[38.787s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.bash'
+[38.788s] INFO:colcon.colcon_core.shell:Creating package script '/fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.zsh'
+[38.788s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/fix-install-v2/mtc_aubo_fake_integration_cpp/share/colcon-core/packages/mtc_aubo_fake_integration_cpp)
+[38.788s] DEBUG:colcon.colcon_core.executor.sequential:run_until_complete 'mtc_aubo_fake_integration_cpp' finished with '0'
+[38.788s] DEBUG:colcon.colcon_core.executor.sequential:closing loop
+[38.789s] DEBUG:colcon.colcon_core.executor.sequential:loop closed
+[38.789s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[38.800s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[38.800s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[38.800s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[38.800s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[38.800s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.NotSupported: Unable to autolaunch a dbus-daemon without a $DISPLAY for X11
+[38.800s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[38.800s] INFO:colcon.colcon_core.shell:Creating prefix script '/fix-install-v2/local_setup.ps1'
+[38.801s] INFO:colcon.colcon_core.shell:Creating prefix util module '/fix-install-v2/_local_setup_util_ps1.py'
+[38.802s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/fix-install-v2/setup.ps1'
+[38.806s] INFO:colcon.colcon_core.shell:Creating prefix script '/fix-install-v2/local_setup.sh'
+[38.807s] INFO:colcon.colcon_core.shell:Creating prefix util module '/fix-install-v2/_local_setup_util_sh.py'
+[38.807s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/fix-install-v2/setup.sh'
+[38.809s] INFO:colcon.colcon_core.shell:Creating prefix script '/fix-install-v2/local_setup.bash'
+[38.809s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/fix-install-v2/setup.bash'
+[38.812s] INFO:colcon.colcon_core.shell:Creating prefix script '/fix-install-v2/local_setup.zsh'
+[38.812s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/fix-install-v2/setup.zsh'

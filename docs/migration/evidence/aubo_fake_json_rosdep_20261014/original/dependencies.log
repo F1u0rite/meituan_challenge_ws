@@ -1,0 +1,20 @@
+ERROR[mtc_manipulation]: Cannot locate rosdep definition for [ament_python]
+	rosdep key : ament_python
+	OS name    : ubuntu
+	OS version : noble
+	Data:
+<no data>
+ERROR[mtc_aubo_fake_integration_cpp]: Cannot locate rosdep definition for [nlohmann_json]
+	rosdep key : nlohmann_json
+	OS name    : ubuntu
+	OS version : noble
+	Data:
+<no data>
+System dependencies have not been satisfied:
+apt	ros-jazzy-gz-sim-vendor
+apt	ros-jazzy-gz-plugin-vendor
+apt	nlohmann-json3-dev
+apt	ros-jazzy-ros-gz-sim
+apt	ros-jazzy-ros-gz-bridge
+apt	ros-jazzy-gz-ros2-control
+apt	python3-opencv

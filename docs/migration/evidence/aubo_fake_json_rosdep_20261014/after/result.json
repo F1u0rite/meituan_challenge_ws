@@ -1,0 +1,29 @@
+{
+  "cases": [
+    "mtc_aubo_fake_integration_cpp.AuboCommand.CompleteSixJointTrajectoryPreserved",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.NamesAreMappedNotAssumed",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.ExplicitSlowdownPreservesSourceAndScalesDerivatives",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.EmptyTrajectoryRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.EndpointOnlyRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.RepeatedJointRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.NonzeroFirstTimeRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.NonIncreasingTimeRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.NanRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.SplineLimitsCannotBeBypassed",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.AccelerationScalingPreserved",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.MissingFrameOrIdentityRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.UnsafeRetimingRejected",
+    "mtc_aubo_fake_integration_cpp.AuboCommand.ExpiredOrUnverifiedPlanTimeRejected",
+    "mtc_aubo_fake_integration_cpp.AuboAction.FullTrajectoryAndIndependentStopEvidence",
+    "mtc_aubo_fake_integration_cpp.AuboAction.CancelBeforeResponsePreservesOwnUuid",
+    "mtc_aubo_fake_integration_cpp.AuboAction.LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock",
+    "mtc_aubo_fake_integration_cpp.AuboAction.CancelAcknowledgementWhileMovingCannotConfirmStop",
+    "mtc_aubo_fake_integration_cpp.AuboAction.StaleJointStatePreventsGoal",
+    "mtc_aubo_fake_integration_cpp.AuboAction.ChangedCompletedIdentityNeverSendsAgain",
+    "mtc_aubo_fake_integration_cpp.AuboAction.WrongFrameAndStartDoNotSendGoal",
+    "mtc_aubo_fake_integration_cpp.AuboAction.ConcurrentRequestsHaveSingleOwner"
+  ],
+  "count": 22,
+  "passed": true,
+  "scope": "package.xml rosdep key change; no kernel changes"
+}

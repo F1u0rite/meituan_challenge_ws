@@ -1,0 +1,10 @@
+{
+  "package": "nlohmann-json3-dev",
+  "version": "3.11.3-1",
+  "url": "https://archive.ubuntu.com/ubuntu/pool/universe/n/nlohmann-json3/nlohmann-json3-dev_3.11.3-1_all.deb",
+  "sha256": "85e4e95dc4bdc6034d593e1933ee88e085319fee36cae83c178e8ddc1a66e8fd",
+  "bytes": 189676,
+  "expected_source": "cached Ubuntu Noble APT metadata, captured in logs/environment.log",
+  "downloaded_at": "2026-10-14T03:03:53.122174+00:00",
+  "use": "host download; container offline extraction to /offline-json only"
+}
