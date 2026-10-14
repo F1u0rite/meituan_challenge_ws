@@ -1,0 +1,28 @@
+{
+  "source_sha": "fc82ffa4dab68437ab4eccdb319048466737c1c9",
+  "parent_sha": "b25c2cdd9cca58b09e864d44be4383f34542b42b",
+  "repair_files": {
+    "src/mtc_vision_adapter/package.xml": "da96721302b25c523b0cdd3eab6d63da4366e23840186ccfa03dee60e1c20f89",
+    "src/mtc_vision_adapter/test/ros_replay_validation.py": "b78517f5c3673380c621b9f617deaaed6e92619e9905e620d1cb3ca5d7f2e9d5"
+  },
+  "patch_sha256": "dbb4799952cadf6b0aed5d39ed7b3d443186f1cc45677590188031d3c09c011f",
+  "runtime_source_unchanged": {
+    "src/mtc_vision_adapter/mtc_vision_adapter/__init__.py": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "src/mtc_vision_adapter/mtc_vision_adapter/core.py": "517093c885d164ccb600cdc523f665ca962458b3306601dc60de237dd5205e6c",
+    "src/mtc_vision_adapter/mtc_vision_adapter/publisher.py": "c9a07cf41726ca20526368a040cee8cf7f27dc279da008056b4b8ce12c846dc1"
+  },
+  "fixture_sha256": "14eb81f46759d7621ec5233507fb55af531dcd328dc3bee30e1ff9199214b980",
+  "tests": {
+    "before": 57,
+    "before_failures": 4,
+    "each_layout": 57,
+    "layouts": [
+      "custom",
+      "default",
+      "merged"
+    ],
+    "negative_prefix_cases": 2
+  },
+  "scope": "Only test executable discovery and test dependency declaration; no publisher/core/interface/FSM/Action/Cancel/Motion or assertion changes. Same 57 tests across layouts, not 171 independent tests.",
+  "ai_assistance": "OpenAI Codex assisted minimal test infrastructure repair, verification and evidence packaging; upstream license preserved."
+}

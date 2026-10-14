@@ -1,0 +1,84 @@
+Starting >>> mtc_core_cpp
+Finished <<< mtc_core_cpp [0.23s]
+Starting >>> mtc_interfaces
+Finished <<< mtc_interfaces [0.55s]
+Starting >>> mtc_aubo_bridge
+Finished <<< mtc_aubo_bridge [0.58s]
+Starting >>> mtc_manipulation
+Finished <<< mtc_manipulation [0.77s]
+Starting >>> mtc_motion_execution
+Finished <<< mtc_motion_execution [0.86s]
+Starting >>> mtc_motion_execution_cpp
+Finished <<< mtc_motion_execution_cpp [0.44s]
+Starting >>> mtc_safety
+Finished <<< mtc_safety [0.58s]
+Starting >>> mtc_task
+Finished <<< mtc_task [0.56s]
+Starting >>> mtc_task_cpp
+Finished <<< mtc_task_cpp [0.27s]
+Starting >>> mtc_tool
+Finished <<< mtc_tool [0.61s]
+Starting >>> mtc_vision_adapter
+Finished <<< mtc_vision_adapter [0.97s]	[ with test failures ]
+Starting >>> mtc_bringup
+Finished <<< mtc_bringup [0.51s]
+Starting >>> mtc_manipulation_cpp
+Finished <<< mtc_manipulation_cpp [0.52s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [0.93s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [29.8s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_trajectory_execution_cpp [21.5s]
+Starting >>> mtc_cpp_mock_bringup
+--- stderr: mtc_cpp_mock_bringup
+test_child_or_graph_conflict_blocks_goal (mtc_webui.test_cpp_mock.Guards.test_child_or_graph_conflict_blocks_goal) ... ok
+test_core_lock_blocks_next_goal (mtc_webui.test_cpp_mock.Guards.test_core_lock_blocks_next_goal) ... ok
+test_explicit_mode_needs_no_fabricated_hardware (mtc_webui.test_cpp_mock.Guards.test_explicit_mode_needs_no_fabricated_hardware) ... ok
+test_readonly_and_invalid_namespace (mtc_webui.test_cpp_mock.Guards.test_readonly_and_invalid_namespace) ... ok
+test_scope_mismatch_blocks_goal (mtc_webui.test_cpp_mock.Guards.test_scope_mismatch_blocks_goal) ... ok
+test_stale_or_replayed_readiness_never_enables_goal (mtc_webui.test_cpp_mock.Guards.test_stale_or_replayed_readiness_never_enables_goal) ... ok
+test_basic_success_requires_full_observation_and_exports_result (mtc_webui.test_mock_backend.BackendTests.test_basic_success_requires_full_observation_and_exports_result) ... ok
+test_cancel_result_does_not_imply_stop_confirmed (mtc_webui.test_mock_backend.BackendTests.test_cancel_result_does_not_imply_stop_confirmed) ... ok
+test_duplicate_and_concurrent_submits_are_rejected (mtc_webui.test_mock_backend.BackendTests.test_duplicate_and_concurrent_submits_are_rejected) ... ok
+test_empty_snapshot_has_no_fabricated_task_or_camera (mtc_webui.test_mock_backend.BackendTests.test_empty_snapshot_has_no_fabricated_task_or_camera) ... ok
+test_goal_validation_rejects_ambiguous_colors_and_bad_types (mtc_webui.test_mock_backend.BackendTests.test_goal_validation_rejects_ambiguous_colors_and_bad_types) ... ok
+test_raw_records_are_persisted_and_existing_output_is_not_overwritten (mtc_webui.test_mock_backend.BackendTests.test_raw_records_are_persisted_and_existing_output_is_not_overwritten) ... ok
+test_sequence_catches_up_after_disconnection_without_resubmission (mtc_webui.test_mock_backend.BackendTests.test_sequence_catches_up_after_disconnection_without_resubmission) ... ok
+test_simultaneous_requests_accept_only_one_goal (mtc_webui.test_mock_backend.BackendTests.test_simultaneous_requests_accept_only_one_goal) ... ok
+test_snapshots_are_detached_and_old_result_cannot_replace_current (mtc_webui.test_mock_backend.BackendTests.test_snapshots_are_detached_and_old_result_cannot_replace_current) ... ok
+test_stale_and_missing_samples_cannot_advertise_submit (mtc_webui.test_mock_backend.BackendTests.test_stale_and_missing_samples_cannot_advertise_submit) ... ok
+test_timeout_and_failure_are_preserved_with_goal_ids (mtc_webui.test_mock_backend.BackendTests.test_timeout_and_failure_are_preserved_with_goal_ids) ... ok
+test_unconfirmed_cancel_blocks_next_task_until_separate_feedback (mtc_webui.test_mock_backend.BackendTests.test_unconfirmed_cancel_blocks_next_task_until_separate_feedback) ... ok
+test_wrong_or_old_goal_cannot_cancel_current_task (mtc_webui.test_mock_backend.BackendTests.test_wrong_or_old_goal_cannot_cancel_current_task) ... ok
+test_assets_contract_submit_export_and_cancel (mtc_webui.test_mock_backend.HttpTests.test_assets_contract_submit_export_and_cancel) ... ok
+test_cross_origin_and_unknown_host_are_rejected (mtc_webui.test_mock_backend.HttpTests.test_cross_origin_and_unknown_host_are_rejected) ... ok
+test_no_filesystem_or_shell_routes (mtc_webui.test_mock_backend.HttpTests.test_no_filesystem_or_shell_routes) ... ok
+test_rgb_padding_and_big_endian_depth_are_decoded (mtc_webui.test_ros_backend.ImageTests.test_rgb_padding_and_big_endian_depth_are_decoded) ... skipped 'OpenCV/NumPy are optional outside camera deployment'
+test_ack_is_not_acceptance_and_time_never_creates_result (mtc_webui.test_ros_backend.RealBackendTests.test_ack_is_not_acceptance_and_time_never_creates_result) ... ok
+test_cancel_requires_owned_goal_and_real_ack_does_not_confirm_stop (mtc_webui.test_ros_backend.RealBackendTests.test_cancel_requires_owned_goal_and_real_ack_does_not_confirm_stop) ... ok
+test_concurrent_commands_only_queue_one_goal (mtc_webui.test_ros_backend.RealBackendTests.test_concurrent_commands_only_queue_one_goal) ... ok
+test_config_and_lazy_start_do_not_fall_back_to_mock (mtc_webui.test_ros_backend.RealBackendTests.test_config_and_lazy_start_do_not_fall_back_to_mock) ... ok
+test_default_is_offline_without_fabricated_devices (mtc_webui.test_ros_backend.RealBackendTests.test_default_is_offline_without_fabricated_devices) ... ok
+test_external_task_is_observed_without_claiming_goal_ownership (mtc_webui.test_ros_backend.RealBackendTests.test_external_task_is_observed_without_claiming_goal_ownership) ... ok
+test_feedback_index_does_not_invent_completed_count (mtc_webui.test_ros_backend.RealBackendTests.test_feedback_index_does_not_invent_completed_count) ... ok
+test_late_and_foreign_feedback_do_not_corrupt_result (mtc_webui.test_ros_backend.RealBackendTests.test_late_and_foreign_feedback_do_not_corrupt_result) ... ok
+test_mismatched_result_is_unknown_and_not_retryable (mtc_webui.test_ros_backend.RealBackendTests.test_mismatched_result_is_unknown_and_not_retryable) ... ok
+test_old_repeated_zero_and_future_header_stamps_are_not_fresh (mtc_webui.test_ros_backend.RealBackendTests.test_old_repeated_zero_and_future_header_stamps_are_not_fresh) ... ok
+test_readonly_blocks_all_commands_and_real_mode_rejects_demo_fields (mtc_webui.test_ros_backend.RealBackendTests.test_readonly_blocks_all_commands_and_real_mode_rejects_demo_fields) ... ok
+test_result_and_stop_and_post_result_state_are_independent (mtc_webui.test_ros_backend.RealBackendTests.test_result_and_stop_and_post_result_state_are_independent) ... ok
+test_simulation_faults_stale_data_and_missing_action_block_hardware_goals (mtc_webui.test_ros_backend.RealBackendTests.test_simulation_faults_stale_data_and_missing_action_block_hardware_goals) ... ok
+test_software_stop_has_separate_delivery_and_no_stop_state_mutation (mtc_webui.test_ros_backend.RealBackendTests.test_software_stop_has_separate_delivery_and_no_stop_state_mutation) ... ok
+test_task_persistence_and_expired_camera (mtc_webui.test_ros_backend.RealBackendTests.test_task_persistence_and_expired_camera) ... ok
+test_ros_routes_reject_demo_mutations_and_tunnel_host_is_explicit (mtc_webui.test_ros_backend.RealHttpTests.test_ros_routes_reject_demo_mutations_and_tunnel_host_is_explicit) ... ok
+
+----------------------------------------------------------------------
+Ran 39 tests in 2.065s
+
+OK (skipped=1)
+---
+Finished <<< mtc_cpp_mock_bringup [2.36s]
+
+Summary: 17 packages finished [1min 2s]
+  1 package had stderr output: mtc_cpp_mock_bringup
+  1 package had test failures: mtc_vision_adapter

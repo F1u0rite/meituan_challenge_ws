@@ -1,0 +1,16 @@
+{
+  "image": "sha256:926e080d8855f35333db51875d24fdd9a22fa29337aceda8310d647fcc8d06a1",
+  "container": "/mtc-main-registration-review-fc82ffa",
+  "network": "none",
+  "cpus": 2000000000,
+  "memory": 4294967296,
+  "devices": [],
+  "mounts": [],
+  "port_bindings": {},
+  "cap_drop": [
+    "ALL"
+  ],
+  "security_opt": [
+    "no-new-privileges"
+  ]
+}

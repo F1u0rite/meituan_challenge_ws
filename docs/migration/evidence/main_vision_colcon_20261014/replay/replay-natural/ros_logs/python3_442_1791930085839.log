@@ -1,0 +1,7 @@
+[WARN] [1791930085.919131863] [vision_offline_replay]: OFFLINE REPLAY: original timestamps; invalid poses; never motion input
+[INFO] [1791930085.919567089] [vision_offline_replay]: created QoS: RELIABLE KEEP_LAST(5) VOLATILE
+[INFO] [1791930086.421187469] [vision_offline_replay]: frame=0 mode=replay source=recorded_fixture
+[INFO] [1791930086.921658667] [vision_offline_replay]: frame=1 mode=replay source=recorded_fixture
+[INFO] [1791930087.421580805] [vision_offline_replay]: frame=2 mode=replay source=recorded_fixture
+[INFO] [1791930087.920909030] [vision_offline_replay]: frame=3 mode=replay source=recorded_fixture
+[INFO] [1791930087.926876006] [vision_offline_replay]: replay complete

@@ -1,0 +1,55 @@
+{
+  "exit_mode": "natural",
+  "passed": true,
+  "install_prefix": "/default-review/install/mtc_vision_adapter",
+  "executable": "/default-review/install/mtc_vision_adapter/lib/mtc_vision_adapter/replay_publisher",
+  "scope": "Local Ubuntu ROS2 only; no D435i, cross-host or C++ FSM",
+  "received_frames": 4,
+  "array_lengths": [
+    0,
+    4,
+    4,
+    4
+  ],
+  "exact_fixture_matches": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "motion_rejections": [
+    {
+      "offline": "REPLAY_NOT_MOTION_INPUT",
+      "live": "EMPTY"
+    },
+    {
+      "offline": "REPLAY_NOT_MOTION_INPUT",
+      "live": "RING_INVALID"
+    },
+    {
+      "offline": "REPLAY_NOT_MOTION_INPUT",
+      "live": "RING_INVALID"
+    },
+    {
+      "offline": "REPLAY_NOT_MOTION_INPUT",
+      "live": "RING_INVALID"
+    }
+  ],
+  "discovered_qos": [
+    {
+      "node": "_NODE_NAME_UNKNOWN_",
+      "type": "mtc_interfaces/msg/BatteryDetectionArray",
+      "reliability": "RELIABLE",
+      "durability": "VOLATILE",
+      "history": "UNKNOWN",
+      "depth": 0,
+      "compatibility": "OK",
+      "reason": ""
+    }
+  ],
+  "created_qos": "RELIABLE KEEP_LAST(5) VOLATILE",
+  "publisher_exit": 0,
+  "signal_sent": false,
+  "replay_nodes_remaining": [],
+  "subscriber_cleanup_complete": true
+}

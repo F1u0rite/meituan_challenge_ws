@@ -1,0 +1,13 @@
+fc82ffa4dab68437ab4eccdb319048466737c1c9
+Python 3.12.3
+python3-setuptools	68.1.2-2ubuntu1.2
+ros-jazzy-moveit-core	2.12.4-1noble.20260915.180823
+ros-jazzy-moveit-msgs	2.6.0-1noble.20260911.142759
+ros-jazzy-rclpy	7.1.12-1noble.20260902.053513
+ros-jazzy-rmw-fastrtps-cpp	8.4.4-1noble.20260902.041916
+cv2 MISSING
+numpy /usr/lib/python3/dist-packages/numpy/__init__.py
+torch MISSING
+sam2 MISSING
+pyrealsense2 MISSING
+rclpy /opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py

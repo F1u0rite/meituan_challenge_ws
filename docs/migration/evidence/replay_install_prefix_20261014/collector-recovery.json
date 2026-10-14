@@ -1,0 +1,6 @@
+{
+  "problem": "After custom-layout 57 tests passed, unqualified colcon test-result attempted to write cwd/log under host-owned read-only copy and exited1. Original test XML and log retained.",
+  "repair": "Use explicit log-base for result collection only, collect same custom test run without rerunning ROS. Copy identical fix source within container to root-owned /default-review for conventional default build/install. No runtime source or assertions changed.",
+  "original_step": "fix-custom",
+  "recovery_step": "custom-results-recovery"
+}
