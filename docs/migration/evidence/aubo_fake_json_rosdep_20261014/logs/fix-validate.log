@@ -1,0 +1,17 @@
+package format parse PASS; single rosdep key substitution only
+Starting >>> mtc_aubo_fake_integration_cpp
+--- stderr: mtc_aubo_fake_integration_cpp
+/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp:1:10: fatal error: fake_controller.hpp: No such file or directory
+    1 | #include "fake_controller.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/test_aubo_action.dir/build.make:76: CMakeFiles/test_aubo_action.dir/test/test_aubo_action.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:271: CMakeFiles/test_aubo_action.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+gmake: *** [Makefile:146: all] Error 2
+---
+Failed   <<< mtc_aubo_fake_integration_cpp [43.1s, exited with code 2]
+
+Summary: 0 packages finished [43.3s]
+  1 package failed: mtc_aubo_fake_integration_cpp
+  1 package had stderr output: mtc_aubo_fake_integration_cpp

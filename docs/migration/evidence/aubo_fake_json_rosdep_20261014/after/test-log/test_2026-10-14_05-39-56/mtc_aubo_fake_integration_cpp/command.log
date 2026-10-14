@@ -1,0 +1,2 @@
+Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process

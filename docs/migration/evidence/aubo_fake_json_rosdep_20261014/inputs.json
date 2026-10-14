@@ -1,0 +1,17 @@
+{
+  "source_base": "05a4ca9fedc81eff3dbdcd3033b9198df6400adb",
+  "validated_repair_commit": "d68a69162aef8e52bab9d13c77b58a1c0abb7ee4",
+  "repair_files": [
+    "src/mtc_aubo_fake_integration_cpp/package.xml"
+  ],
+  "scope": "Only package.xml rosdep key substitution; no CMake identifier, runtime or kernel edits",
+  "cpp_base_cases": 553,
+  "cpp_base_targets": 33,
+  "repair_package_cases": 22,
+  "repair_package_failures": 0,
+  "native_functional_pass": 6,
+  "native_functional_fail": 3,
+  "native_teardown_fail": 9,
+  "limitations": "Native authority loss and MoveIt shutdown remain unresolved; no full FSM/Gazebo/real-hardware acceptance",
+  "ai_assistance": "OpenAI Codex"
+}

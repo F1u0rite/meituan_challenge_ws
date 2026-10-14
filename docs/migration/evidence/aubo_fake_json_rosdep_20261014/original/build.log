@@ -1,0 +1,90 @@
+Starting >>> mtc_core_cpp
+Finished <<< mtc_core_cpp [6.35s]
+Starting >>> mtc_interfaces
+Finished <<< mtc_interfaces [28.8s]
+Starting >>> mtc_aubo_bridge
+Finished <<< mtc_aubo_bridge [1.01s]
+--- stderr: mtc_aubo_bridge
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Starting >>> mtc_manipulation
+Finished <<< mtc_manipulation [0.85s]
+--- stderr: mtc_manipulation
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Starting >>> mtc_motion_execution
+--- stderr: mtc_motion_execution
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_motion_execution [0.85s]
+Starting >>> mtc_motion_execution_cpp
+Finished <<< mtc_motion_execution_cpp [11.6s]
+Starting >>> mtc_safety
+Finished <<< mtc_safety [0.93s]
+--- stderr: mtc_safety
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Starting >>> mtc_task
+Finished <<< mtc_task [0.99s]
+--- stderr: mtc_task
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Starting >>> mtc_task_cpp
+Finished <<< mtc_task_cpp [7.39s]
+Starting >>> mtc_tool
+--- stderr: mtc_tool
+warning: build_py: byte-compiling is disabled, skipping.
+
+warning: install_lib: byte-compiling is disabled, skipping.
+
+---
+Finished <<< mtc_tool [0.97s]
+Starting >>> mtc_manipulation_cpp
+Finished <<< mtc_manipulation_cpp [12.3s]
+Starting >>> mtc_moveit_planner
+Finished <<< mtc_moveit_planner [30.4s]
+Starting >>> mtc_ros2_action_cpp
+Finished <<< mtc_ros2_action_cpp [32.7s]
+Starting >>> mtc_trajectory_execution_cpp
+Finished <<< mtc_trajectory_execution_cpp [38.8s]
+Starting >>> mtc_aubo_fake_integration_cpp
+--- stderr: mtc_aubo_fake_integration_cpp
+CMake Error at CMakeLists.txt:8 (find_package):
+  By not providing "Findnlohmann_json.cmake" in CMAKE_MODULE_PATH this
+  project has asked CMake to find a package configuration file provided by
+  "nlohmann_json", but CMake did not find one.
+
+  Could not find a package configuration file provided by "nlohmann_json"
+  with any of the following names:
+
+    nlohmann_jsonConfig.cmake
+    nlohmann_json-config.cmake
+
+  Add the installation prefix of "nlohmann_json" to CMAKE_PREFIX_PATH or set
+  "nlohmann_json_DIR" to a directory containing one of the above files.  If
+  "nlohmann_json" provides a separate development package or SDK, be sure it
+  has been installed.
+
+
+---
+Failed   <<< mtc_aubo_fake_integration_cpp [2.52s, exited with code 1]
+
+Summary: 14 packages finished [2min 57s]
+  1 package failed: mtc_aubo_fake_integration_cpp
+  7 packages had stderr output: mtc_aubo_bridge mtc_aubo_fake_integration_cpp mtc_manipulation mtc_motion_execution mtc_safety mtc_task mtc_tool
+  2 packages not processed

@@ -1,0 +1,16 @@
+{
+  "name": "fix-validate",
+  "started_at": "2026-10-14T05:38:11.933435+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-aubo-fake-review-05a4ca9",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=232 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; set -e\nmkdir -p /review-evidence/dependency-fix\nrosdep resolve --rosdistro jazzy --os ubuntu:noble nlohmann-json-dev > /review-evidence/dependency-fix/rosdep-resolve.txt\npython3 - <<'P'\nimport json,xml.etree.ElementTree as E\nfrom pathlib import Path\nfrom catkin_pkg.package import parse_package\nbefore=Path('/candidate/src/mtc_aubo_fake_integration_cpp/package.xml')\nafter=Path('/fix-source/mtc_aubo_fake_integration_cpp/package.xml')\na=parse_package(str(before));b=parse_package(str(after))\nassert before.read_text().replace('<depend>nlohmann_json</depend>','<depend>nlohmann-json-dev</depend>')==after.read_text()\nassert b.name==a.name\nprint('package format parse PASS; single rosdep key substitution only')\nP\ncolcon --log-base /review-evidence/dependency-fix/build-log build --base-paths /fix-source --build-base /fix-build --install-base /fix-install --packages-select mtc_aubo_fake_integration_cpp --executor sequential --cmake-args -DCMAKE_PREFIX_PATH=/offline-json/usr\nsource /fix-install/setup.bash\ncolcon --log-base /review-evidence/dependency-fix/test-log test --base-paths /fix-source --build-base /fix-build --install-base /fix-install --packages-select mtc_aubo_fake_integration_cpp --executor sequential --return-code-on-test-failure\ncolcon test-result --test-result-base /fix-build --verbose > /review-evidence/dependency-fix/test-results.txt\npython3 - <<'P'\nimport json,hashlib,xml.etree.ElementTree as E\nfrom pathlib import Path\nr=Path('/review-evidence/dependency-fix');r.joinpath('xml').mkdir()\ncases=[]\nfor p in Path('/fix-build/mtc_aubo_fake_integration_cpp/test_results').rglob('*.gtest.xml'):\n r.joinpath('xml',p.name).write_bytes(p.read_bytes())\n for c in E.parse(p).getroot().iter('testcase'):\n  assert c.get('status')=='run' and c.get('result')=='completed' and not any(c.find(x) is not None for x in ['failure','error','skipped'])\n  cases.append(c.get('classname')+'.'+c.get('name'))\nassert len(cases)==22 and len(set(cases))==22\nr.joinpath('result.json').write_text(json.dumps(dict(cases=cases,count=22,passed=True,scope='package.xml rosdep key change; no kernel changes'),indent=2))\nprint('DEPENDENCY FIX 22 CASES PASS')\nP\n"
+  ],
+  "timeout_seconds": 210,
+  "pid": 32797,
+  "exit_code": 2,
+  "ended_at": "2026-10-14T05:38:57.048472+00:00"
+}

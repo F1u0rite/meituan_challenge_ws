@@ -1,0 +1,56 @@
+{
+  "fault": {
+    "samples": 1179,
+    "max_receipt_gap_s": 0.27188288583420217,
+    "max_stamp_gap_s": 0.265016654,
+    "nonincreasing": 0
+  },
+  "silence": {
+    "samples": 1272,
+    "max_receipt_gap_s": 0.33619565214030445,
+    "max_stamp_gap_s": 0.335041617,
+    "nonincreasing": 0
+  },
+  "plan": {
+    "samples": 1072,
+    "max_receipt_gap_s": 0.33565252204425633,
+    "max_stamp_gap_s": 0.334973043,
+    "nonincreasing": 1
+  },
+  "foreign": {
+    "samples": 1167,
+    "max_receipt_gap_s": 0.2546500279568136,
+    "max_stamp_gap_s": 0.249987791,
+    "nonincreasing": 0
+  },
+  "mismatch": {
+    "samples": 1200,
+    "max_receipt_gap_s": 0.34058035002090037,
+    "max_stamp_gap_s": 0.254976523,
+    "nonincreasing": 0
+  },
+  "identity": {
+    "samples": 2997,
+    "max_receipt_gap_s": 0.3340533538721502,
+    "max_stamp_gap_s": 0.204990727,
+    "nonincreasing": 0
+  },
+  "execute": {
+    "samples": 3014,
+    "max_receipt_gap_s": 0.27219075500033796,
+    "max_stamp_gap_s": 0.269984216,
+    "nonincreasing": 0
+  },
+  "cancel": {
+    "samples": 1215,
+    "max_receipt_gap_s": 0.03145770914852619,
+    "max_stamp_gap_s": 0.031399322,
+    "nonincreasing": 0
+  },
+  "expired": {
+    "samples": 1079,
+    "max_receipt_gap_s": 0.3397807099390775,
+    "max_stamp_gap_s": 0.33497814,
+    "nonincreasing": 0
+  }
+}

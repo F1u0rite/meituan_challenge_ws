@@ -1,0 +1,13 @@
+diff --git a/src/mtc_aubo_fake_integration_cpp/package.xml b/src/mtc_aubo_fake_integration_cpp/package.xml
+index 14c87ba..e635757 100644
+--- a/src/mtc_aubo_fake_integration_cpp/package.xml
++++ b/src/mtc_aubo_fake_integration_cpp/package.xml
+@@ -16,7 +16,7 @@
+   <depend>moveit_ros_planning</depend>
+   <depend>urdf</depend>
+   <depend>pluginlib</depend>
+-  <depend>nlohmann_json</depend>
++  <depend>nlohmann-json-dev</depend>
+   <exec_depend>launch_ros</exec_depend>
+   <exec_depend>controller_manager</exec_depend>
+   <exec_depend>robot_state_publisher</exec_depend>

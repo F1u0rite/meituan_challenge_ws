@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/ros/rosdistro",
+  "commit": "555721de97bcb40ff12a370cfcd7b32941592b86",
+  "url": "https://raw.githubusercontent.com/ros/rosdistro/555721de97bcb40ff12a370cfcd7b32941592b86/rosdep/base.yaml",
+  "base_yaml_sha256": "e012a515f673a1c78d801552e4b8863a5eb0bf6fd698e08263df709f8da09497",
+  "extraction": "nlohmann-json-dev stanza only",
+  "source_note": "Primary ROS dependency definition; cache resolve checked separately inside offline Jazzy"
+}

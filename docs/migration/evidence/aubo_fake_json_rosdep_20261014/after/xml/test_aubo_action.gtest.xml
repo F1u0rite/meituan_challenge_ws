@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="8" failures="0" disabled="0" errors="0" time="27.269" timestamp="2026-10-14T05:39:57.355" name="AllTests">
+  <testsuite name="AuboAction" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="27.269" timestamp="2026-10-14T05:39:57.355">
+    <testcase name="FullTrajectoryAndIndependentStopEvidence" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="35" status="run" result="completed" time="3.397" timestamp="2026-10-14T05:39:57.355" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="CancelBeforeResponsePreservesOwnUuid" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="39" status="run" result="completed" time="3.206" timestamp="2026-10-14T05:40:00.753" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="45" status="run" result="completed" time="3.735" timestamp="2026-10-14T05:40:03.959" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="CancelAcknowledgementWhileMovingCannotConfirmStop" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="54" status="run" result="completed" time="3.976" timestamp="2026-10-14T05:40:07.707" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="StaleJointStatePreventsGoal" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="59" status="run" result="completed" time="3.121" timestamp="2026-10-14T05:40:13.302" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="ChangedCompletedIdentityNeverSendsAgain" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="63" status="run" result="completed" time="3.361" timestamp="2026-10-14T05:40:16.423" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="WrongFrameAndStartDoNotSendGoal" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="67" status="run" result="completed" time="3.111" timestamp="2026-10-14T05:40:19.785" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+    <testcase name="ConcurrentRequestsHaveSingleOwner" file="/fix-source/mtc_aubo_fake_integration_cpp/test/test_aubo_action.cpp" line="71" status="run" result="completed" time="3.358" timestamp="2026-10-14T05:40:22.896" classname="mtc_aubo_fake_integration_cpp.AuboAction" />
+  </testsuite>
+</testsuites>

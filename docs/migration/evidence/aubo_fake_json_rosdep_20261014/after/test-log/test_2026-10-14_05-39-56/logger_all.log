@@ -1,0 +1,80 @@
+[0.202s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', '--log-base', '/review-evidence/dependency-fix-v2/test-log', 'test', '--base-paths', '/fix-source', '--build-base', '/fix-build-v2', '--install-base', '/fix-install-v2', '--packages-select', 'mtc_aubo_fake_integration_cpp', '--executor', 'sequential', '--return-code-on-test-failure']
+[0.203s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base='/review-evidence/dependency-fix-v2/test-log', log_level=None, verb_name='test', build_base='/fix-build-v2', install_base='/fix-install-v2', merge_install=False, test_result_base=None, retest_until_fail=0, retest_until_pass=0, abort_on_error=False, return_code_on_test_failure=True, executor='sequential', parallel_workers=16, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['/fix-source'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['mtc_aubo_fake_integration_cpp'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, ctest_args=None, python_testing=None, pytest_args=None, pytest_with_coverage=False, unittest_args=None, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x76339a20d4c0>, verb_extension=<colcon_core.verb.test.TestVerb object at 0x76339a20c0b0>, main=<bound method TestVerb.main of <colcon_core.verb.test.TestVerb object at 0x76339a20c0b0>>, mixin_verb=('test',))
+[0.246s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.247s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/Gazebo.meta'
+[0.247s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/fastdds.meta'
+[0.248s] INFO:colcon.colcon_metadata.package_discovery.colcon_meta:Using configuration from '/root/.colcon/metadata/default/fastrtps.meta'
+[0.248s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.248s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.248s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.248s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.248s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/fix-source'
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['ignore', 'ignore_ament_install']
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ignore'
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ignore_ament_install'
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['colcon_pkg']
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'colcon_pkg'
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['colcon_meta']
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'colcon_meta'
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['ros']
+[0.248s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'ros'
+[0.270s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['cmake', 'python']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'cmake'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'python'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extensions ['python_setup_py']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source) by extension 'python_setup_py'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ignore'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ignore_ament_install'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['colcon_pkg']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'colcon_pkg'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['colcon_meta']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'colcon_meta'
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extensions ['ros']
+[0.271s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_aubo_fake_integration_cpp) by extension 'ros'
+[0.274s] DEBUG:colcon.colcon_core.package_identification:Package '/fix-source/mtc_aubo_fake_integration_cpp' with type 'ros.ament_cmake' and name 'mtc_aubo_fake_integration_cpp'
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ignore'
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ignore_ament_install'
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['colcon_pkg']
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'colcon_pkg'
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['colcon_meta']
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'colcon_meta'
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extensions ['ros']
+[0.274s] Level 1:colcon.colcon_core.package_identification:_identify(/fix-source/mtc_trajectory_execution_cpp) by extension 'ros'
+[0.275s] DEBUG:colcon.colcon_core.package_identification:Package '/fix-source/mtc_trajectory_execution_cpp' with type 'ros.ament_cmake' and name 'mtc_trajectory_execution_cpp'
+[0.275s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.278s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'mtc_trajectory_execution_cpp' in '/fix-source/mtc_trajectory_execution_cpp'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'ctest_args' from command line to 'None'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'python_testing' from command line to 'None'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'pytest_args' from command line to 'None'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'pytest_with_coverage' from command line to 'False'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'unittest_args' from command line to 'None'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'retest_until_pass' from command line to '0'
+[0.278s] Level 5:colcon.colcon_core.verb:set package 'mtc_aubo_fake_integration_cpp' test argument 'retest_until_fail' from command line to '0'
+[0.278s] DEBUG:colcon.colcon_core.verb.test:Testing package 'mtc_aubo_fake_integration_cpp' with the following arguments: {'build_base': '/fix-build-v2/mtc_aubo_fake_integration_cpp', 'ctest_args': None, 'install_base': '/fix-install-v2/mtc_aubo_fake_integration_cpp', 'path': '/fix-source/mtc_aubo_fake_integration_cpp', 'pytest_args': None, 'pytest_with_coverage': False, 'python_testing': None, 'retest_until_fail': 0, 'retest_until_pass': 0, 'test_result_base': None, 'unittest_args': None}
+[0.278s] INFO:colcon.colcon_core.executor:Executing jobs using 'sequential' executor
+[0.280s] DEBUG:colcon.colcon_core.executor.sequential:run_until_complete 'mtc_aubo_fake_integration_cpp'
+[0.280s] INFO:colcon.colcon_ros.task.ament_cmake.test:Testing ROS package in '/fix-source/mtc_aubo_fake_integration_cpp' with build type 'ament_cmake'
+[0.280s] INFO:colcon.colcon_cmake.task.cmake.test:Testing CMake package in '/fix-source/mtc_aubo_fake_integration_cpp'
+[0.283s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.283s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.283s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.289s] WARNING:colcon.colcon_core.shell:The following packages are in the workspace but haven't been built:
+- mtc_trajectory_execution_cpp
+They are being used from the following locations instead:
+- /candidate-install/mtc_trajectory_execution_cpp
+To suppress this warning ignore these packages in the workspace:
+--packages-ignore mtc_trajectory_execution_cpp
+[0.323s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+[29.619s] DEBUG:colcon.colcon_core.executor.sequential:run_until_complete 'mtc_aubo_fake_integration_cpp' finished with '0'
+[29.620s] DEBUG:colcon.colcon_core.executor.sequential:closing loop
+[29.620s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+[29.621s] DEBUG:colcon.colcon_core.executor.sequential:loop closed
+[29.621s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[29.628s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[29.628s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[29.629s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[29.629s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[29.629s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.NotSupported: Unable to autolaunch a dbus-daemon without a $DISPLAY for X11
+[29.629s] DEBUG:colcon.colcon_core.event_reactor:joined thread

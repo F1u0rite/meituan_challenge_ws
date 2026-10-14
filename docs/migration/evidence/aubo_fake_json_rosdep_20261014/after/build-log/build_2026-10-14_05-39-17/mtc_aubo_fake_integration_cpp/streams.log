@@ -1,0 +1,106 @@
+[0.021s] Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake /fix-source/mtc_aubo_fake_integration_cpp -DCMAKE_PREFIX_PATH=/offline-json/usr -DCMAKE_INSTALL_PREFIX=/fix-install-v2/mtc_aubo_fake_integration_cpp
+[0.108s] -- The C compiler identification is GNU 13.3.0
+[0.197s] -- The CXX compiler identification is GNU 13.3.0
+[0.226s] -- Detecting C compiler ABI info
+[0.378s] -- Detecting C compiler ABI info - done
+[0.386s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.386s] -- Detecting C compile features
+[0.387s] -- Detecting C compile features - done
+[0.402s] -- Detecting CXX compiler ABI info
+[0.556s] -- Detecting CXX compiler ABI info - done
+[0.564s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.565s] -- Detecting CXX compile features
+[0.565s] -- Detecting CXX compile features - done
+[0.577s] -- Found ament_cmake: 2.5.6 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.768s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[0.982s] -- Found mtc_trajectory_execution_cpp: 0.1.0 (/candidate-install/mtc_trajectory_execution_cpp/share/mtc_trajectory_execution_cpp/cmake)
+[1.086s] -- Found rosidl_generator_c: 4.6.9 (/opt/ros/jazzy/share/rosidl_generator_c/cmake)
+[1.119s] -- Found rosidl_generator_cpp: 4.6.9 (/opt/ros/jazzy/share/rosidl_generator_cpp/cmake)
+[1.158s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.196s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.406s] -- Found rmw_implementation_cmake: 7.3.3 (/opt/ros/jazzy/share/rmw_implementation_cmake/cmake)
+[1.417s] -- Found rmw_fastrtps_cpp: 8.4.4 (/opt/ros/jazzy/share/rmw_fastrtps_cpp/cmake)
+[1.580s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13")  
+[1.600s] -- Found FastRTPS: /opt/ros/jazzy/include (Required is at least version "2.13") 
+[1.630s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.164s] -- Found mtc_moveit_planner: 0.1.0 (/candidate-install/mtc_moveit_planner/share/mtc_moveit_planner/cmake)
+[2.506s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found version "1.83.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[2.656s] -- Found tcb_span: 1.3.2 (/opt/ros/jazzy/share/tcb_span/cmake)
+[2.679s] -- Found rclcpp_lifecycle: 28.1.22 (/opt/ros/jazzy/share/rclcpp_lifecycle/cmake)
+[2.715s] -- Found parameter_traits: 0.7.6 (/opt/ros/jazzy/share/parameter_traits/cmake)
+[2.890s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[2.890s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[3.216s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found version "1.83.0") found components: system filesystem date_time program_options thread chrono 
+[3.282s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found version "1.83.0") found components: date_time filesystem program_options system thread 
+[3.308s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found version "1.83.0") found components: thread system filesystem regex date_time program_options 
+[3.360s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.83.0/BoostConfig.cmake (found version "1.83.0") found components: system filesystem date_time program_options thread 
+[3.437s] -- Found nlohmann_json: /offline-json/usr/share/cmake/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.11.3") 
+[3.463s] -- Found ament_cmake_gtest: 2.5.6 (/opt/ros/jazzy/share/ament_cmake_gtest/cmake)
+[3.475s] -- Found gtest sources under '/opt/ros/jazzy/src/gtest_vendor': C++ tests using 'Google Test' will be built
+[3.481s] -- Found Threads: TRUE  
+[3.601s] -- Configuring done (3.6s)
+[3.727s] -- Generating done (0.1s)
+[3.743s] -- Build files have been written to: /fix-build-v2/mtc_aubo_fake_integration_cpp
+[3.768s] Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake /fix-source/mtc_aubo_fake_integration_cpp -DCMAKE_PREFIX_PATH=/offline-json/usr -DCMAKE_INSTALL_PREFIX=/fix-install-v2/mtc_aubo_fake_integration_cpp
+[3.770s] Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --build /fix-build-v2/mtc_aubo_fake_integration_cpp -- -j16 -l16
+[3.876s] [ 28%] Building CXX object gtest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[3.876s] [ 28%] Building CXX object gtest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[3.876s] [ 28%] Building CXX object CMakeFiles/mtc_aubo_planning_only.dir/src/planning_only.cpp.o
+[3.876s] [ 28%] Building CXX object CMakeFiles/mtc_aubo_fake_integration_cpp.dir/src/aubo_fjt_motion_port.cpp.o
+[5.983s] [ 35%] Linking CXX static library libgtest_main.a
+[6.111s] [ 35%] Built target gtest_main
+[10.797s] [ 42%] Linking CXX shared library libmtc_aubo_fake_integration_cpp.so
+[11.115s] [ 50%] Linking CXX static library libgtest.a
+[11.268s] [ 57%] Linking CXX shared library libmtc_aubo_planning_only.so
+[11.305s] [ 57%] Built target gtest
+[11.501s] [ 57%] Built target mtc_aubo_fake_integration_cpp
+[11.574s] [ 64%] Building CXX object CMakeFiles/aubo_fake_probe.dir/src/aubo_fake_probe.cpp.o
+[11.580s] [ 78%] Building CXX object CMakeFiles/test_aubo_command.dir/test/test_aubo_command.cpp.o
+[11.580s] [ 78%] Building CXX object CMakeFiles/test_aubo_action.dir/test/test_aubo_action.cpp.o
+[12.678s] [ 78%] Built target mtc_aubo_planning_only
+[19.716s] [ 85%] Linking CXX executable test_aubo_command
+[20.325s] [ 85%] Built target test_aubo_command
+[30.510s] [ 92%] Linking CXX executable test_aubo_action
+[31.595s] [ 92%] Built target test_aubo_action
+[36.749s] [100%] Linking CXX executable aubo_fake_probe
+[38.566s] [100%] Built target aubo_fake_probe
+[38.586s] Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --build /fix-build-v2/mtc_aubo_fake_integration_cpp -- -j16 -l16
+[38.603s] Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --install /fix-build-v2/mtc_aubo_fake_integration_cpp
+[38.617s] -- Install configuration: ""
+[38.619s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/planning_only.xml
+[38.619s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/lib/libmtc_aubo_fake_integration_cpp.so
+[38.621s] -- Set non-toolchain portion of runtime path of "/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/libmtc_aubo_fake_integration_cpp.so" to ""
+[38.621s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/lib/libmtc_aubo_planning_only.so
+[38.623s] -- Set non-toolchain portion of runtime path of "/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/libmtc_aubo_planning_only.so" to ""
+[38.623s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe
+[38.642s] -- Set non-toolchain portion of runtime path of "/fix-install-v2/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/aubo_fake_probe" to ""
+[38.642s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/include
+[38.642s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/include/mtc_aubo_fake_integration_cpp
+[38.642s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/include/mtc_aubo_fake_integration_cpp/aubo_fjt_motion_port.hpp
+[38.643s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/include/mtc_aubo_fake_integration_cpp/fsm_injection.hpp
+[38.643s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/launch
+[38.643s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/launch/aubo_fake.launch.py
+[38.644s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/lib/mtc_aubo_fake_integration_cpp/run_aubo_fake.py
+[38.645s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/library_path.sh
+[38.645s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/library_path.dsv
+[38.647s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/ament_index/resource_index/package_run_dependencies/mtc_aubo_fake_integration_cpp
+[38.648s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/ament_index/resource_index/parent_prefix_path/mtc_aubo_fake_integration_cpp
+[38.649s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/ament_prefix_path.sh
+[38.649s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/ament_prefix_path.dsv
+[38.650s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/path.sh
+[38.650s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/environment/path.dsv
+[38.651s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/local_setup.bash
+[38.651s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/local_setup.sh
+[38.652s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/local_setup.zsh
+[38.652s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/local_setup.dsv
+[38.653s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.dsv
+[38.654s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/ament_index/resource_index/packages/mtc_aubo_fake_integration_cpp
+[38.655s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/ament_index/resource_index/moveit_core__pluginlib__plugin/mtc_aubo_fake_integration_cpp
+[38.656s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/export_mtc_aubo_fake_integration_cppExport.cmake
+[38.656s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/export_mtc_aubo_fake_integration_cppExport-noconfig.cmake
+[38.657s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/ament_cmake_export_targets-extras.cmake
+[38.657s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/ament_cmake_export_dependencies-extras.cmake
+[38.658s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/mtc_aubo_fake_integration_cppConfig.cmake
+[38.658s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/cmake/mtc_aubo_fake_integration_cppConfig-version.cmake
+[38.659s] -- Installing: /fix-install-v2/mtc_aubo_fake_integration_cpp/share/mtc_aubo_fake_integration_cpp/package.xml
+[38.662s] Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/candidate-install/mtc_tool:/candidate-install/mtc_task:/candidate-install/mtc_safety:/candidate-install/mtc_motion_execution:/candidate-install/mtc_manipulation:/candidate-install/mtc_aubo_bridge:/opt/ros/jazzy /usr/bin/cmake --install /fix-build-v2/mtc_aubo_fake_integration_cpp

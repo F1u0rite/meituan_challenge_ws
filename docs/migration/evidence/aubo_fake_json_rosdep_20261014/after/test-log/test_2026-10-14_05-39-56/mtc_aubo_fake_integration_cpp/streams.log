@@ -1,0 +1,110 @@
+[0.043s] Invoking command in '/fix-build-v2/mtc_aubo_fake_integration_cpp': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
+[0.056s] UpdateCTestConfiguration  from :/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini
+[0.057s] Parse Config file:/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini
+[0.057s]    Site: 2680a2d061b8
+[0.057s]    Build name: (empty)
+[0.057s]  Add coverage exclude regular expressions.
+[0.057s] Create new tag: 20261014-0539 - Experimental
+[0.057s] UpdateCTestConfiguration  from :/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini
+[0.057s] Parse Config file:/fix-build-v2/mtc_aubo_fake_integration_cpp/CTestConfiguration.ini
+[0.057s] Test project /fix-build-v2/mtc_aubo_fake_integration_cpp
+[0.057s] Constructing a list of tests
+[0.057s] Done constructing a list of tests
+[0.057s] Updating test list for fixtures
+[0.058s] Added 0 tests to meet fixture requirements
+[0.058s] Checking test dependency graph...
+[0.058s] Checking test dependency graph end
+[0.058s] test 1
+[0.058s]     Start 1: test_aubo_command
+[0.058s] 
+[0.058s] 1: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml" "--package-name" "mtc_aubo_fake_integration_cpp" "--output-file" "/fix-build-v2/mtc_aubo_fake_integration_cpp/ament_cmake_gtest/test_aubo_command.txt" "--command" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_command" "--gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml"
+[0.058s] 1: Working Directory: /fix-build-v2/mtc_aubo_fake_integration_cpp
+[0.058s] 1: Test timeout computed to be: 30
+[0.122s] 1: -- run_test.py: invoking following command in '/fix-build-v2/mtc_aubo_fake_integration_cpp':
+[0.122s] 1:  - /fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_command --gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml
+[0.185s] 1: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+[0.185s] 1: [==========] Running 14 tests from 1 test suite.
+[0.185s] 1: [----------] Global test environment set-up.
+[0.185s] 1: [----------] 14 tests from AuboCommand
+[0.185s] 1: [ RUN      ] AuboCommand.CompleteSixJointTrajectoryPreserved
+[0.185s] 1: [       OK ] AuboCommand.CompleteSixJointTrajectoryPreserved (0 ms)
+[0.186s] 1: [ RUN      ] AuboCommand.NamesAreMappedNotAssumed
+[0.186s] 1: [       OK ] AuboCommand.NamesAreMappedNotAssumed (0 ms)
+[0.186s] 1: [ RUN      ] AuboCommand.ExplicitSlowdownPreservesSourceAndScalesDerivatives
+[0.187s] 1: [       OK ] AuboCommand.ExplicitSlowdownPreservesSourceAndScalesDerivatives (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.EmptyTrajectoryRejected
+[0.187s] 1: [       OK ] AuboCommand.EmptyTrajectoryRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.EndpointOnlyRejected
+[0.187s] 1: [       OK ] AuboCommand.EndpointOnlyRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.RepeatedJointRejected
+[0.187s] 1: [       OK ] AuboCommand.RepeatedJointRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.NonzeroFirstTimeRejected
+[0.187s] 1: [       OK ] AuboCommand.NonzeroFirstTimeRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.NonIncreasingTimeRejected
+[0.187s] 1: [       OK ] AuboCommand.NonIncreasingTimeRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.NanRejected
+[0.187s] 1: [       OK ] AuboCommand.NanRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.SplineLimitsCannotBeBypassed
+[0.187s] 1: [       OK ] AuboCommand.SplineLimitsCannotBeBypassed (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.AccelerationScalingPreserved
+[0.187s] 1: [       OK ] AuboCommand.AccelerationScalingPreserved (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.MissingFrameOrIdentityRejected
+[0.187s] 1: [       OK ] AuboCommand.MissingFrameOrIdentityRejected (0 ms)
+[0.187s] 1: [ RUN      ] AuboCommand.UnsafeRetimingRejected
+[0.188s] 1: [       OK ] AuboCommand.UnsafeRetimingRejected (0 ms)
+[0.188s] 1: [ RUN      ] AuboCommand.ExpiredOrUnverifiedPlanTimeRejected
+[0.188s] 1: [       OK ] AuboCommand.ExpiredOrUnverifiedPlanTimeRejected (0 ms)
+[0.188s] 1: [----------] 14 tests from AuboCommand (1 ms total)
+[0.188s] 1: 
+[0.188s] 1: [----------] Global test environment tear-down
+[0.188s] 1: [==========] 14 tests from 1 test suite ran. (1 ms total)
+[0.188s] 1: [  PASSED  ] 14 tests.
+[0.191s] 1: -- run_test.py: return code 0
+[0.192s] 1: -- run_test.py: inject classname prefix into gtest result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml'
+[0.192s] 1: -- run_test.py: verify result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_command.gtest.xml'
+[0.203s] 1/2 Test #1: test_aubo_command ................   Passed    0.15 sec
+[0.203s] test 2
+[0.203s]     Start 2: test_aubo_action
+[0.203s] 
+[0.203s] 2: Test command: /usr/bin/python3 "-u" "/opt/ros/jazzy/share/ament_cmake_test/cmake/run_test.py" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml" "--package-name" "mtc_aubo_fake_integration_cpp" "--output-file" "/fix-build-v2/mtc_aubo_fake_integration_cpp/ament_cmake_gtest/test_aubo_action.txt" "--command" "/fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_action" "--gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml"
+[0.203s] 2: Working Directory: /fix-build-v2/mtc_aubo_fake_integration_cpp
+[0.203s] 2: Test timeout computed to be: 90
+[0.270s] 2: -- run_test.py: invoking following command in '/fix-build-v2/mtc_aubo_fake_integration_cpp':
+[0.271s] 2:  - /fix-build-v2/mtc_aubo_fake_integration_cpp/test_aubo_action --gtest_output=xml:/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml
+[0.311s] 2: Running main() from /opt/ros/jazzy/src/gtest_vendor/src/gtest_main.cc
+[0.311s] 2: [==========] Running 8 tests from 1 test suite.
+[0.311s] 2: [----------] Global test environment set-up.
+[0.311s] 2: [----------] 8 tests from AuboAction
+[0.311s] 2: [ RUN      ] AuboAction.FullTrajectoryAndIndependentStopEvidence
+[3.708s] 2: [       OK ] AuboAction.FullTrajectoryAndIndependentStopEvidence (3397 ms)
+[3.708s] 2: [ RUN      ] AuboAction.CancelBeforeResponsePreservesOwnUuid
+[6.915s] 2: [       OK ] AuboAction.CancelBeforeResponsePreservesOwnUuid (3206 ms)
+[6.915s] 2: [ RUN      ] AuboAction.LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock
+[10.650s] 2: [       OK ] AuboAction.LateResponseAfterTimeoutCannotBecomeOrphanOrUnlock (3735 ms)
+[10.651s] 2: [ RUN      ] AuboAction.CancelAcknowledgementWhileMovingCannotConfirmStop
+[14.627s] 2: [       OK ] AuboAction.CancelAcknowledgementWhileMovingCannotConfirmStop (3976 ms)
+[14.627s] 2: [ RUN      ] AuboAction.StaleJointStatePreventsGoal
+[17.749s] 2: [       OK ] AuboAction.StaleJointStatePreventsGoal (3121 ms)
+[17.749s] 2: [ RUN      ] AuboAction.ChangedCompletedIdentityNeverSendsAgain
+[21.110s] 2: [       OK ] AuboAction.ChangedCompletedIdentityNeverSendsAgain (3361 ms)
+[21.110s] 2: [ RUN      ] AuboAction.WrongFrameAndStartDoNotSendGoal
+[24.221s] 2: [       OK ] AuboAction.WrongFrameAndStartDoNotSendGoal (3111 ms)
+[24.221s] 2: [ RUN      ] AuboAction.ConcurrentRequestsHaveSingleOwner
+[27.580s] 2: [       OK ] AuboAction.ConcurrentRequestsHaveSingleOwner (3358 ms)
+[27.580s] 2: [----------] 8 tests from AuboAction (27269 ms total)
+[27.580s] 2: 
+[27.580s] 2: [----------] Global test environment tear-down
+[27.580s] 2: [==========] 8 tests from 1 test suite ran. (27269 ms total)
+[27.580s] 2: [  PASSED  ] 8 tests.
+[27.688s] 2: -- run_test.py: return code 0
+[27.689s] 2: -- run_test.py: inject classname prefix into gtest result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml'
+[27.689s] 2: -- run_test.py: verify result file '/fix-build-v2/mtc_aubo_fake_integration_cpp/test_results/mtc_aubo_fake_integration_cpp/test_aubo_action.gtest.xml'
+[27.700s] 2/2 Test #2: test_aubo_action .................   Passed   27.50 sec
+[27.700s] 
+[27.700s] 100% tests passed, 0 tests failed out of 2
+[27.701s] 
+[27.701s] Label Time Summary:
+[27.701s] gtest    =  27.64 sec*proc (2 tests)
+[27.701s] 
+[27.701s] Total Test time (real) =  27.64 sec
+[27.709s] Invoked command in '/fix-build-v2/mtc_aubo_fake_integration_cpp' returned '0': /usr/bin/ctest -C Release -D ExperimentalTest --no-compress-output -V --force-new-ctest-process
