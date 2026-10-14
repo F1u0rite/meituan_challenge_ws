@@ -4,6 +4,8 @@
 #include <mtc_core_cpp/results.hpp>
 namespace mtc::trajectory
 {
+enum class ExecutionAuthority {UNINITIALIZED, VERIFYING_ENVIRONMENT, EXCLUSIVE_READY,
+  GOAL_PENDING, GOAL_OWNED, STOP_PENDING, FAULT_LOCKED};
 enum class GoalOwnership {NO_ACTIVE_GOAL, OWN_GOAL, FOREIGN_GOAL, UNKNOWN};
 struct ExecutionSnapshot
 {
@@ -18,5 +20,10 @@ struct ExecutionSnapshot
   size_t goals_sent = 0, cancel_requests = 0, feedback_samples = 0, stationary_samples = 0, foreign_active_goals = 0;
   double stationary_observed_seconds = 0.0;
   std::optional<mtc::core::MotionResult> result;
+  // Additive diagnostics; consumers must rebuild rather than mix old ABI.
+  std::string hardware_plugin;
+  bool hardware_verified = false, controller_verified = false;
+  bool controlled_start = false;
+  ExecutionAuthority authority = ExecutionAuthority::UNINITIALIZED;
 };
 }  // namespace mtc::trajectory

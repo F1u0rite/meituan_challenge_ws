@@ -1,0 +1,5 @@
+<library path="mtc_aubo_planning_only">
+  <class name="mtc_aubo_fake/PlanningOnly" type="mtc::aubo_fake::PlanningOnly" base_class_type="moveit_controller_manager::MoveItControllerManager">
+    <description>Non-contact Fake planning only; exposes no execution handles.</description>
+  </class>
+</library>

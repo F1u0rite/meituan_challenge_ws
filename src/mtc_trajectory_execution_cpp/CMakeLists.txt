@@ -26,6 +26,8 @@ if(BUILD_TESTING)
   target_link_libraries(test_trajectory_validator ${PROJECT_NAME})
   ament_add_gtest(test_fjt_action test/test_fjt_action.cpp TIMEOUT 120)
   target_link_libraries(test_fjt_action ${PROJECT_NAME})
+  ament_add_gtest(test_controlled_start test/test_controlled_start.cpp TIMEOUT 150)
+  target_link_libraries(test_controlled_start ${PROJECT_NAME})
 endif()
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(action_msgs rclcpp rclcpp_action control_msgs trajectory_msgs sensor_msgs
