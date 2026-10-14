@@ -1,0 +1,18 @@
+{
+  "prefix": "/fix-merged-install",
+  "modules": {
+    "mtc_vision_adapter": {
+      "path": "/fix-merged-install/lib/python3.12/site-packages/mtc_vision_adapter/__init__.py",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "mtc_vision_adapter.core": {
+      "path": "/fix-merged-install/lib/python3.12/site-packages/mtc_vision_adapter/core.py",
+      "sha256": "517093c885d164ccb600cdc523f665ca962458b3306601dc60de237dd5205e6c"
+    },
+    "mtc_vision_adapter.publisher": {
+      "path": "/fix-merged-install/lib/python3.12/site-packages/mtc_vision_adapter/publisher.py",
+      "sha256": "c9a07cf41726ca20526368a040cee8cf7f27dc279da008056b4b8ce12c846dc1"
+    }
+  },
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
+}

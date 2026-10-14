@@ -1,0 +1,16 @@
+[
+  {
+    "case": "missing-package",
+    "exception": "PackageNotFoundError",
+    "detail": "\"package 'mtc_vision_adapter' not found, searching: ['/tmp/prefix-negative-996rvs2b']\"",
+    "ros_context_started": false,
+    "passed": true
+  },
+  {
+    "case": "missing-executable",
+    "exception": "AssertionError",
+    "detail": "Installed replay_publisher missing: /tmp/prefix-negative-svkcc3pk/lib/mtc_vision_adapter/replay_publisher",
+    "ros_context_started": false,
+    "passed": true
+  }
+]

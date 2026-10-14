@@ -1,0 +1,16 @@
+{
+  "name": "original-before",
+  "started_at": "2026-10-14T00:01:43.199417+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-main-registration-review-fc82ffa",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=232 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; test ! -e /candidate/install\nexport MTC_VALIDATION_OUT=/review-evidence/before-replay\nset +e\ncolcon --log-base /review-evidence/colcon-before test --build-base /candidate-build --install-base /candidate-install --packages-select mtc_vision_adapter --executor sequential --return-code-on-test-failure --pytest-args -ra --basetemp=/review-evidence/before-pytest-temp\nrc=$?\nset -e\ncp /candidate-build/mtc_vision_adapter/pytest.xml /review-evidence/colcon-before.xml\nprintf '%s\\n' \"$rc\" > /review-evidence/colcon-before.rc\ntest \"$rc\" -eq 1\n"
+  ],
+  "timeout_seconds": 180,
+  "pid": 15583,
+  "exit_code": 0,
+  "ended_at": "2026-10-14T00:01:45.923868+00:00"
+}

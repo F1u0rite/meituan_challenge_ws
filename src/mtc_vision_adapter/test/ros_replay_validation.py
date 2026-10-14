@@ -9,6 +9,7 @@ import subprocess
 import time
 
 import rclpy
+from ament_index_python.packages import get_package_prefix
 from rclpy.node import Node
 from rclpy.qos import (
     QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy, LivelinessPolicy,
@@ -34,9 +35,9 @@ def equal(actual, expected):
 def run_validation(fixture, out, exit_mode='natural'):
     fixture, out = Path(fixture), Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    workspace = Path(__file__).resolve().parents[3]
-    executable = workspace/'install/mtc_vision_adapter/lib/mtc_vision_adapter/replay_publisher'
-    assert executable.is_file(), 'Build and source the workspace overlay first'
+    prefix = Path(get_package_prefix('mtc_vision_adapter'))
+    executable = prefix/'lib/mtc_vision_adapter/replay_publisher'
+    assert executable.is_file(), f'Installed replay_publisher missing: {executable}'
     records = [json.loads(line) for line in fixture.read_text().splitlines() if line]
     assert len(records) == 4
     assert exit_mode in ('natural', 'sigint')
@@ -47,6 +48,7 @@ def run_validation(fixture, out, exit_mode='natural'):
     node = Node('vision_process_acceptance')
     proc = None
     result = {'exit_mode': exit_mode, 'passed': False,
+              'install_prefix': str(prefix), 'executable': str(executable),
               'scope': 'Local Ubuntu ROS2 only; no D435i, cross-host or C++ FSM'}
     log = open(out/'ros_publisher.log', 'w')
 

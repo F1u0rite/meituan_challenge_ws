@@ -1,0 +1,7 @@
+[WARN] [1791936156.587132381] [vision_offline_replay]: OFFLINE REPLAY: original timestamps; invalid poses; never motion input
+[INFO] [1791936156.587731507] [vision_offline_replay]: created QoS: RELIABLE KEEP_LAST(5) VOLATILE
+[INFO] [1791936157.089018872] [vision_offline_replay]: frame=0 mode=synthetic source=synthetic_clock
+[INFO] [1791936157.589348057] [vision_offline_replay]: frame=1 mode=synthetic source=synthetic_clock
+[INFO] [1791936158.089805086] [vision_offline_replay]: frame=2 mode=synthetic source=synthetic_clock
+[INFO] [1791936158.589285438] [vision_offline_replay]: frame=3 mode=synthetic source=synthetic_clock
+[INFO] [1791936158.595669881] [vision_offline_replay]: replay complete

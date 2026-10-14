@@ -1,0 +1,16 @@
+{
+  "name": "domain-cleanup",
+  "started_at": "2026-10-14T00:03:18.059085+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-main-registration-review-fc82ffa",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=232 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; python3 - <<'INNER'\nimport subprocess,os,json\nfrom pathlib import Path\ncode=\"\"\"import rclpy,time,json\nrclpy.init();n=rclpy.create_node('post_replay_cleanup_probe');end=time.monotonic()+2\nwhile time.monotonic()<end:rclpy.spin_once(n,timeout_sec=.1)\nothers=[(a,b) for a,b in n.get_node_names_and_namespaces() if a!=n.get_name()]\nn.destroy_node();rclpy.shutdown();print(json.dumps(others));assert not others,others\n\"\"\"\nr={}\nfor domain in [191,192,193,194]:\n p=subprocess.run(['python3','-c',code],env=dict(os.environ,ROS_DOMAIN_ID=str(domain)),capture_output=True,text=True,timeout=10)\n r[domain]={'returncode':p.returncode,'stdout':p.stdout,'stderr':p.stderr};assert p.returncode==0,p.stderr\nPath('/review-evidence/replay-domains-empty.json').write_text(json.dumps(r,indent=2)+'\\n')\nprint(json.dumps(r))\nINNER\n"
+  ],
+  "timeout_seconds": 60,
+  "pid": 15865,
+  "exit_code": 0,
+  "ended_at": "2026-10-14T00:03:28.362913+00:00"
+}

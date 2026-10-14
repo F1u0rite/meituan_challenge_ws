@@ -1,0 +1,16 @@
+{
+  "name": "fix-custom",
+  "started_at": "2026-10-14T00:01:45.965918+00:00",
+  "argv": [
+    "docker",
+    "exec",
+    "mtc-main-registration-review-fc82ffa",
+    "bash",
+    "-c",
+    "set -e; source /opt/ros/jazzy/setup.bash; source /driver_work/install/setup.bash; if test -f /candidate-install/setup.bash; then source /candidate-install/setup.bash; fi; unset ROS_STATIC_PEERS ROS_LOCALHOST_ONLY FASTRTPS_DEFAULT_PROFILES_FILE FASTDDS_DEFAULT_PROFILES_FILE CYCLONEDDS_URI; export ROS_DOMAIN_ID=232 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST PYTHONDONTWRITEBYTECODE=1 ROS_LOG_DIR=/review-evidence/roslogs XML_CATALOG_FILES=/acceptance-tools/offline-schema/catalog.xml GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0=/candidate; cd /candidate; cd /fix-review\ncolcon --log-base /review-evidence/build-custom build --base-paths src/mtc_vision_adapter --build-base /fix-custom-build --install-base /fix-custom-install --executor sequential\nsource /fix-custom-install/setup.bash\nexport MTC_VALIDATION_OUT=/review-evidence/custom-replay\ncolcon --log-base /review-evidence/test-custom test --build-base /fix-custom-build --install-base /fix-custom-install --packages-select mtc_vision_adapter --executor sequential --return-code-on-test-failure --pytest-args -ra --basetemp=/review-evidence/custom-pytest-temp\ncolcon test-result --test-result-base /fix-custom-build/mtc_vision_adapter --all > /review-evidence/custom-results.txt\ncp /fix-custom-build/mtc_vision_adapter/pytest.xml /review-evidence/custom.xml\npython3 - <<'INNER'\nimport json,hashlib,sys\nfrom pathlib import Path\nfrom ament_index_python.packages import get_package_prefix\nimport mtc_vision_adapter,mtc_vision_adapter.core,mtc_vision_adapter.publisher\nmodules={}\nfor m in [mtc_vision_adapter,mtc_vision_adapter.core,mtc_vision_adapter.publisher]:\n p=Path(m.__file__);modules[m.__name__]={'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}\nassert get_package_prefix('mtc_vision_adapter')=='/fix-custom-install/mtc_vision_adapter'\nassert all(x['path'].startswith('/fix-custom-install/mtc_vision_adapter'+'/') for x in modules.values())\nassert all(x['sha256']==hashlib.sha256((Path('/candidate/src/mtc_vision_adapter/mtc_vision_adapter') / (('__init__' if k=='mtc_vision_adapter' else k.split('.')[-1])+'.py')).read_bytes()).hexdigest() for k,x in modules.items())\nPath('/review-evidence/custom-identity.json').write_text(json.dumps({'prefix':'/fix-custom-install/mtc_vision_adapter','modules':modules,'python':sys.version},indent=2)+'\\n')\nINNER\n"
+  ],
+  "timeout_seconds": 180,
+  "pid": 15598,
+  "exit_code": 1,
+  "ended_at": "2026-10-14T00:02:00.584788+00:00"
+}

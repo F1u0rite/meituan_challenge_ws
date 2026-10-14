@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-14T00:03:34.176839+00:00",
+  "all_stopped": true,
+  "all_recorded_pids_absent": true,
+  "container_names": [
+    "mtc-main-registration-review-fc82ffa",
+    "mtc-repro-5c8f61d8af9f-fc82ffa4dab6",
+    "mtc-scene-registration-review-454143e",
+    "mtc-repro-5c8f61d8af9f-454143e66402"
+  ],
+  "containers": [
+    {
+      "name": "mtc-main-registration-review-fc82ffa",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-10-14T00:01:01.323385333Z",
+        "FinishedAt": "2026-10-14T00:03:33.75076221Z"
+      },
+      "exec_ids": null
+    },
+    {
+      "name": "mtc-repro-5c8f61d8af9f-fc82ffa4dab6",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-10-13T23:51:45.155623534Z",
+        "FinishedAt": "2026-10-13T23:57:30.461170938Z"
+      },
+      "exec_ids": null
+    },
+    {
+      "name": "mtc-scene-registration-review-454143e",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-10-13T23:46:15.125567327Z",
+        "FinishedAt": "2026-10-13T23:48:12.830397298Z"
+      },
+      "exec_ids": null
+    },
+    {
+      "name": "mtc-repro-5c8f61d8af9f-454143e66402",
+      "state": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 137,
+        "Error": "",
+        "StartedAt": "2026-10-13T23:39:42.088577398Z",
+        "FinishedAt": "2026-10-13T23:43:44.733799465Z"
+      },
+      "exec_ids": null
+    }
+  ],
+  "absent_runner_pids": [
+    13195,
+    9928,
+    15710,
+    15567,
+    15598,
+    15723,
+    15756,
+    15802,
+    15865,
+    15583,
+    15816
+  ],
+  "domain232_empty": true,
+  "top_before_stop": "PID                 PPID                STAT                COMMAND\n88466               88441               Ss                  sleep infinity\n"
+}
